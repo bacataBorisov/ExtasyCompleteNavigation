@@ -13,6 +13,7 @@ struct BigDisplayCell: View {
 
     let alarmGradient = EllipticalGradient(colors:[Color(UIColor.systemRed), Color(UIColor.systemPink), Color(UIColor.systemBackground)])
     let nonAlarmGradient = EllipticalGradient(colors:[Color(UIColor.systemBackground), Color(UIColor.systemBackground)])
+
     
     @State var triggerAlarm: Bool = false
     
@@ -60,16 +61,17 @@ struct BigDisplayCell: View {
         .onChange(of: navigationReadings.depth) { oldValue, newValue in
             if newValue != nil {
                 if let value = newValue {
-                    //this value here has to be selectable from the settings Menu, also for other values
+                    
+                    //TODO: - this value here has to be selectable from the settings Menu, also for other values
                     if value < 3 {
                         triggerAlarm = true
+                    } else {
+                        triggerAlarm = false
                     }
                 }
-            } else {
-                triggerAlarm = false
             }
         }
-        .background((cell.id == 0 && triggerAlarm) ? alarmGradient.opacity(0.8)  : nonAlarmGradient.opacity(0.8))
+        .background((cell.id == 0 && triggerAlarm) ? alarmGradient : nonAlarmGradient)
         .foregroundStyle(Color("display_font"))
         .aspectRatio(3/2, contentMode: .fit)
 

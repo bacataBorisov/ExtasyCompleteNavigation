@@ -55,19 +55,20 @@ struct SmallDisplayCell: View {
             }//END OF ZSTACK
         }//END OF GEOMETRY READER
         //MARK: - Trigger Depth Alarm
-        .onChange(of: navigationReadings.depth) { _ , newValue in
+        .onChange(of: navigationReadings.depth) { oldValue, newValue in
             if newValue != nil {
                 if let value = newValue {
-                    //this value here has to be selectable from the settings Menu, also for other values
+                    
+                    //TODO: - this value here has to be selectable from the settings Menu, also for other values
                     if value < 3 {
                         triggerAlarm = true
+                    } else {
+                        triggerAlarm = false
                     }
                 }
-            } else {
-                triggerAlarm = false
             }
         }
-        .background((cell.id == 0 && triggerAlarm) ? alarmGradient  : nonAlarmGradient)
+        .background((cell.id == 0 && triggerAlarm) ? alarmGradient : nonAlarmGradient)
         .aspectRatio(1, contentMode: .fit)
         .foregroundStyle(Color("display_font"))
         

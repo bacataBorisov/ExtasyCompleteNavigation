@@ -1,133 +1,51 @@
-//
-//  RawNavigationData.swift
-//  ExtasyCompleteNavigation
-//
-//  Created by Vasil Borisov on 14.09.23.
-//
-
 import SwiftUI
-
 
 struct RawNavigationData: View {
     
     @Environment(NMEAReader.self) private var navigationReadings
     
     var body: some View {
-        
-        //Data from instruments
-        List{
-            Text("Navigation data from Instruments")
-                .font(.title)
-            Group{
-                if let depth = navigationReadings.depth {
-                    Text("Depth: \(depth)")
-                } else {
-                    Text("Depth: --- ")
-                }
-                if let heading = navigationReadings.hdgForDisplayAndCalculation {
-                    Text("Heading: \(heading)")
-                } else {
-                    Text("Heading: --- ")
-                }
-                if let travelledDistance = navigationReadings.totalDistance {
-                    Text("Total Distance Travelled: \(travelledDistance)")
-                } else {
-                    Text("Total Distance Travelled: ----- ")
-                }
-                if let distanceSinceReset = navigationReadings.distSinceReset {
-                    Text("Distance Since Last Reset: \(distanceSinceReset)")
-                } else {
-                    Text("Distance Since Last Reset: ----- ")
-                }
-                if let waterTemp = navigationReadings.seaWaterTemperature {
-                    Text("Sea Water Temperature: \(waterTemp)")
-                } else {
-                    Text("Sea Water Temperature: --.-")
-                }
-                if let boatSpeed = navigationReadings.boatSpeedLag {
-                    Text("Speed (SpeedLog): \(boatSpeed)")
-                } else {
-                    Text("Speed (SppedLog): --.--")
-                }
-                if let appWingAngle = navigationReadings.appWindAngle {
-                    Text("AWA: \(appWingAngle)")
-                } else {
-                    Text("AWA: ---")
-                }
-                if let appWingSpeed = navigationReadings.appWindForce {
-                    Text("AWS: \(appWingSpeed)")
-                } else {
-                    Text("AWS: --.-")
-                }
-                if let trueWingAngle = navigationReadings.trueWindAngle {
-                    Text("TWA: \(trueWingAngle)")
-                } else {
-                    Text("TWA: ---")
-                }
-                if let trueWingSpeed = navigationReadings.trueWindForce {
-                    Text("TWS: \(trueWingSpeed)")
-                } else {
-                    Text("TWS: --.-")
-                }
-                
+        List {
+            Section(header: Text("Navigation data from Instruments").font(.title)) {
+                dataGroup(header: "Depth", value: navigationReadings.depth, unit: " mtrs")
+                dataGroup(header: "Heading", value: navigationReadings.hdgForDisplayAndCalculation, unit: "")
+                dataGroup(header: "Total Distance Travelled", value: navigationReadings.totalDistance, unit: "")
+                dataGroup(header: "Distance Since Last Reset", value: navigationReadings.distSinceReset, unit: "")
+                dataGroup(header: "Sea Water Temperature", value: navigationReadings.seaWaterTemperature, unit: "°C")
+                dataGroup(header: "Speed (SpeedLog)", value: navigationReadings.boatSpeedLag, unit: " kn")
+                dataGroup(header: "AWA", value: navigationReadings.appWindAngle, unit: "°")
+                dataGroup(header: "AWS", value: navigationReadings.appWindForce, unit: " kn")
+                dataGroup(header: "TWA", value: navigationReadings.trueWindAngle, unit: "°")
+                dataGroup(header: "TWS", value: navigationReadings.trueWindForce, unit: " kn")
             }
             .font(.subheadline)
             
-            Text("GPS Data")
-                .font(.title)
-            Group{
-                if let utcTime = navigationReadings.utcTime {
-                    Text("Time UTC: \(utcTime)")
-                } else {
-                    Text("Time UTC: --:--:--")
-                }
-                if let date = navigationReadings.gpsDate {
-                    Text("Date: \(date)")
-                } else {
-                    Text("Date: --/---/----")
-                }
-                if let lat = navigationReadings.lat {
-                    Text("Latitude: \(lat)")
-                } else {
-                    Text("Latitude: --.----")
-                }
-                if let lon = navigationReadings.lon {
-                    Text("Longtitude: .2f\(lon)")
-                } else {
-                    Text("Longtitude: --.----")
-                }
-                if let cog = navigationReadings.courseOverGround {
-                    Text("Course Over Ground: \(cog)")
-                } else {
-                    Text("Course Over Ground: ---")
-                }
-                if let sog = navigationReadings.speedOverGround {
-                    Text("Speed Over Ground: \(sog)")
-                } else {
-                    Text("Speed Over Ground: --.--")
-                }
-                if let polarSpeed = navigationReadings.polarSpeed {
-                    Text("Polar Speed (pSPD): \(polarSpeed)")
-                } else {
-                    Text("Polar Speed (pSPD): --.--")
-                }
-                if let polarVMG = navigationReadings.polarVMG {
-                    Text("Polar VMG: \(polarVMG)")
-                } else {
-                    Text("Polar VMG: --.-")
-                }
-                if let curVMC = navigationReadings.waypointVMC {
-                    Text("Current VMC: \(curVMC)")
-                } else {
-                    Text("Current VMC: --.-")
-                }
+            Section(header: Text("GPS Data").font(.title)) {
+                dataGroup(header: "Time UTC", value: navigationReadings.utcTime, unit: "")
+                dataGroup(header: "Date", value: navigationReadings.gpsDate, unit: "")
+                dataGroup(header: "Latitude", value: navigationReadings.lat, unit: "")
+                dataGroup(header: "Longitude", value: navigationReadings.lon, unit: "")
+                dataGroup(header: "Course Over Ground", value: navigationReadings.courseOverGround, unit: "°")
+                dataGroup(header: "Speed Over Ground", value: navigationReadings.speedOverGround, unit: " kn")
+                dataGroup(header: "Polar Speed (pSPD)", value: navigationReadings.polarSpeed, unit: " kn")
+                dataGroup(header: "Polar VMG", value: navigationReadings.polarVMG, unit: "")
+                dataGroup(header: "Current VMC", value: navigationReadings.waypointVMC, unit: "")
             }
             .font(.subheadline)
         }
-        //END OF VSTACK
         .navigationTitle("Raw Navigation Data")
-    }//END OF BODY
-}//END OF STRUCT
+    }
+    
+    private func dataGroup<T>(header: String, value: T?, unit: String) -> some View {
+        Group {
+            if let value = value {
+                Text("\(header): \(value)\(unit)")
+            } else {
+                Text("\(header): ---")
+            }
+        }
+    }
+}
 
 #Preview {
     RawNavigationData()

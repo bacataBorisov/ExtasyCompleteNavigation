@@ -12,7 +12,7 @@ struct MultiDisplayCells: Hashable, Codable, Identifiable {
     var id: Int
     var name: String
     var units: String
-    //check if the value can be expressed in the metric system
+    //check if the value can be converted to metric units
     var valueHasMetric: Bool
     var metric: String
     var specifier: String

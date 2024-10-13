@@ -33,6 +33,9 @@ struct ContentView: View {
                     navigationReadings.stop()
                     
                 })
+                .onAppear {
+                    navigationReadings.start()
+                }
         } else {
             IPhoneView()
                 .onDisappear(perform: {

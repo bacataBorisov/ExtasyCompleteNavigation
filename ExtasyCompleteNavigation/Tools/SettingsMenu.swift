@@ -34,21 +34,19 @@ struct SettingsMenu: View {
                         navigationReadings.isMetricSelected = newValue
                     }
                 NavigationLink("Raw Navigation Data", destination: RawNavigationData())
-                //this will lead to a view that will give more information about the units used.
+                //TODO: - this will lead to a view that will give more information about the units used.
                 Text("Glossary")
-                //this will lead to a menu that you can select different alarm levels for the different values
+                //TODO: - this will lead to a menu that you can select different alarm levels for the different values
                 Text("Set Alarms")
-                //better name to be implemented
-                Button("Start") {
-                    navigationReadings.start()
-                }
-                Button("Stop") {
-                    navigationReadings.stop()
-                }
                 
+                /*
+                 Button are used during debugging for easier access to the socket communication functions. In the real world the app connects automatically once in the same network and disconnects when the app exits
+                 */
+                
+                //Button("Start") { navigationReadings.start() }
+                //Button("Stop") { navigationReadings.stop() }
             }
             .navigationTitle("Settings")
-            
         }
     }
 }

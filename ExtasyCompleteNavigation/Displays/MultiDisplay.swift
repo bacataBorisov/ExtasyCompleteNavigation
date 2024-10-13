@@ -120,8 +120,6 @@ struct MultiDisplay: View {
                                              valueID: identifier[1])
                         }//END OF LABEL
                         
-                        
-                        
                         //MARK: - Small Middle Display Cell
                         
                         Menu(){

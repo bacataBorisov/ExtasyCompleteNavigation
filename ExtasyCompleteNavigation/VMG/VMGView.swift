@@ -69,13 +69,10 @@ struct VMGView: View {
     VMGView()
         .environment(NMEAReader())
         .modelContainer(for: [
-            //Matrix.self,
             UserSettingsMenu.self,
             NauticalDistance.self,
             BearingToMarkUnitsMenu.self,
             NextTackNauticalDistance.self,
             SwitchCoordinatesView.self
-            //UltimateMatrix.self,
-            //Waypoints.self
         ])
 }

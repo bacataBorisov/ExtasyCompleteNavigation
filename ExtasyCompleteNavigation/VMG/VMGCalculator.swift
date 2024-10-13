@@ -11,7 +11,7 @@ class VMGCalculator {
     
     //VMG = Velocity Made Good - is the optimup angle against the wind
     //VMG formula
-    // VMG = SOG*cos(tita), where tita = angle between COG and TWA
+    //VMG = SOG*cos(tita), where tita = angle between COG and TWA
     
     let SMALL: Double = 1.0e-5;
     let DEG_TO_RAD: Double = 0.017453292519943295769236907684886;
@@ -29,28 +29,6 @@ class VMGCalculator {
     func toDegrees(radians: Double) -> Double {
         return radians * (180.0 / Double.pi)
     }
-    
-    
-//MARK: - This might be wrong and probably deleted
-//    func calculateVMG(boatSpeed: Double, windAngle: Double) -> Double {
-//
-//        var trueWindAngle = toRadians(degrees: windAngle)
-//        if trueWindAngle < 0 {
-//            trueWindAngle *= (-1)
-//        }
-//        
-//        let vmg = boatSpeed*cos(trueWindAngle)
-//        //print("PRINTING FROM VMG CALC FUNCTION")
-//        //print("boat speed is: [\(boatSpeed)], TWA is: [\(windAngle)]")
-//        
-//        
-//        //I think that VMG should always be positive, it is easier to read.
-//        //This needs to be confirmed
-//        if vmg <= 0 {
-//            return vmg * (-1)
-//        }
-//        return vmg
-//    }
     
     func eval_cubic_spline(u: Double, xa: Double, xb: Double, xc: Double, xd: Double) -> Double {
         var c = Double()
