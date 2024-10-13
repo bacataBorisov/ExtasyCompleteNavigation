@@ -1,0 +1,192 @@
+[
+        {
+                "id": 0,
+                "name": "DPT",
+                "units": "m",
+                "valueHasMetric": false,
+                "metric": "",
+                "specifier": "%.1f",
+                "tag": "other"
+        },
+        
+        {
+                "id": 1,
+                "name": "HDG",
+                "units": "°",
+                "valueHasMetric": false,
+                "metric": "",
+                "specifier": "%.f",
+                "tag": "other"
+        },
+        
+        {
+                "id": 2,
+                "name": "SWT",
+                "units": "°C",
+                "valueHasMetric": false,
+                "metric": "",
+                "specifier": "%.1f",
+                "tag": "other"
+        },
+        
+        {
+                "id": 3,
+                "name": "BSPD",
+                "units": "kn",
+                "valueHasMetric": false,
+                "metric": "",
+                "specifier": "%.2f",
+                "tag": "speed"
+        },
+        
+        {
+                "id": 4,
+                "name": "AWA",
+                "units": "°",
+                "valueHasMetric": false,
+                "metric": "",
+                "specifier": "%.f",
+                "tag": "wind"
+        },
+        
+        {
+                "id": 5,
+                "name": "AWD",
+                "units": "°",
+                "valueHasMetric": false,
+                "metric": "",
+                "specifier": "%.f",
+                "tag": "wind"
+        },
+        
+        {
+                "id": 6,
+                "name": "AWS",
+                "units": "kn",
+                "valueHasMetric": true,
+                "metric": "m/s",
+                "specifier": "%.1f",
+                "tag": "wind"
+        },
+        
+        {
+                "id": 7,
+                "name": "TWA",
+                "units": "°",
+                "valueHasMetric": false,
+                "metric": "",
+                "specifier": "%.f",
+                "tag": "wind"
+        },
+        
+        {
+                "id": 8,
+                "name": "TWD",
+                "units": "°",
+                "valueHasMetric": false,
+                "metric": "",
+                "specifier": "%.f",
+                "tag": "wind"
+        },
+        
+        {
+                "id": 9,
+                "name": "TWS",
+                "units": "kn",
+                "valueHasMetric": true,
+                "metric": "m/s",
+                "specifier": "%.1f",
+                "tag": "wind"
+        },
+        
+        {
+                "id": 10,
+                "name": "COG",
+                "units": "°",
+                "valueHasMetric": false,
+                "metric": "",
+                "specifier": "%.f",
+                "tag": "other"
+        },
+        
+        {
+                "id": 11,
+                "name": "SOG",
+                "units": "kn",
+                "valueHasMetric": false,
+                "metric": "",
+                "specifier": "%.2f",
+                "tag": "speed"
+        },
+        
+        {
+                "id": 12,
+                "name": "pSPD",
+                "units": "kn",
+                "valueHasMetric": false,
+                "metric": "",
+                "specifier": "%.2f",
+                "tag": "speed"
+        },
+        
+        {
+                "id": 13,
+                "name": "VMC",
+                "units": "kn",
+                "valueHasMetric": false,
+                "metric": "",
+                "specifier": "%.2f",
+                "tag": "waypoint"
+        },
+        
+        {
+                "id": 14,
+                "name": "VMG",
+                "units": "kn",
+                "valueHasMetric": false,
+                "metric": "",
+                "specifier": "%.2f",
+                "tag": "speed"
+        },
+        
+        {
+                "id": 15,
+                "name": "BTM",
+                "units": "°",
+                "valueHasMetric": false,
+                "metric": "",
+                "specifier": "%.f",
+                "tag": "waypoint"
+        },
+        
+        {
+                "id": 16,
+                "name": "DTM",
+                "units": "nmi",
+                "valueHasMetric": false,
+                "metric": "",
+                "specifier": "%.f",
+                "tag": "waypoint"
+        },
+        
+        {
+                "id": 17,
+                "name": "ETA",
+                "units": "hh:mm",
+                "valueHasMetric": false,
+                "metric": "",
+                "specifier": "%.2f",
+                "tag": "waypoint"
+        },
+        
+        {
+                "id": 18,
+                "name": "TckETA",
+                "units": "hh:mm",
+                "valueHasMetric": false,
+                "metric": "",
+                "specifier": "%.2f",
+                "tag": "waypoint"
+        }
+        
+]

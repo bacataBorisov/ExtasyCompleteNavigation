@@ -1,0 +1,211 @@
+Here I will describe all the mssages that I see from the sample string in the nanoPi named "p1".
+I don't know how many of them are real but I will check once everything is readble and we go
+to the boat and check in place.
+
+
+information has been taken from this link:
+https://www.tronico.fi/OH6NT/docs/NMEA0183.pdf
+
+Talker Identifiers
+
+-> II - Integrated Instrumentation
+-> GP - GPS (Global Positioning System)
+
+
+*** All the following tags are from II - boat navigation ***
+
+DPT - DPT Heading – Deviation & Variation
+//need to check if there is the devieation value
+$--DPT,%f,,*hh - debtp as a float in meters
+
+1) Depth, meters
+2) Offset from transducer;
+positive means distance from transducer to water line,
+negative means distance from transducer to keel
+3) Checksum
+
+//this is probably the built-in GPS - to be checked
+GLL - Geographic Position – Latitude/Longitude
+$--GLL,llll.ll,a,yyyyy.yy,a,hhmmss.ss,A*hh
+1) Latitude
+2) N or S (North or South)
+3) Longitude
+4) E or W (East or West)
+5) Time (UTC)
+6) Status A - Data Valid, V - Data Invalid 7) Checksum
+
+HDG - Heading – Deviation & Variation
+$--HDG,%i,,,%f,a*hh - heading as Int, magnetic variation in degrees as float, we don't have the rest in the string that is why the numbers are like that
+
+1) Magnetic Sensor heading in degrees
+4) Magnetic Variation degrees
+5) Magnetic Variation direction, E = Easterly, W = Westerly
+6) Checksum
+
+MTW - Water Temperature
+
+//there are currently no value - probably the temp. sensor is in the lag, could have been out during the test
+$--MTW,%f,C*hh - probably a float in celsius
+
+1) Degrees
+2) Unit of Measurement, Celcius
+3) Checksum
+
+MWV - Wind Speed and Angle
+
+$--MWV,%i,a,x.x,a*hh - wind angle as Int, relative for our boat, speed in knots, status (last letter)
+A - status is valid
+V - status is not valid
+
+1) Wind Angle, 0 to 360 degrees
+2) Reference, R = Relative, T = True
+3) Wind Speed
+4) Wind Speed Units, K/M/N
+5) Status, A = Data Valid
+6) Checksum
+
+RMB - Recommended Minimum Navigation Information
+//do more research about that string - what is it used for
+//it is empty in the sample file - propably is used for autopilot navigation but you need
+//the gps to be working
+
+$--RMB,A,x.x,a,c--c,c--c,llll.ll,a,yyyyy.yy,a,x.x,x.x,x.x,A*hh
+
+1) Status, V = Navigation receiver warning
+2) Cross Track error - nautical miles
+3) Direction to Steer, Left or Right
+4) TO Waypoint ID
+5) FROM Waypoint ID
+6) Destination Waypoint Latitude 7) N or S
+8) Destination Waypoint Longitude 9) E or W
+10) Range to destination in nautical miles 11) Bearing to destination in degrees True 12) Destination closing velocity in knots
+13) Arrival Status, A = Arrival Circle Entered 14) Checksum
+
+RMC - Recommended Minimum Navigation Information
+//do research, it is also probably used for autopilot navigation
+
+$--RMC,hhmmss.ss,A,llll.ll,a,yyyyy.yy,a,x.x,x.x,xxxx,x.x,a*hh
+
+1) Time (UTC)
+2) Status, V = Navigation receiver warning
+3) Latitude
+4) N or S
+5) Longitude
+6) E or W
+7) Speed over ground, knots
+8) Track made good, degrees true
+9) Date, ddmmyy
+10) Magnetic Variation, degrees 11) E or W
+12) Checksum
+
+VHW - Water Speed and Heading
+
+$--VHW,x.x,T,x.x,M,x.x,N,x.x,K*hh
+$IIVHW,221,T,217,M,0.00,N,0.00,K*50 - string taken from our navigation
+
+1) Degress True
+2) T = True
+3) Degrees Magnetic
+4) M = Magnetic
+5) Knots (speed of vessel relative to the water)
+6) N = Knots
+7) Kilometers (speed of vessel relative to the water)
+8) K = Kilometres
+9) Checksum
+
+VLW - Distance Traveled through Water
+
+$--VLW,x.x,N,x.x,N*hh
+$IIVLW,62396.99,N,8252.56,N*7B - string taken from our navigation
+
+
+1) Total cumulative distance
+2) N = Nautical Miles
+3) Distance since Reset
+4) N = Nautical Miles
+5) Checksum
+
+*** Tags from GPS -> talker identifier GP *** () - probably not all the values are very useful,
+I need to decide which ones I will use
+
+GGA Global Positioning System Fix Data. Time, Position and fix related data for a GPS receiver
+
+$--GGA,hhmmss.ss,llll.ll,a,yyyyy.yy,a,x,xx,x.x,x.x,M,x.x,M,x.x,xxxx*hh
+
+1) Time (UTC)
+2) Latitude
+3) N or S (North or South)
+4) Longitude
+5) E or W (East or West)
+6) GPS Quality Indicator,
+0 - fix not available, 1 - GPS fix,
+2 - Differential GPS fix
+7) Number of satellites in view, 00 - 12
+8) Horizontal Dilution of precision
+9) Antenna Altitude above/below mean-sea-level (geoid)
+10) Units of antenna altitude, meters
+11) Geoidal separation, the difference between the WGS-84 earth
+ellipsoid and mean-sea-level (geoid), "-" means mean-sea-level below ellipsoid
+12) Units of geoidal separation, meters
+13) Age of differential GPS data, time in seconds since last SC104
+type 1 or 9 update, null field when DGPS is not used
+14) Differential reference station ID, 0000-1023
+15) Checksum
+
+GSA - GPS DOP and active satellites
+
+$--GSA,a,a,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x.x,x.x,x.x*hh
+1) Selection mode
+2) Mode
+3) ID of 1st satellite used for fix 4) ID of 2nd satellite used for fix ...
+14) ID of 12th satellite used for fix 15) PDOP in meters
+16) HDOP in meters
+17) VDOP in meters
+18) Checksum
+
+
+//this is rather used for information, it might be not so useful for the user interface
+// I can implement it at a later stage
+
+GSV - Satellites in view
+$--GSV,x,x,x,x,x,x,x,...*hh
+1) total number of messages
+2) message number
+3) satellites in view
+4) satellite number
+5) elevation in degrees
+6) azimuth in degrees to true
+7) SNR in dB
+more satellite infos like
+4)-7)
+n) Checksum
+
+RMC - Recommended Minimum Navigation Information
+
+$--RMC,hhmmss.ss,A,llll.ll,a,yyyyy.yy,a,x.x,x.x,xxxx,x.x,a*hh
+
+1) Time (UTC)
+2) Status, V = Navigation receiver warning 3) Latitude
+4) N or S
+5) Longitude
+6) E or W
+7) Speed over ground, knots
+8) Track made good, degrees true
+9) Date, ddmmyy
+10) Magnetic Variation, degrees 11) E or W
+12) Checksum
+
+VTG Track Made Good and Ground Speed
+//in our string there is a status also
+$--VTG,x.x,T,x.x,M,x.x,N,x.x,K*hh
+
+1) Track Degrees
+2) T = True
+3) Track Degrees
+4) M = Magnetic
+5) Speed Knots
+6) N = Knots
+7) Speed Kilometers Per Hour
+8) K = Kilometres Per Hour
+9) Checksum
+
