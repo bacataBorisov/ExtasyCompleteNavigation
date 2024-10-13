@@ -28,10 +28,10 @@
 		06A0A1002A92E8D100274526 /* PseudoBoatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A0A0FF2A92E8D100274526 /* PseudoBoatView.swift */; };
 		06ABCE2E2AA162600067DCAA /* NMEASentencesExtasy in Resources */ = {isa = PBXBuildFile; fileRef = 06ABCE2D2AA162600067DCAA /* NMEASentencesExtasy */; };
 		06B264AA2B76E4DC00745E5B /* NextTackETAView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06B264A92B76E4DC00745E5B /* NextTackETAView.swift */; };
-		06BD31862BC20D7A00839017 /* diagram.txt in Resources */ = {isa = PBXBuildFile; fileRef = 06BD31852BC20D7A00839017 /* diagram.txt */; };
 		06BFC92B2B69A00300E74C47 /* PreviewContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06BFC92A2B69A00300E74C47 /* PreviewContainer.swift */; };
 		06CF549A2BC1FC2600F21A12 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 06CF54992BC1FC2600F21A12 /* README.md */; };
 		06F483BD2A8F258300B701EC /* AvailableFontsSwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06F483BC2A8F258300B701EC /* AvailableFontsSwiftUI.swift */; };
+		06FC30D32CBC13BE00E5DBF9 /* diagram.txt in Resources */ = {isa = PBXBuildFile; fileRef = 06FC30D22CBC13BE00E5DBF9 /* diagram.txt */; };
 		06FC6E4D2B55D9BB006AF16A /* WaypointListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06FC6E4C2B55D9BB006AF16A /* WaypointListView.swift */; };
 		181601DF2AD0DF5700D6D31B /* SettingsMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 181601DE2AD0DF5700D6D31B /* SettingsMenu.swift */; };
 		181601E12AD0F20700D6D31B /* DisplayCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 181601E02AD0F20700D6D31B /* DisplayCells.swift */; };
@@ -68,10 +68,10 @@
 		06A0A0FF2A92E8D100274526 /* PseudoBoatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PseudoBoatView.swift; sourceTree = "<group>"; };
 		06ABCE2D2AA162600067DCAA /* NMEASentencesExtasy */ = {isa = PBXFileReference; lastKnownFileType = text; path = NMEASentencesExtasy; sourceTree = "<group>"; };
 		06B264A92B76E4DC00745E5B /* NextTackETAView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextTackETAView.swift; sourceTree = "<group>"; };
-		06BD31852BC20D7A00839017 /* diagram.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = diagram.txt; path = "../../../Extasy Navigation Additional Materials/diagram.txt"; sourceTree = "<group>"; };
 		06BFC92A2B69A00300E74C47 /* PreviewContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewContainer.swift; sourceTree = "<group>"; };
 		06CF54992BC1FC2600F21A12 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		06F483BC2A8F258300B701EC /* AvailableFontsSwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvailableFontsSwiftUI.swift; sourceTree = "<group>"; };
+		06FC30D22CBC13BE00E5DBF9 /* diagram.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = diagram.txt; sourceTree = "<group>"; };
 		06FC6E4C2B55D9BB006AF16A /* WaypointListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointListView.swift; sourceTree = "<group>"; };
 		181601DE2AD0DF5700D6D31B /* SettingsMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsMenu.swift; sourceTree = "<group>"; };
 		181601E02AD0F20700D6D31B /* DisplayCells.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayCells.swift; sourceTree = "<group>"; };
@@ -187,7 +187,7 @@
 		06F483BB2A8F256500B701EC /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				06BD31852BC20D7A00839017 /* diagram.txt */,
+				06FC30D22CBC13BE00E5DBF9 /* diagram.txt */,
 				06F483BC2A8F258300B701EC /* AvailableFontsSwiftUI.swift */,
 				06ABCE2D2AA162600067DCAA /* NMEASentencesExtasy */,
 				181601E42AD0F6D500D6D31B /* navigationReadings.json */,
@@ -297,7 +297,7 @@
 				06ABCE2E2AA162600067DCAA /* NMEASentencesExtasy in Resources */,
 				066311B62A38DB6C00AAE263 /* Preview Assets.xcassets in Resources */,
 				181601E52AD0F6D500D6D31B /* navigationReadings.json in Resources */,
-				06BD31862BC20D7A00839017 /* diagram.txt in Resources */,
+				06FC30D32CBC13BE00E5DBF9 /* diagram.txt in Resources */,
 				066311B32A38DB6C00AAE263 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
