@@ -29,7 +29,7 @@ struct MapView: View {
     @State var layline = CGFloat()
     @State var oppositeLayline = CGFloat()
     @State var tackPoint = CGPointZero
-    @State var centerRadius: Double = 500
+    @State var centerRadius: Double = 5000
     
     //it will be update every time user taps on the map screen
     
@@ -75,7 +75,7 @@ struct MapView: View {
                         
                         //the blue circle around the boat. By changing the radius you can change the initial level of the zoom
                         MapCircle(center: unwrappedBoatLoacation, radius: centerRadius)
-                            .foregroundStyle(Color(UIColor.systemYellow).opacity(0.5))
+                            .foregroundStyle(Color(UIColor.systemOrange).opacity(0.3))
                         
                     }
                     

@@ -9,7 +9,7 @@ import Foundation
 
 class VMGCalculator {
     
-    //VMG = Velocity Made Good - is the optimup angle against the wind
+    //VMG = Velocity Made Good - is the optimum angle against the wind
     //VMG formula
     //VMG = SOG*cos(tita), where tita = angle between COG and TWA
     
