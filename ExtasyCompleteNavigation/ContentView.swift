@@ -13,7 +13,8 @@ import SwiftData
 struct ContentView: View {
     
     //One instance - Single Source of Thruth
-    @Environment(NMEAReader.self) private var navigationReadings
+    @Environment(NMEAParser.self) private var navigationReadings
+    
     //create one instance of the NMEAReader
     @Environment(\.verticalSizeClass) var verticalSizeClass: UserInterfaceSizeClass?
     @Environment(\.horizontalSizeClass) var horizontalSizeClass: UserInterfaceSizeClass?
@@ -28,28 +29,20 @@ struct ContentView: View {
                     
                     for waypoint in waypoints {
                         waypoint.isTargetSelected = false
-                    }
-                    navigationReadings.isVMGSelected = false
-                    navigationReadings.stop()
-                    
+                    }                    
                 })
-                .onAppear {
-                    navigationReadings.start()
-                }
         } else {
             IPhoneView()
                 .onDisappear(perform: {
                     
-                    navigationReadings.stop()
-
-                    
+                    //navigationReadings.stop()
                     for waypoint in waypoints {
                         waypoint.isTargetSelected = false
                     }
-                    navigationReadings.isVMGSelected = false
+                    //                    navigationReadings.isVMGSelected = false
                 })
                 .onAppear {
-                    navigationReadings.start()
+                    //navigationReadings.start()
                 }
         }
     }//END OF BODY
@@ -61,7 +54,7 @@ struct IpadView: View {
     
     @Environment(\.horizontalSizeClass) var horizontalSizeClass: UserInterfaceSizeClass?
     
-    @Environment(NMEAReader.self) private var navigationReadings
+    @Environment(NMEAParser.self) private var navigationReadings
     
     var body: some View {
         
@@ -76,15 +69,15 @@ struct IpadView: View {
                     
                     HStack{
                         MultiDisplay()
-                        if navigationReadings.isVMGSelected {
+                        if navigationReadings.isVMGSelected == true {
                             Divider()
-                                .frame(width: 1)
-                            
-                            VMGView()
+                                .frame(height: 1)
+                                .overlay(Color(UIColor.systemGray))
+                            VMGView(viewModel: VMGViewModel(vmgProcessor: navigationReadings.vmgProcessor))
                         }
-                        
                     }
                 }//END OF VSTACK
+                
                 
             } else {
                 //MARK: - iPad LandscapeView
@@ -96,13 +89,17 @@ struct IpadView: View {
                         .overlay(Color(UIColor.systemGray))
                     VStack(){
                         MultiDisplay()
-                        if navigationReadings.isVMGSelected {
+                        Text("isVMGSelected: \(navigationReadings.isVMGSelected.description)")
+                        // Ensure VMGView is displayed only if isVMGSelected is true
+                        if navigationReadings.isVMGSelected == true {
                             Divider()
                                 .frame(height: 1)
                                 .overlay(Color(UIColor.systemGray))
-                            VMGView()
+                            withAnimation(.spring) {
+                                VMGView(viewModel: VMGViewModel(vmgProcessor: navigationReadings.vmgProcessor))
+                                
+                            }
                         }
-                        
                     }
                 }//END OF HSTACK
             }
@@ -114,7 +111,7 @@ struct IpadView: View {
 struct IPhoneView: View {
     
     @Environment(\.verticalSizeClass) var verticalSizeClass: UserInterfaceSizeClass?
-    @Environment(NMEAReader.self) private var navigationReadings
+    @Environment(NMEAParser.self) private var navigationReadings
     
     var body: some View {
         VHStack{
@@ -126,11 +123,17 @@ struct IPhoneView: View {
             
             ScrollView(verticalSizeClass == .compact ? .vertical : .horizontal) {
                 
-                HVStack{
+                HStack{
                     MultiDisplay()
-                    if navigationReadings.isVMGSelected {
-                        Divider()
-                        VMGView()
+                    Divider()
+                    
+                    // Ensure VMGView is displayed only if isVMGSelected is true
+                    if navigationReadings.isVMGSelected == true {
+                        
+                        withAnimation(.spring(response: 0.5, dampingFraction: 1)) {
+                            VMGView(viewModel: VMGViewModel(vmgProcessor: navigationReadings.vmgProcessor))
+                                .transition(.opacity)
+                        }
                     }
                 }
             }
@@ -138,13 +141,13 @@ struct IPhoneView: View {
             .scrollClipDisabled()
             
         }
-
+        
     }//END OF ZSTACK
 }//END OF NAVIGATION STACK
 
 #Preview {
     ContentView()
-        .environment(NMEAReader())
+        .environment(NMEAParser())
         .modelContainer(for: [
             Matrix.self,
             UserSettingsMenu.self,
