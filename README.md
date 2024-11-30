@@ -123,6 +123,13 @@ ExtasyCompleteNavigation was created by **[Vasil Borisov](https://github.com/bac
 ## **Changelog**
 
 - **1.0.0:** Initial release
+- **1.1.0:** - 2024-11-30
+### Refactored
+- Codebase refactored to improve modularity and maintainability.
+- Introduced a more structured software architecture to align with best practices.
+- Enhanced organization of files into logical layers (Data, Business, and Presentation).
+
+No breaking changes. This update improves code quality for future development.
 
 ## **Contact**
 
