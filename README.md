@@ -113,6 +113,10 @@ Tapping on the WPPOS will toggle between waypoint (mark) and boat position.
 
 Once the waypoint has been de-selected as target the view will disappear as well as the small green arrow and the position on the map, returning to the original view.
 
+## **Documentation**
+
+This is a navigation application project, featuring modular MVVM architecture. For a detailed look at the project's structure, refer to the [Software Architecture Diagram](https://github.com/bacataBorisov/ExtasyCompleteNavigation/blob/main/ExtasyCompleteNavigation/Docs/ExtasyCompleteNavigation-SA-Diagram.pdf).
+
 ## **Authors and Acknowledgment**
 
 ExtasyCompleteNavigation was created by **[Vasil Borisov](https://github.com/bacataBorisov)**.
