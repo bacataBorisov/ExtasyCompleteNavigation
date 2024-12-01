@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0621D1192CFD0D6C009C062F /* ExtasyCompleteNavigation-SA-Diagram.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 0621D1182CFD0D6C009C062F /* ExtasyCompleteNavigation-SA-Diagram.pdf */; };
 		062866522CF7BB3B0004B484 /* ReusableDistanceCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 062866512CF7BB3B0004B484 /* ReusableDistanceCell.swift */; };
 		063650382B671592002AF39C /* SmallCornerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 063650372B671592002AF39C /* SmallCornerView.swift */; };
 		063659CE2B546CFF00B22B5C /* VMGView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 063659CD2B546CFF00B22B5C /* VMGView.swift */; };
@@ -83,6 +84,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0621D1182CFD0D6C009C062F /* ExtasyCompleteNavigation-SA-Diagram.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "ExtasyCompleteNavigation-SA-Diagram.pdf"; sourceTree = "<group>"; };
 		062866512CF7BB3B0004B484 /* ReusableDistanceCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReusableDistanceCell.swift; sourceTree = "<group>"; };
 		063650372B671592002AF39C /* SmallCornerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmallCornerView.swift; sourceTree = "<group>"; };
 		063659CD2B546CFF00B22B5C /* VMGView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VMGView.swift; sourceTree = "<group>"; };
@@ -173,6 +175,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0621D1172CFD0D57009C062F /* Docs */ = {
+			isa = PBXGroup;
+			children = (
+				0621D1182CFD0D6C009C062F /* ExtasyCompleteNavigation-SA-Diagram.pdf */,
+			);
+			path = Docs;
+			sourceTree = "<group>";
+		};
 		066311A22A38DB6B00AAE263 = {
 			isa = PBXGroup;
 			children = (
@@ -204,6 +214,7 @@
 				06C0D8C92CCD9D0D001B258A /* ViewModel */,
 				06C0D8C82CCD9CFD001B258A /* View */,
 				06C0D8CA2CE6ABE6001B258A /* Utilities */,
+				0621D1172CFD0D57009C062F /* Docs */,
 				06F483BB2A8F256500B701EC /* Resources */,
 				066311B42A38DB6C00AAE263 /* PreviewContent */,
 				066311B22A38DB6C00AAE263 /* Assets.xcassets */,
@@ -503,6 +514,7 @@
 				06CF549A2BC1FC2600F21A12 /* README.md in Resources */,
 				06ABCE2E2AA162600067DCAA /* NMEASentencesExtasy in Resources */,
 				066311B62A38DB6C00AAE263 /* Preview Assets.xcassets in Resources */,
+				0621D1192CFD0D6C009C062F /* ExtasyCompleteNavigation-SA-Diagram.pdf in Resources */,
 				06FC30D32CBC13BE00E5DBF9 /* diagram.txt in Resources */,
 				066311B32A38DB6C00AAE263 /* Assets.xcassets in Resources */,
 			);
