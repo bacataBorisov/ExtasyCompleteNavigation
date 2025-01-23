@@ -110,7 +110,7 @@ struct iPhoneVMGView: View {
                                            iconSize: iconSize,
                                            valueFont: valueFont
                                 )
-                                infoColumn(icon: (sailingState == "Upwind" ? "arrow.up" : "arrow.down"),
+                                infoColumn(icon: (sailingState == "Upwind" ? "arrow.down" : "arrow.up"),
                                            value: navigationReadings.vmgData?.sailingState ?? "N/A",
                                            iconSize: iconSize,
                                            valueFont: valueFont
@@ -132,7 +132,7 @@ struct iPhoneVMGView: View {
                                            iconSize: iconSize,
                                            valueFont: valueFont
                                 )
-                                infoColumn(icon: (oppositeSailingState == "Upwind" ? "arrow.up" : "arrow.down"),
+                                infoColumn(icon: (oppositeSailingState == "Upwind" ? "arrow.down" : "arrow.up"),
                                            value: navigationReadings.waypointData?.oppositeTackState ?? "N/A",
                                            iconSize: iconSize,
                                            valueFont: valueFont
