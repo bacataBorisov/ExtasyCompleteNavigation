@@ -1,68 +1,69 @@
-//
-//  WaypointDetailedView.swift
-//  ExtasyCompleteNavigation
-//
-//  Created by Vasil Borisov on 18.01.24.
-//
-
 import SwiftUI
-import SwiftData
-import MapKit
 
 struct WaypointDetailedView: View {
-    
-    @Environment(NMEAParser.self) private var navigationReadings
-
-    @Environment(\.dismiss) private var dismiss
-    @Query private var waypoints: [Waypoints]
     @Bindable var waypoint: Waypoints
-    @Namespace var mapScope
+    @Environment(\.dismiss) private var dismiss
+    @Environment(NMEAParser.self) private var navigationReadings // Access boat's GPS data
+    
+    // Store the original latitude and longitude to allow reverting
+    @State private var originalLat: Double?
+    @State private var originalLon: Double?
     
     var body: some View {
-        NavigationStack{
-            List{
-                TextField("Waypoint Name", text: $waypoint.title)
+        Form {
+            Section(header: Text("Waypoint Details")) {
+                TextField("Name", text: $waypoint.title)
                 TextField("Latitude", value: $waypoint.lat, format: .number)
+                    .keyboardType(.decimalPad)
                 TextField("Longitude", value: $waypoint.lon, format: .number)
-                //something with check box - "Show on Map" - to be show on the map but without being VMG target
-                Button("Set as VMG Target") {
-                    
-                    //disable all the previous active targets selected
-                    for waypoint in waypoints {
-                        waypoint.isTargetSelected = false
-                    }
-                    //if coordinates are correct enable the new one
-                    if  let lat = waypoint.lat,
-                        let lon = waypoint.lon
-                    {
-                        waypoint.isTargetSelected = true // used to be shown on the map
-                        
-                        //send coordinates for the selected mark
-                        let newCoordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
-                        navigationReadings.vmgProcessor.updateMarkerCoordinate(to: newCoordinate)
-                        
-                        navigationReadings.isVMGSelected = true //start VMG Calculations
-                    }
+                    .keyboardType(.decimalPad)
+            }
+            
+            Section {
+                Button(action: fillWithBoatLocation) {
+                    Label("Use Boat's Location", systemImage: "location.fill")
                 }
-                Button("Cancel VMG"){
-                    
-                    navigationReadings.isVMGSelected = false
-                    navigationReadings.vmgProcessor.resetVMGCalculations()
-                    waypoint.isTargetSelected = false // hide the mark on the map
-                    
-                    
+                Button(action: revertToOriginalCoordinates) {
+                    Label("Cancel Changes", systemImage: "arrow.uturn.backward")
+                        .foregroundColor(.red) // Optional: Red color for emphasis
+                }
+            }
+            
+            Section {
+                Button("Done") {
+                    dismiss()
                 }
             }
         }
+        .onAppear {
+            // Store the original coordinates when the view appears
+            originalLat = waypoint.lat
+            originalLon = waypoint.lon
+        }
         .navigationTitle(waypoint.title)
         .navigationBarTitleDisplayMode(.inline)
+        .padding()
     }
-}
-
-#Preview {
-    NavigationStack {
-        WaypointDetailedView(waypoint: Waypoints())
-            .modelContainer(for: Waypoints.self)
-            .environment(NMEAParser())
+    
+    // MARK: - Fill with Boat's Location
+    private func fillWithBoatLocation() {
+        guard let boatLocation = navigationReadings.gpsData?.boatLocation else {
+            debugLog("Boat location not available.")
+            return
+        }
+        
+        waypoint.lat = boatLocation.latitude
+        waypoint.lon = boatLocation.longitude
+    }
+    
+    // MARK: - Revert to Original Coordinates
+    private func revertToOriginalCoordinates() {
+        guard let originalLat = originalLat, let originalLon = originalLon else {
+            debugLog("Original coordinates not available.")
+            return
+        }
+        
+        waypoint.lat = originalLat
+        waypoint.lon = originalLon
     }
 }

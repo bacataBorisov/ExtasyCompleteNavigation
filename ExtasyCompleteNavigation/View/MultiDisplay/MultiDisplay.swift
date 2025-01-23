@@ -21,11 +21,9 @@ struct MultiDisplay: View {
     
     var body: some View {
         
-        GeometryProvider { width, _ in
+        GeometryProvider { width, _, _ in
             ZStack{
-
                 VStack {
-                    
                     // Big Display Cell
                     menuDisplayCell(index: 0, aspectRatio: 3/2)
                     
@@ -43,13 +41,17 @@ struct MultiDisplay: View {
                     .zIndex(1) // Ensure it's rendered above other views
                 
             }//END OF ZSTACK
-            .ignoresSafeArea()
+            .aspectRatio(1, contentMode: .fit)
             .onAppear { loadData() }
             .onChange(of: identifier, { oldValue, newValue in
                 saveData(newValue: newValue)
             })
+            .onChange(of: data) { _, _ in
+                if let lastSavedModel = data.last {
+                    identifier = lastSavedModel.identifier.prefix(displayCell.count).map { $0 }
+                }
+            }
         }//END OF GEOMETRY
-        .aspectRatio(contentMode: .fit)
     }//END OF BODY
     
     // MARK: - Helper Methods
@@ -73,7 +75,6 @@ struct MultiDisplay: View {
                 fontSizeMultiplier: 1,
                 valueAlignment: .center
             )
-            .buttonStyle(.plain)
         }
     }
     
@@ -85,17 +86,25 @@ struct MultiDisplay: View {
     }
 
     private func loadData() {
-        if data.isEmpty {
+        if let lastSavedModel = data.last {
+            identifier = lastSavedModel.identifier.prefix(displayCell.count).map { $0 }
+            debugLog("Loaded identifier: \(identifier)")
+        } else {
             let model = Matrix(identifier: identifier)
             context.insert(model)
-        } else if let last = data.last {
-            identifier = last.identifier.prefix(displayCell.count).map { $0 }
+            try? context.save()
+            debugLog("Inserted new identifier: \(identifier)")
         }
     }
 
     private func saveData(newValue: [Int]) {
-        let model = Matrix(identifier: newValue)
-        context.insert(model)
+        if let existingData = data.last {
+            existingData.identifier = newValue
+        } else {
+            let newModel = Matrix(identifier: newValue)
+            context.insert(newModel)
+        }
+        try? context.save()
     }
 }//END OF STRUCTURE
 
@@ -103,7 +112,8 @@ struct MultiDisplay: View {
     
     MultiDisplay()
         .environment(NMEAParser())
-        .modelContainer(for: [Matrix.self, UserSettingsMenu.self])
+        .environment(SettingsManager())
+        .modelContainer(for: [Matrix.self])
     
 }
 

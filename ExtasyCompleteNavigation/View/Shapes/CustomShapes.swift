@@ -215,3 +215,19 @@ struct GaugeMarker: Identifiable, Hashable {
         ]
     }
 }
+
+public struct BoatShape: Shape {
+    public func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let width = rect.width
+        let height = rect.height
+
+        // Draw a triangular boat shape
+        path.move(to: CGPoint(x: width / 2, y: 0)) // Top point
+        path.addLine(to: CGPoint(x: 0, y: height)) // Bottom-left
+        path.addLine(to: CGPoint(x: width, y: height)) // Bottom-right
+        path.closeSubpath() // Close the triangle
+
+        return path
+    }
+}

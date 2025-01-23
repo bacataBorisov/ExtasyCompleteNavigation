@@ -21,37 +21,47 @@ struct DisplayCell: View {
     
     // MARK: - Properties
     @Environment(NMEAParser.self) private var navigationReadings
-    @Query var lastSettings: [UserSettingsMenu]
-    var cell: MultiDisplayCells
+    @Environment(SettingsManager.self) private var settingsManager
     
+    var cell: MultiDisplayCells
     var valueID: Int
-    var aspectRatio: CGFloat = 1 //Default to square
-    var fontSizeMultiplier: CGFloat = 1 //Adjust font dynamically - used for the big cell segment
-    var valueAlignment: Alignment = .center //Default value for alignment
+    var aspectRatio: CGFloat = 1 // Default to square
+    var fontSizeMultiplier: CGFloat = 1 // Adjust font dynamically
+    var valueAlignment: Alignment = .center // Default alignment
     
     // MARK: - State
-    @State private var triggerAlarm: Bool = false
-    @State private var goodResult = false
+    @State private var displayedValue: Double = 0 // Tracks the animated value
     
     var body: some View {
         GeometryReader { geometry in
             let width = geometry.size.width
-            let height = width / aspectRatio
+            let height = geometry.size.height
             
             ZStack {
                 Group {
                     labelView(width: width)
-                    valueView(width: width, height: height)
+                    animatedValueView(width: width, height: height)
+                        .minimumScaleFactor(0.4)
                     unitView(width: width)
                 }
-                .padding(.top, 3)
+                .padding([.leading, .trailing, .top], 4)
             }
             .background(alarmBackground())
             .foregroundStyle(Color("display_font"))
         }
         .aspectRatio(aspectRatio, contentMode: .fit)
-        .onChange(of: navigationReadings.hydroData?.depth) { _, newValue in
-            handleDepthAlarm(newValue: newValue)
+        .onAppear {
+            // Set the initial value when the view appears
+            if let initialValue = navigationReadings.displayValue(a: valueID) {
+                displayedValue = initialValue
+            }
+        }
+        .onChange(of: navigationReadings.displayValue(a: valueID)) { _, newValue in
+            // Animate to the new value when it changes
+            guard let newValue = newValue else { return }
+            withAnimation(.easeOut(duration: 0.3)) {
+                displayedValue = newValue
+            }
         }
     }
     
@@ -62,70 +72,33 @@ struct DisplayCell: View {
             .font(Font.custom("AppleSDGothicNeo-Bold", size: width * 0.2 * fontSizeMultiplier))
     }
     
-    private func valueView(width: CGFloat, height: CGFloat) -> some View {
-        if let unwrappedValue = navigationReadings.displayValue(a: valueID) {
-            return AnyView(
-                Text(String(format: cell.specifier, unwrappedValue))
-                    .frame(width: width, height: width, alignment: valueAlignment)
-                    .font(Font.custom("Futura-CondensedExtraBold", size: width * 0.4 * fontSizeMultiplier))
-                    .offset(y: aspectRatio > 1 ? (height - width) / 4 : 0) // Adjust for non-square ratios
-                /*
-                 MARK: - Aspect Ratio Notes
-
-                 1. **Definition**:
-                    - Aspect ratio (`width / height`) determines the layout's proportions:
-                      - `aspectRatio = 1`: Square layout.
-                      - `aspectRatio > 1`: Wider layout (e.g., 3:2).
-                      - `aspectRatio < 1`: Taller layout (e.g., 2:3).
-
-                 2. **Behavior**:
-                    - For `aspectRatio > 1` (wider layout):
-                      - Height is reduced, so elements may need vertical adjustment (e.g., centering text).
-                      - Use `.offset(y:)` to account for the height reduction.
-                    - For `aspectRatio <= 1`:
-                      - No adjustment needed; elements are naturally centered.
-
-                 3. **Future Use**:
-                    - Refactor alignment logic into reusable helper functions for consistent layout handling.
-                    - Example:
-                      ```swift
-                      if aspectRatio > 1 {
-                          Text("Centered Text").offset(y: (height - width) / 4)
-                      }
-                      ```
-                */
-
-            )
-        } else {
-            return AnyView(EmptyView())
-        }
+    private func animatedValueView(width: CGFloat, height: CGFloat) -> some View {
+        Text(String(format: cell.specifier, displayedValue))
+            .frame(width: width, height: width, alignment: valueAlignment)
+            .font(Font.custom("Futura-CondensedExtraBold", size: width * 0.4 * fontSizeMultiplier))
+            .offset(y: aspectRatio > 1 ? (height - width) / 4 : 0) // Adjust for non-square ratios
     }
-
+    
     private func unitView(width: CGFloat) -> some View {
-        let unit: String = {
-            guard let lastSetting = lastSettings.last else { return cell.units }
-            return (lastSetting.metricToggle && cell.valueHasMetric) ? cell.metric : cell.units
-        }()
-        
+        let unit: String = settingsManager.metricWind && cell.valueHasMetric ? cell.metric : cell.units
         return Text(unit)
             .frame(width: width, height: width, alignment: .topTrailing)
             .font(Font.custom("AppleSDGothicNeo-Bold", size: width * 0.18 * fontSizeMultiplier))
     }
     
     // MARK: - Helper Methods
-    private func handleDepthAlarm(newValue: Double?) {
-        guard let value = newValue else { return }
-        // TODO: Make threshold customizable from settings.
-        triggerAlarm = value < 3
+    private func alarmBackground() -> some View {
+        (cell.id == 0 && triggerAlarm()) ? alarmGradient : nonAlarmGradient
     }
     
-    private func alarmBackground() -> some View {
-        (cell.id == 0 && triggerAlarm) ? alarmGradient : nonAlarmGradient
+    private func triggerAlarm() -> Bool {
+        guard let value = navigationReadings.hydroData?.depth else { return false }
+        return value < 3 // Alarm threshold for depth
     }
 }
 
 #Preview {
     DisplayCell(cell: displayCell[1], valueID: 1)
         .environment(NMEAParser())
-        .modelContainer(for: [Matrix.self, UserSettingsMenu.self])
+        .modelContainer(for: [Matrix.self])
 }

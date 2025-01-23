@@ -1,69 +1,95 @@
-//
-//  UltimateNavigationView.swift
-//  ExtasyCompleteNavigation
-//
-//  Created by Vasil Borisov on 22.11.24.
-//
-// NOTE:
-// The current child views (e.g., SettingsView, MapView, WaypointListView)
-// do not require explicit geometry management or width passing from the parent view.
-// They adapt naturally to the screen size or navigation context provided by SwiftUI.
-//
-// However, if these views become more complex and require precise scaling, padding,
-// or layout adjustments based on the parent dimensions, it is recommended to:
-// 1. Use GeometryProvider in the parent (UltimateView).
-// 2. Pass the `width` (or other geometry-related parameters) explicitly
-//    from UltimateView to the child views.
-//
-// This approach ensures consistency across child views and flexibility for future enhancements.
-
-
-import Foundation
 import SwiftUI
 
 struct UltimateNavigationView: View {
     
-    //the source for the data to be displayed
     @Environment(NMEAParser.self) private var navigationReadings
-    @Environment(\.modelContext) var context
+    @Environment(SettingsManager.self) private var settingsManager
     
     var body: some View {
-        ZStack {
-            PseudoBoat()
-                .stroke(lineWidth: 4)
-                .foregroundColor(Color(UIColor.systemGray))
-                .scaleEffect(x: 0.25, y: 0.55, anchor: .center)
+        GeometryReader { geometry in
+            let buttonSize = max(geometry.size.width * 0.075, 14) // Button size relative to screen width
+            let spacing = geometry.size.width * 0.02   // Spacing relative to screen width
             
-            VStack(spacing: 20) {
-                NavigationLink(destination: SettingsMenuView(navigationReadings: navigationReadings, modelContext: context)) {
-                    Image(systemName: "gear")
-                        .dynamicTypeSize(.xxxLarge)
-                        .foregroundStyle(Color(UIColor.systemGray))
+            ZStack {
+                // Central pseudo-boat illustration
+                PseudoBoat()
+                    .stroke(lineWidth: 4)
+                    .foregroundColor(Color(UIColor.systemGray))
+                    .scaleEffect(x: 0.25, y: 0.55, anchor: .center)
+                
+                // Navigation buttons in a vertical stack
+                VStack(spacing: spacing) {
+                    NavigationButton(
+                        systemName: "gear",
+                        gradientColors: [Color.gray.opacity(0.6), Color.black],
+                        buttonSize: buttonSize,
+                        destination: RoundedBackgroundView(content: {
+                            SettingsMenuView()
+                        })
+                    )
+                    if DeviceType.isIPad {
+                        NavigationButton(
+                            systemName: "map",
+                            gradientColors: [Color.blue.opacity(0.6), Color.cyan],
+                            buttonSize: buttonSize,
+                            destination: MapView()
+                        )
+                    }
+                    
+                    //                    if DeviceType.isIPhone {
+                    //                        NavigationButton(
+                    //                            systemName: "scope",
+                    //                            gradientColors: [Color.green.opacity(0.6), Color.teal],
+                    //                            buttonSize: buttonSize,
+                    //                            destination: WaypointListView()
+                    //                        )
+                    //                    }
                 }
-                NavigationLink(destination: MapView()) {
-                    Image(systemName: "map")
-                        .dynamicTypeSize(.xxxLarge)
-                        .foregroundStyle(Color(UIColor.systemGray))
-                }
-                NavigationLink(destination: WaypointListView()) {
-                    Image(systemName: "scope")
-                        .dynamicTypeSize(.xxxLarge)
-                        .foregroundStyle(Color(UIColor.systemGray))
-                }
+                .frame(maxHeight: .infinity, alignment: .center) // Keep buttons pinned near the top center
+                //.padding(.top, geometry.size.height * 0.2) // Adjust vertical position of the buttons
             }
         }
     }
 }
 
-#Preview {
-    //Use geometry reader only in the preview since I am using one in the UltimateView
-    GeometryProvider { width, _ in
+struct NavigationButton<Destination: View>: View {
+    let systemName: String
+    let gradientColors: [Color]
+    let buttonSize: CGFloat
+    let destination: Destination
+    
+    var body: some View {
+        NavigationLink(destination: destination) {
+            ZStack {
+                // Background with gradient and shadow
+                RoundedRectangle(cornerRadius: buttonSize / 4)
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: gradientColors),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: buttonSize, height: buttonSize)
+                    .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 3)
                 
+                // Button icon
+                Image(systemName: systemName)
+                    .foregroundColor(.white)
+                    .font(.system(size: buttonSize * 0.5, weight: .bold))
+            }
+            .buttonStyle(.plain)
+        }
+    }
+}
+
+// MARK: - Preview
+#Preview {
+    GeometryProvider { width, _, _ in
         UltimateNavigationView()
             .environment(NMEAParser())
-            .modelContainer(for: [UserSettingsMenu.self])
-            .background(Color.black)
+            .environment(SettingsManager())
+            .background(Color.white)
     }
     .aspectRatio(contentMode: .fit)
-    
 }

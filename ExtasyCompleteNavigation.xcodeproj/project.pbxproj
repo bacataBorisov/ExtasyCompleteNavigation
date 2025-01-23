@@ -7,26 +7,33 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0608FE3A2D29C8DA0079A03D /* iPhoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0608FE392D29C8D70079A03D /* iPhoneView.swift */; };
 		0621D1192CFD0D6C009C062F /* ExtasyCompleteNavigation-SA-Diagram.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 0621D1182CFD0D6C009C062F /* ExtasyCompleteNavigation-SA-Diagram.pdf */; };
-		062866522CF7BB3B0004B484 /* ReusableDistanceCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 062866512CF7BB3B0004B484 /* ReusableDistanceCell.swift */; };
 		063650382B671592002AF39C /* SmallCornerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 063650372B671592002AF39C /* SmallCornerView.swift */; };
-		063659CE2B546CFF00B22B5C /* VMGView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 063659CD2B546CFF00B22B5C /* VMGView.swift */; };
-		063BD79E2CF69DED00732F50 /* VMGViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 063BD79D2CF69DED00732F50 /* VMGViewModel.swift */; };
-		063BD7A22CF795F800732F50 /* BearingToMarkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 063BD7A12CF795F200732F50 /* BearingToMarkView.swift */; };
-		063BD7A52CF7A4E500732F50 /* ReusableSpeedCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 063BD7A42CF7A4E500732F50 /* ReusableSpeedCell.swift */; };
 		0641C3F32A9AF061008799BC /* DisplayCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0641C3F22A9AF061008799BC /* DisplayCell.swift */; };
+		0647304F2D275C7E009BCF9A /* CalibrateSpeedLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0647304E2D275C78009BCF9A /* CalibrateSpeedLog.swift */; };
+		0647305D2D29A535009BCF9A /* WaypointCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0647305A2D29A535009BCF9A /* WaypointCard.swift */; };
+		0647305E2D29A535009BCF9A /* InformationCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0647305B2D29A535009BCF9A /* InformationCard.swift */; };
+		0647305F2D29A535009BCF9A /* InfoWaypointSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 064730592D29A535009BCF9A /* InfoWaypointSection.swift */; };
+		064730632D29A64D009BCF9A /* PerformanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 064730622D29A63E009BCF9A /* PerformanceView.swift */; };
 		064ACD622A9EE3430018E449 /* NMEAParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 064ACD612A9EE3430018E449 /* NMEAParser.swift */; };
+		06529FA42D40734000CE6B66 /* share_your_passion.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 06529FA32D40734000CE6B66 /* share_your_passion.m4a */; };
 		066311AF2A38DB6B00AAE263 /* ExtasyCompleteNavigationApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 066311AE2A38DB6B00AAE263 /* ExtasyCompleteNavigationApp.swift */; };
 		066311B12A38DB6B00AAE263 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 066311B02A38DB6B00AAE263 /* ContentView.swift */; };
 		066311B32A38DB6C00AAE263 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 066311B22A38DB6C00AAE263 /* Assets.xcassets */; };
 		066311B62A38DB6C00AAE263 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 066311B52A38DB6C00AAE263 /* Preview Assets.xcassets */; };
 		066CCD892B59D4DB00381E2E /* WaypointDetailedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 066CCD882B59D4DB00381E2E /* WaypointDetailedView.swift */; };
+		066FD0EF2D41784200FE7AF1 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 066FD0EE2D41783D00FE7AF1 /* AudioManager.swift */; };
+		067388CB2D3C5F01002C9C54 /* iPhoneVMGView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067388CA2D3C5F01002C9C54 /* iPhoneVMGView.swift */; };
+		067388CD2D3C7893002C9C54 /* iPhoneMultiDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067388CC2D3C7893002C9C54 /* iPhoneMultiDisplay.swift */; };
+		067388CF2D3C7CDF002C9C54 /* iPhoneDisplayCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067388CE2D3C7CDF002C9C54 /* iPhoneDisplayCell.swift */; };
+		067388D12D3DAC32002C9C54 /* ReadRawNMEA.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067388D02D3DAC2B002C9C54 /* ReadRawNMEA.swift */; };
 		0674D44B2B5B340F0000E20F /* WaypointFIllForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0674D44A2B5B340F0000E20F /* WaypointFIllForm.swift */; };
-		0676620B2AA8096E00544940 /* CocoaAsyncSocket in Frameworks */ = {isa = PBXBuildFile; productRef = 0676620A2AA8096E00544940 /* CocoaAsyncSocket */; };
-		067A2CDC2B6ED61E0058A689 /* ReusableETACell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067A2CDB2B6ED61E0058A689 /* ReusableETACell.swift */; };
-		067A2CE02B6EE3FE0058A689 /* CoordinatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067A2CDF2B6EE3FE0058A689 /* CoordinatesView.swift */; };
-		067A2CE22B6EE53A0058A689 /* DistanceToNextTack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067A2CE12B6EE53A0058A689 /* DistanceToNextTack.swift */; };
-		067A2CE82B74552C0058A689 /* DistanceToWaypoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067A2CE72B74552C0058A689 /* DistanceToWaypoint.swift */; };
+		06823F272D1CC70600BA5180 /* TackAlignmentBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06823F262D1CC70600BA5180 /* TackAlignmentBar.swift */; };
+		06823F2D2D1F9DAD00BA5180 /* iPadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06823F2C2D1F9DA300BA5180 /* iPadView.swift */; };
+		06823F362D23562300BA5180 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06823F352D23562300BA5180 /* UserDefaultsKeys.swift */; };
+		06823F382D23563D00BA5180 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06823F372D23563D00BA5180 /* AppSettings.swift */; };
+		06823F3A2D23575100BA5180 /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06823F392D23575100BA5180 /* SettingsManager.swift */; };
 		0686F5262CEE0D2B007EE554 /* CompassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0686F5252CEE0D26007EE554 /* CompassView.swift */; };
 		0686F5282CEF40CE007EE554 /* HydroData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0686F5272CEF40CB007EE554 /* HydroData.swift */; };
 		0686F52A2CEF4169007EE554 /* HydroProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0686F5292CEF4165007EE554 /* HydroProcessor.swift */; };
@@ -34,10 +41,8 @@
 		0686F52E2CEF4B31007EE554 /* GPSProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0686F52D2CEF4B2C007EE554 /* GPSProcessor.swift */; };
 		0686F5332CEF5893007EE554 /* VMGData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0686F5322CEF5893007EE554 /* VMGData.swift */; };
 		0686F5352CEF5D51007EE554 /* VMGProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0686F5342CEF5D51007EE554 /* VMGProcessor.swift */; };
-		069EEA4E2CEB2D4000357A05 /* SettingsMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 069EEA4D2CEB2D3500357A05 /* SettingsMenuViewModel.swift */; };
 		069EEA502CEB31FA00357A05 /* SettingsMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 069EEA4F2CEB31F400357A05 /* SettingsMenuView.swift */; };
 		069EEA522CEB401700357A05 /* UserSettingsSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 069EEA512CEB401000357A05 /* UserSettingsSample.swift */; };
-		069EEA542CEB40CE00357A05 /* Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 069EEA532CEB40CC00357A05 /* Preview.swift */; };
 		069EEA562CEB4A1500357A05 /* UDPHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 069EEA552CEB4A0F00357A05 /* UDPHandler.swift */; };
 		069EEA592CEB503400357A05 /* NavigationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 069EEA582CEB502E00357A05 /* NavigationManager.swift */; };
 		069EEA672CEB88A800357A05 /* WindData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 069EEA662CEB88A300357A05 /* WindData.swift */; };
@@ -56,16 +61,23 @@
 		06A525852CF4B75F00532A51 /* CustomShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A525842CF4B75C00532A51 /* CustomShapes.swift */; };
 		06A525892CF4BD9800532A51 /* CompassLabelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A525882CF4BD9800532A51 /* CompassLabelView.swift */; };
 		06A5258B2CF4BDC300532A51 /* GaugeMarkerCompass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A5258A2CF4BDC300532A51 /* GaugeMarkerCompass.swift */; };
-		06A5258E2CF5D24600532A51 /* VMGModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A5258D2CF5D24300532A51 /* VMGModels.swift */; };
 		06A525902CF5D2CD00532A51 /* MultiDisplayMatrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A5258F2CF5D2C600532A51 /* MultiDisplayMatrix.swift */; };
 		06A525922CF5D2F700532A51 /* UltimateViewMatrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A525912CF5D2F100532A51 /* UltimateViewMatrix.swift */; };
-		06A525942CF5D31D00532A51 /* UserSettingsMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A525932CF5D31600532A51 /* UserSettingsMenu.swift */; };
+		06A840F02D18DCCE002FA7E4 /* SplashScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A840EF2D18DCCE002FA7E4 /* SplashScreenView.swift */; };
+		06A840F22D1C2884002FA7E4 /* WaypointData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A840F12D1C2880002FA7E4 /* WaypointData.swift */; };
+		06A840F42D1C2893002FA7E4 /* WaypointProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A840F32D1C288A002FA7E4 /* WaypointProcessor.swift */; };
+		06A840F92D1C8A62002FA7E4 /* PerformanceSingleBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A840F82D1C8A5B002FA7E4 /* PerformanceSingleBarView.swift */; };
+		06A840FB2D1C97AE002FA7E4 /* optimal_tack.txt in Resources */ = {isa = PBXBuildFile; fileRef = 06A840FA2D1C97AE002FA7E4 /* optimal_tack.txt */; };
 		06ABCE2E2AA162600067DCAA /* NMEASentencesExtasy in Resources */ = {isa = PBXBuildFile; fileRef = 06ABCE2D2AA162600067DCAA /* NMEASentencesExtasy */; };
 		06BFC92B2B69A00300E74C47 /* PreviewContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06BFC92A2B69A00300E74C47 /* PreviewContainer.swift */; };
 		06CF549A2BC1FC2600F21A12 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 06CF54992BC1FC2600F21A12 /* README.md */; };
 		06F483BD2A8F258300B701EC /* AvailableFontsSwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06F483BC2A8F258300B701EC /* AvailableFontsSwiftUI.swift */; };
+		06F61EA52D10FF59005EA416 /* PerformanceDoubleBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06F61EA42D10FF59005EA416 /* PerformanceDoubleBarView.swift */; };
+		06F61EA72D12454E005EA416 /* VMGSimpleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06F61EA62D124549005EA416 /* VMGSimpleView.swift */; };
 		06FC30D32CBC13BE00E5DBF9 /* diagram.txt in Resources */ = {isa = PBXBuildFile; fileRef = 06FC30D22CBC13BE00E5DBF9 /* diagram.txt */; };
 		06FC6E4D2B55D9BB006AF16A /* WaypointListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06FC6E4C2B55D9BB006AF16A /* WaypointListView.swift */; };
+		06FCADCE2D40461400A09594 /* CocoaAsyncSocket in Frameworks */ = {isa = PBXBuildFile; productRef = 06FCADCD2D40461400A09594 /* CocoaAsyncSocket */; };
+		06FCADD02D40466100A09594 /* CocoaAsyncSocket in Frameworks */ = {isa = PBXBuildFile; productRef = 06FCADCF2D40466100A09594 /* CocoaAsyncSocket */; };
 		181601E12AD0F20700D6D31B /* DisplayCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 181601E02AD0F20700D6D31B /* DisplayCells.swift */; };
 		188B2B662ADB5EA000836F66 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188B2B652ADB5EA000836F66 /* MapView.swift */; };
 		18A8FA742ACB974200EE2128 /* UltimateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18A8FA732ACB974200EE2128 /* UltimateView.swift */; };
@@ -84,26 +96,34 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0608FE392D29C8D70079A03D /* iPhoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPhoneView.swift; sourceTree = "<group>"; };
 		0621D1182CFD0D6C009C062F /* ExtasyCompleteNavigation-SA-Diagram.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "ExtasyCompleteNavigation-SA-Diagram.pdf"; sourceTree = "<group>"; };
-		062866512CF7BB3B0004B484 /* ReusableDistanceCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReusableDistanceCell.swift; sourceTree = "<group>"; };
 		063650372B671592002AF39C /* SmallCornerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmallCornerView.swift; sourceTree = "<group>"; };
-		063659CD2B546CFF00B22B5C /* VMGView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VMGView.swift; sourceTree = "<group>"; };
-		063BD79D2CF69DED00732F50 /* VMGViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VMGViewModel.swift; sourceTree = "<group>"; };
-		063BD7A12CF795F200732F50 /* BearingToMarkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BearingToMarkView.swift; sourceTree = "<group>"; };
-		063BD7A42CF7A4E500732F50 /* ReusableSpeedCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReusableSpeedCell.swift; sourceTree = "<group>"; };
 		0641C3F22A9AF061008799BC /* DisplayCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayCell.swift; sourceTree = "<group>"; };
+		0647304E2D275C78009BCF9A /* CalibrateSpeedLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrateSpeedLog.swift; sourceTree = "<group>"; };
+		064730592D29A535009BCF9A /* InfoWaypointSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoWaypointSection.swift; sourceTree = "<group>"; };
+		0647305A2D29A535009BCF9A /* WaypointCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointCard.swift; sourceTree = "<group>"; };
+		0647305B2D29A535009BCF9A /* InformationCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InformationCard.swift; sourceTree = "<group>"; };
+		064730622D29A63E009BCF9A /* PerformanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceView.swift; sourceTree = "<group>"; };
 		064ACD612A9EE3430018E449 /* NMEAParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NMEAParser.swift; sourceTree = "<group>"; };
+		06529FA32D40734000CE6B66 /* share_your_passion.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = share_your_passion.m4a; sourceTree = "<group>"; };
 		066311AB2A38DB6B00AAE263 /* ExtasyCompleteNavigation.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ExtasyCompleteNavigation.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		066311AE2A38DB6B00AAE263 /* ExtasyCompleteNavigationApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtasyCompleteNavigationApp.swift; sourceTree = "<group>"; };
 		066311B02A38DB6B00AAE263 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		066311B22A38DB6C00AAE263 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		066311B52A38DB6C00AAE263 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		066CCD882B59D4DB00381E2E /* WaypointDetailedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointDetailedView.swift; sourceTree = "<group>"; };
+		066FD0EE2D41783D00FE7AF1 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
+		067388CA2D3C5F01002C9C54 /* iPhoneVMGView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPhoneVMGView.swift; sourceTree = "<group>"; };
+		067388CC2D3C7893002C9C54 /* iPhoneMultiDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPhoneMultiDisplay.swift; sourceTree = "<group>"; };
+		067388CE2D3C7CDF002C9C54 /* iPhoneDisplayCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPhoneDisplayCell.swift; sourceTree = "<group>"; };
+		067388D02D3DAC2B002C9C54 /* ReadRawNMEA.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadRawNMEA.swift; sourceTree = "<group>"; };
 		0674D44A2B5B340F0000E20F /* WaypointFIllForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointFIllForm.swift; sourceTree = "<group>"; };
-		067A2CDB2B6ED61E0058A689 /* ReusableETACell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReusableETACell.swift; sourceTree = "<group>"; };
-		067A2CDF2B6EE3FE0058A689 /* CoordinatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoordinatesView.swift; sourceTree = "<group>"; };
-		067A2CE12B6EE53A0058A689 /* DistanceToNextTack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistanceToNextTack.swift; sourceTree = "<group>"; };
-		067A2CE72B74552C0058A689 /* DistanceToWaypoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistanceToWaypoint.swift; sourceTree = "<group>"; };
+		06823F262D1CC70600BA5180 /* TackAlignmentBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TackAlignmentBar.swift; sourceTree = "<group>"; };
+		06823F2C2D1F9DA300BA5180 /* iPadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPadView.swift; sourceTree = "<group>"; };
+		06823F352D23562300BA5180 /* UserDefaultsKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKeys.swift; sourceTree = "<group>"; };
+		06823F372D23563D00BA5180 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		06823F392D23575100BA5180 /* SettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsManager.swift; sourceTree = "<group>"; };
 		0686F5252CEE0D26007EE554 /* CompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompassView.swift; sourceTree = "<group>"; };
 		0686F5272CEF40CB007EE554 /* HydroData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HydroData.swift; sourceTree = "<group>"; };
 		0686F5292CEF4165007EE554 /* HydroProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HydroProcessor.swift; sourceTree = "<group>"; };
@@ -111,10 +131,9 @@
 		0686F52D2CEF4B2C007EE554 /* GPSProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPSProcessor.swift; sourceTree = "<group>"; };
 		0686F5322CEF5893007EE554 /* VMGData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VMGData.swift; sourceTree = "<group>"; };
 		0686F5342CEF5D51007EE554 /* VMGProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VMGProcessor.swift; sourceTree = "<group>"; };
-		069EEA4D2CEB2D3500357A05 /* SettingsMenuViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsMenuViewModel.swift; sourceTree = "<group>"; };
+		068ED18C2D2CBC05009D0A45 /* ExtasyCompleteNavigation.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ExtasyCompleteNavigation.entitlements; sourceTree = "<group>"; };
 		069EEA4F2CEB31F400357A05 /* SettingsMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsMenuView.swift; sourceTree = "<group>"; };
 		069EEA512CEB401000357A05 /* UserSettingsSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettingsSample.swift; sourceTree = "<group>"; };
-		069EEA532CEB40CC00357A05 /* Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preview.swift; sourceTree = "<group>"; };
 		069EEA552CEB4A0F00357A05 /* UDPHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UDPHandler.swift; sourceTree = "<group>"; };
 		069EEA582CEB502E00357A05 /* NavigationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationManager.swift; sourceTree = "<group>"; };
 		069EEA662CEB88A300357A05 /* WindData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindData.swift; sourceTree = "<group>"; };
@@ -134,14 +153,19 @@
 		06A525842CF4B75C00532A51 /* CustomShapes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomShapes.swift; sourceTree = "<group>"; };
 		06A525882CF4BD9800532A51 /* CompassLabelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompassLabelView.swift; sourceTree = "<group>"; };
 		06A5258A2CF4BDC300532A51 /* GaugeMarkerCompass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GaugeMarkerCompass.swift; sourceTree = "<group>"; };
-		06A5258D2CF5D24300532A51 /* VMGModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VMGModels.swift; sourceTree = "<group>"; };
 		06A5258F2CF5D2C600532A51 /* MultiDisplayMatrix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiDisplayMatrix.swift; sourceTree = "<group>"; };
 		06A525912CF5D2F100532A51 /* UltimateViewMatrix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UltimateViewMatrix.swift; sourceTree = "<group>"; };
-		06A525932CF5D31600532A51 /* UserSettingsMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettingsMenu.swift; sourceTree = "<group>"; };
+		06A840EF2D18DCCE002FA7E4 /* SplashScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenView.swift; sourceTree = "<group>"; };
+		06A840F12D1C2880002FA7E4 /* WaypointData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointData.swift; sourceTree = "<group>"; };
+		06A840F32D1C288A002FA7E4 /* WaypointProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointProcessor.swift; sourceTree = "<group>"; };
+		06A840F82D1C8A5B002FA7E4 /* PerformanceSingleBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceSingleBarView.swift; sourceTree = "<group>"; };
+		06A840FA2D1C97AE002FA7E4 /* optimal_tack.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = optimal_tack.txt; sourceTree = "<group>"; };
 		06ABCE2D2AA162600067DCAA /* NMEASentencesExtasy */ = {isa = PBXFileReference; lastKnownFileType = text; path = NMEASentencesExtasy; sourceTree = "<group>"; };
 		06BFC92A2B69A00300E74C47 /* PreviewContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewContainer.swift; sourceTree = "<group>"; };
 		06CF54992BC1FC2600F21A12 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		06F483BC2A8F258300B701EC /* AvailableFontsSwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvailableFontsSwiftUI.swift; sourceTree = "<group>"; };
+		06F61EA42D10FF59005EA416 /* PerformanceDoubleBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceDoubleBarView.swift; sourceTree = "<group>"; };
+		06F61EA62D124549005EA416 /* VMGSimpleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VMGSimpleView.swift; sourceTree = "<group>"; };
 		06FC30D22CBC13BE00E5DBF9 /* diagram.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = diagram.txt; sourceTree = "<group>"; };
 		06FC6E4C2B55D9BB006AF16A /* WaypointListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointListView.swift; sourceTree = "<group>"; };
 		181601E02AD0F20700D6D31B /* DisplayCells.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayCells.swift; sourceTree = "<group>"; };
@@ -161,7 +185,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0676620B2AA8096E00544940 /* CocoaAsyncSocket in Frameworks */,
+				06FCADD02D40466100A09594 /* CocoaAsyncSocket in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -169,6 +193,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				06FCADCE2D40461400A09594 /* CocoaAsyncSocket in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -181,6 +206,33 @@
 				0621D1182CFD0D6C009C062F /* ExtasyCompleteNavigation-SA-Diagram.pdf */,
 			);
 			path = Docs;
+			sourceTree = "<group>";
+		};
+		064517D22D3F21C700F4D8F8 /* MapView */ = {
+			isa = PBXGroup;
+			children = (
+				188B2B652ADB5EA000836F66 /* MapView.swift */,
+			);
+			path = MapView;
+			sourceTree = "<group>";
+		};
+		064730602D29A579009BCF9A /* InfoWaypointSection */ = {
+			isa = PBXGroup;
+			children = (
+				064730592D29A535009BCF9A /* InfoWaypointSection.swift */,
+				0647305A2D29A535009BCF9A /* WaypointCard.swift */,
+				0647305B2D29A535009BCF9A /* InformationCard.swift */,
+			);
+			path = InfoWaypointSection;
+			sourceTree = "<group>";
+		};
+		064730612D29A609009BCF9A /* PerformanceSection */ = {
+			isa = PBXGroup;
+			children = (
+				064730622D29A63E009BCF9A /* PerformanceView.swift */,
+				06823F262D1CC70600BA5180 /* TackAlignmentBar.swift */,
+			);
+			path = PerformanceSection;
 			sourceTree = "<group>";
 		};
 		066311A22A38DB6B00AAE263 = {
@@ -204,14 +256,16 @@
 		066311AD2A38DB6B00AAE263 /* ExtasyCompleteNavigation */ = {
 			isa = PBXGroup;
 			children = (
+				068ED18C2D2CBC05009D0A45 /* ExtasyCompleteNavigation.entitlements */,
 				066311AE2A38DB6B00AAE263 /* ExtasyCompleteNavigationApp.swift */,
 				066311B02A38DB6B00AAE263 /* ContentView.swift */,
+				06823F2C2D1F9DA300BA5180 /* iPadView.swift */,
+				0608FE392D29C8D70079A03D /* iPhoneView.swift */,
 				069EEA5B2CEB623700357A05 /* Networking */,
 				069EEA572CEB500200357A05 /* Managers */,
 				069EEA5C2CEB759E00357A05 /* Parsing */,
 				069EEA682CEB890600357A05 /* Modules */,
 				06C0D8C72CCD9CF0001B258A /* Model */,
-				06C0D8C92CCD9D0D001B258A /* ViewModel */,
 				06C0D8C82CCD9CFD001B258A /* View */,
 				06C0D8CA2CE6ABE6001B258A /* Utilities */,
 				0621D1172CFD0D57009C062F /* Docs */,
@@ -226,17 +280,28 @@
 		066311B42A38DB6C00AAE263 /* PreviewContent */ = {
 			isa = PBXGroup;
 			children = (
-				069EEA532CEB40CC00357A05 /* Preview.swift */,
 				069EEA512CEB401000357A05 /* UserSettingsSample.swift */,
 				066311B52A38DB6C00AAE263 /* Preview Assets.xcassets */,
 			);
 			path = PreviewContent;
 			sourceTree = "<group>";
 		};
+		06823F322D220AF200BA5180 /* SettingsView */ = {
+			isa = PBXGroup;
+			children = (
+				067388D02D3DAC2B002C9C54 /* ReadRawNMEA.swift */,
+				069EEA4F2CEB31F400357A05 /* SettingsMenuView.swift */,
+				0647304E2D275C78009BCF9A /* CalibrateSpeedLog.swift */,
+			);
+			path = SettingsView;
+			sourceTree = "<group>";
+		};
 		069EEA572CEB500200357A05 /* Managers */ = {
 			isa = PBXGroup;
 			children = (
+				066FD0EE2D41783D00FE7AF1 /* AudioManager.swift */,
 				069EEA582CEB502E00357A05 /* NavigationManager.swift */,
+				06823F392D23575100BA5180 /* SettingsManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -265,6 +330,7 @@
 				069EEA892CECD28D00357A05 /* CompassProcessor.swift */,
 				069EEA692CEB892A00357A05 /* WindProcessor.swift */,
 				0686F5342CEF5D51007EE554 /* VMGProcessor.swift */,
+				06A840F32D1C288A002FA7E4 /* WaypointProcessor.swift */,
 				06A525512CEF886600532A51 /* VMGCalculator.swift */,
 			);
 			path = Modules;
@@ -280,17 +346,16 @@
 			path = Waypoints;
 			sourceTree = "<group>";
 		};
-		06A525632CF08D8200532A51 /* SwiftDataModels */ = {
+		06A525632CF08D8200532A51 /* PersistanceModels */ = {
 			isa = PBXGroup;
 			children = (
-				06A525932CF5D31600532A51 /* UserSettingsMenu.swift */,
+				06823F372D23563D00BA5180 /* AppSettings.swift */,
 				06A525912CF5D2F100532A51 /* UltimateViewMatrix.swift */,
 				06A5258F2CF5D2C600532A51 /* MultiDisplayMatrix.swift */,
-				06A5258D2CF5D24300532A51 /* VMGModels.swift */,
 				181601E02AD0F20700D6D31B /* DisplayCells.swift */,
 				06A5255C2CF077AB00532A51 /* Waypoints.swift */,
 			);
-			path = SwiftDataModels;
+			path = PersistanceModels;
 			sourceTree = "<group>";
 		};
 		06A525662CF092A900532A51 /* UltimateView */ = {
@@ -298,11 +363,11 @@
 			children = (
 				18A8FA732ACB974200EE2128 /* UltimateView.swift */,
 				06A525692CF09EDD00532A51 /* UltimateNavigationView.swift */,
-				069EEA4F2CEB31F400357A05 /* SettingsMenuView.swift */,
-				188B2B652ADB5EA000836F66 /* MapView.swift */,
+				064517D22D3F21C700F4D8F8 /* MapView */,
 				383EEC242AB359BE00C2F22B /* RawNavigationDataView.swift */,
 				06A5254F2CEF886600532A51 /* PseudoBoatView.swift */,
 				063650372B671592002AF39C /* SmallCornerView.swift */,
+				06823F322D220AF200BA5180 /* SettingsView */,
 				06A5258C2CF4BDE200532A51 /* AnemometerView */,
 				06A525872CF4BD7D00532A51 /* CompassView */,
 				06A525742CF0AE0B00532A51 /* BearingMarkerView.swift */,
@@ -313,11 +378,8 @@
 		06A525672CF092E000532A51 /* VMGView */ = {
 			isa = PBXGroup;
 			children = (
-				063659CD2B546CFF00B22B5C /* VMGView.swift */,
-				063BD7A12CF795F200732F50 /* BearingToMarkView.swift */,
-				067A2CE72B74552C0058A689 /* DistanceToWaypoint.swift */,
-				067A2CE12B6EE53A0058A689 /* DistanceToNextTack.swift */,
-				067A2CDF2B6EE3FE0058A689 /* CoordinatesView.swift */,
+				06F61EA62D124549005EA416 /* VMGSimpleView.swift */,
+				067388CA2D3C5F01002C9C54 /* iPhoneVMGView.swift */,
 			);
 			path = VMGView;
 			sourceTree = "<group>";
@@ -326,6 +388,7 @@
 			isa = PBXGroup;
 			children = (
 				18EDC55A2ACD052C003C82B2 /* MultiDisplay.swift */,
+				067388CC2D3C7893002C9C54 /* iPhoneMultiDisplay.swift */,
 				06A5257C2CF28BE300532A51 /* DisplayMenu.swift */,
 			);
 			path = MultiDisplay;
@@ -362,10 +425,10 @@
 		06A525952CF5E33100532A51 /* Common */ = {
 			isa = PBXGroup;
 			children = (
-				062866512CF7BB3B0004B484 /* ReusableDistanceCell.swift */,
-				063BD7A42CF7A4E500732F50 /* ReusableSpeedCell.swift */,
-				067A2CDB2B6ED61E0058A689 /* ReusableETACell.swift */,
+				067388CE2D3C7CDF002C9C54 /* iPhoneDisplayCell.swift */,
 				0641C3F22A9AF061008799BC /* DisplayCell.swift */,
+				06F61EA42D10FF59005EA416 /* PerformanceDoubleBarView.swift */,
+				06A840F82D1C8A5B002FA7E4 /* PerformanceSingleBarView.swift */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -378,7 +441,9 @@
 				069EEA872CECD25800357A05 /* CompassData.swift */,
 				069EEA662CEB88A300357A05 /* WindData.swift */,
 				0686F5322CEF5893007EE554 /* VMGData.swift */,
-				06A525632CF08D8200532A51 /* SwiftDataModels */,
+				06A840F12D1C2880002FA7E4 /* WaypointData.swift */,
+				06823F352D23562300BA5180 /* UserDefaultsKeys.swift */,
+				06A525632CF08D8200532A51 /* PersistanceModels */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -386,23 +451,17 @@
 		06C0D8C82CCD9CFD001B258A /* View */ = {
 			isa = PBXGroup;
 			children = (
-				06A525952CF5E33100532A51 /* Common */,
-				06A525862CF4B76200532A51 /* Shapes */,
+				06A840EF2D18DCCE002FA7E4 /* SplashScreenView.swift */,
+				06A525662CF092A900532A51 /* UltimateView */,
+				064730612D29A609009BCF9A /* PerformanceSection */,
+				06A525682CF0930400532A51 /* MultiDisplay */,
+				064730602D29A579009BCF9A /* InfoWaypointSection */,
 				06A525672CF092E000532A51 /* VMGView */,
 				06A525622CF07E7C00532A51 /* Waypoints */,
-				06A525662CF092A900532A51 /* UltimateView */,
-				06A525682CF0930400532A51 /* MultiDisplay */,
+				06A525952CF5E33100532A51 /* Common */,
+				06A525862CF4B76200532A51 /* Shapes */,
 			);
 			path = View;
-			sourceTree = "<group>";
-		};
-		06C0D8C92CCD9D0D001B258A /* ViewModel */ = {
-			isa = PBXGroup;
-			children = (
-				069EEA4D2CEB2D3500357A05 /* SettingsMenuViewModel.swift */,
-				063BD79D2CF69DED00732F50 /* VMGViewModel.swift */,
-			);
-			path = ViewModel;
 			sourceTree = "<group>";
 		};
 		06F483BB2A8F256500B701EC /* Resources */ = {
@@ -411,7 +470,9 @@
 				06F483BC2A8F258300B701EC /* AvailableFontsSwiftUI.swift */,
 				06BFC92A2B69A00300E74C47 /* PreviewContainer.swift */,
 				06FC30D22CBC13BE00E5DBF9 /* diagram.txt */,
+				06A840FA2D1C97AE002FA7E4 /* optimal_tack.txt */,
 				06ABCE2D2AA162600067DCAA /* NMEASentencesExtasy */,
+				06529FA32D40734000CE6B66 /* share_your_passion.m4a */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -436,7 +497,7 @@
 			);
 			name = ExtasyCompleteNavigation;
 			packageProductDependencies = (
-				0676620A2AA8096E00544940 /* CocoaAsyncSocket */,
+				06FCADCF2D40466100A09594 /* CocoaAsyncSocket */,
 			);
 			productName = ExtasyCompleteNavigation;
 			productReference = 066311AB2A38DB6B00AAE263 /* ExtasyCompleteNavigation.app */;
@@ -460,6 +521,7 @@
 			);
 			name = ExtasyCompleteNavigationTests;
 			packageProductDependencies = (
+				06FCADCD2D40461400A09594 /* CocoaAsyncSocket */,
 			);
 			productName = ExtasyCompleteNavigationTests;
 			productReference = 069EEA762CECCA6B00357A05 /* ExtasyCompleteNavigationTests.xctest */;
@@ -514,6 +576,8 @@
 				06CF549A2BC1FC2600F21A12 /* README.md in Resources */,
 				06ABCE2E2AA162600067DCAA /* NMEASentencesExtasy in Resources */,
 				066311B62A38DB6C00AAE263 /* Preview Assets.xcassets in Resources */,
+				06529FA42D40734000CE6B66 /* share_your_passion.m4a in Resources */,
+				06A840FB2D1C97AE002FA7E4 /* optimal_tack.txt in Resources */,
 				0621D1192CFD0D6C009C062F /* ExtasyCompleteNavigation-SA-Diagram.pdf in Resources */,
 				06FC30D32CBC13BE00E5DBF9 /* diagram.txt in Resources */,
 				066311B32A38DB6C00AAE263 /* Assets.xcassets in Resources */,
@@ -534,61 +598,70 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				06A840F42D1C2893002FA7E4 /* WaypointProcessor.swift in Sources */,
+				067388CD2D3C7893002C9C54 /* iPhoneMultiDisplay.swift in Sources */,
+				066FD0EF2D41784200FE7AF1 /* AudioManager.swift in Sources */,
+				067388D12D3DAC32002C9C54 /* ReadRawNMEA.swift in Sources */,
 				069EEA592CEB503400357A05 /* NavigationManager.swift in Sources */,
+				067388CF2D3C7CDF002C9C54 /* iPhoneDisplayCell.swift in Sources */,
+				06823F362D23562300BA5180 /* UserDefaultsKeys.swift in Sources */,
 				0674D44B2B5B340F0000E20F /* WaypointFIllForm.swift in Sources */,
 				069EEA562CEB4A1500357A05 /* UDPHandler.swift in Sources */,
 				18A8FA742ACB974200EE2128 /* UltimateView.swift in Sources */,
+				0647305D2D29A535009BCF9A /* WaypointCard.swift in Sources */,
+				0647305E2D29A535009BCF9A /* InformationCard.swift in Sources */,
 				06A525752CF0AE0B00532A51 /* BearingMarkerView.swift in Sources */,
+				064730632D29A64D009BCF9A /* PerformanceView.swift in Sources */,
 				188B2B662ADB5EA000836F66 /* MapView.swift in Sources */,
 				069EEA882CECD25800357A05 /* CompassData.swift in Sources */,
 				383EEC252AB359BE00C2F22B /* RawNavigationDataView.swift in Sources */,
-				067A2CDC2B6ED61E0058A689 /* ReusableETACell.swift in Sources */,
 				06A5257D2CF28BE300532A51 /* DisplayMenu.swift in Sources */,
-				067A2CE82B74552C0058A689 /* DistanceToWaypoint.swift in Sources */,
 				069EEA522CEB401700357A05 /* UserSettingsSample.swift in Sources */,
 				0686F5262CEE0D2B007EE554 /* CompassView.swift in Sources */,
+				06A840F02D18DCCE002FA7E4 /* SplashScreenView.swift in Sources */,
 				181601E12AD0F20700D6D31B /* DisplayCells.swift in Sources */,
 				06A525522CEF886600532A51 /* DisplayGrid3x3Sectors.swift in Sources */,
 				06A525542CEF886600532A51 /* MultiDisplayGrid.swift in Sources */,
-				063BD7A52CF7A4E500732F50 /* ReusableSpeedCell.swift in Sources */,
-				06A525942CF5D31D00532A51 /* UserSettingsMenu.swift in Sources */,
 				06A525552CEF886600532A51 /* PseudoBoatView.swift in Sources */,
+				06A840F92D1C8A62002FA7E4 /* PerformanceSingleBarView.swift in Sources */,
 				06A5256A2CF09EDD00532A51 /* UltimateNavigationView.swift in Sources */,
 				06A5258B2CF4BDC300532A51 /* GaugeMarkerCompass.swift in Sources */,
+				06823F3A2D23575100BA5180 /* SettingsManager.swift in Sources */,
 				06A525572CEF886600532A51 /* VMGCalculator.swift in Sources */,
-				063BD79E2CF69DED00732F50 /* VMGViewModel.swift in Sources */,
 				0686F5332CEF5893007EE554 /* VMGData.swift in Sources */,
 				069EEA672CEB88A800357A05 /* WindData.swift in Sources */,
 				0686F52C2CEF4A9C007EE554 /* GPSData.swift in Sources */,
-				06A5258E2CF5D24600532A51 /* VMGModels.swift in Sources */,
 				0686F52E2CEF4B31007EE554 /* GPSProcessor.swift in Sources */,
 				069EEA502CEB31FA00357A05 /* SettingsMenuView.swift in Sources */,
 				06A5255D2CF077AB00532A51 /* Waypoints.swift in Sources */,
 				069EEA8A2CECD28D00357A05 /* CompassProcessor.swift in Sources */,
-				069EEA4E2CEB2D4000357A05 /* SettingsMenuViewModel.swift in Sources */,
-				067A2CE02B6EE3FE0058A689 /* CoordinatesView.swift in Sources */,
-				067A2CE22B6EE53A0058A689 /* DistanceToNextTack.swift in Sources */,
+				06F61EA52D10FF59005EA416 /* PerformanceDoubleBarView.swift in Sources */,
 				06A525852CF4B75F00532A51 /* CustomShapes.swift in Sources */,
+				0647305F2D29A535009BCF9A /* InfoWaypointSection.swift in Sources */,
 				06F483BD2A8F258300B701EC /* AvailableFontsSwiftUI.swift in Sources */,
-				063BD7A22CF795F800732F50 /* BearingToMarkView.swift in Sources */,
 				06FC6E4D2B55D9BB006AF16A /* WaypointListView.swift in Sources */,
 				06A5256C2CF0A14800532A51 /* AnemometerView.swift in Sources */,
 				064ACD622A9EE3430018E449 /* NMEAParser.swift in Sources */,
 				063650382B671592002AF39C /* SmallCornerView.swift in Sources */,
 				0641C3F32A9AF061008799BC /* DisplayCell.swift in Sources */,
 				0686F52A2CEF4169007EE554 /* HydroProcessor.swift in Sources */,
+				06823F2D2D1F9DAD00BA5180 /* iPadView.swift in Sources */,
 				06BFC92B2B69A00300E74C47 /* PreviewContainer.swift in Sources */,
 				18EDC55B2ACD052C003C82B2 /* MultiDisplay.swift in Sources */,
+				06A840F22D1C2884002FA7E4 /* WaypointData.swift in Sources */,
 				0686F5352CEF5D51007EE554 /* VMGProcessor.swift in Sources */,
-				063659CE2B546CFF00B22B5C /* VMGView.swift in Sources */,
 				06A525892CF4BD9800532A51 /* CompassLabelView.swift in Sources */,
 				0686F5282CEF40CE007EE554 /* HydroData.swift in Sources */,
 				06A525922CF5D2F700532A51 /* UltimateViewMatrix.swift in Sources */,
+				06F61EA72D12454E005EA416 /* VMGSimpleView.swift in Sources */,
+				067388CB2D3C5F01002C9C54 /* iPhoneVMGView.swift in Sources */,
+				0647304F2D275C7E009BCF9A /* CalibrateSpeedLog.swift in Sources */,
 				066311B12A38DB6B00AAE263 /* ContentView.swift in Sources */,
 				066311AF2A38DB6B00AAE263 /* ExtasyCompleteNavigationApp.swift in Sources */,
+				06823F272D1CC70600BA5180 /* TackAlignmentBar.swift in Sources */,
+				0608FE3A2D29C8DA0079A03D /* iPhoneView.swift in Sources */,
+				06823F382D23563D00BA5180 /* AppSettings.swift in Sources */,
 				069EEA6A2CEB893200357A05 /* WindProcessor.swift in Sources */,
-				069EEA542CEB40CE00357A05 /* Preview.swift in Sources */,
-				062866522CF7BB3B0004B484 /* ReusableDistanceCell.swift in Sources */,
 				066CCD892B59D4DB00381E2E /* WaypointDetailedView.swift in Sources */,
 				06A525902CF5D2CD00532A51 /* MultiDisplayMatrix.swift in Sources */,
 			);
@@ -732,6 +805,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ExtasyCompleteNavigation/ExtasyCompleteNavigation.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ExtasyCompleteNavigation/PreviewContent\"";
@@ -739,8 +813,12 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ExtasyCompleteNavigation/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "";
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "We need access for communication with the navigational instruments";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to give you GPS data";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "To provide seamless navigation tracking.";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Location access is required even when the app is not in use.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs location for navigation";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -765,6 +843,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ExtasyCompleteNavigation/ExtasyCompleteNavigation.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ExtasyCompleteNavigation/PreviewContent\"";
@@ -772,8 +851,12 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ExtasyCompleteNavigation/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "";
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "We need access for communication with the navigational instruments";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to give you GPS data";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "To provide seamless navigation tracking.";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Location access is required even when the app is not in use.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs location for navigation";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -883,7 +966,12 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		0676620A2AA8096E00544940 /* CocoaAsyncSocket */ = {
+		06FCADCD2D40461400A09594 /* CocoaAsyncSocket */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 067662092AA8096E00544940 /* XCRemoteSwiftPackageReference "CocoaAsyncSocket" */;
+			productName = CocoaAsyncSocket;
+		};
+		06FCADCF2D40466100A09594 /* CocoaAsyncSocket */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 067662092AA8096E00544940 /* XCRemoteSwiftPackageReference "CocoaAsyncSocket" */;
 			productName = CocoaAsyncSocket;

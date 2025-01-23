@@ -2,24 +2,35 @@ import Foundation
 import CoreLocation
 import Observation
 
-class VMGProcessor: ObservableObject {
+class VMGProcessor {
     
-    @Published var vmgData = VMGData() // Instance to hold VMG-related data
+    // Reference to shared VMGData
+    var vmgData = VMGData()
+    
+    // Initialize with VMGData from NMEAParser
     private var calculateVMG: VMGCalculator? // Instance of VMGCalculator for computations
+    private var tackTableLoaded: Bool = false
+
     
     // MARK: - Initialization
     ///If no other diagram exists and it is loaded it defaults to Extasy polar diagram
     ///TODO: - To be further extended for externally added diagrams
-
-    init(diagramFileName: String = "diagram") {
+    
+    init(diagramFileName: String = "diagram", tackTableFileName: String = "optimal_tack") {
         if let diagram = DiagramLoader.loadDiagram(from: diagramFileName) {
             self.calculateVMG = VMGCalculator(diagram: diagram)
-            print("VMGCalculator initialized with diagram: \(diagramFileName)")
-            //print(calculateVMG?.gradus ?? "---")
-            //print(calculateVMG?.wind ?? "---")
-
+            debugLog("VMGCalculator initialized with diagram: \(diagramFileName)")
         } else {
-            print("Failed to initialize VMGCalculator. Diagram not loaded.")
+            debugLog("Failed to initialize VMGCalculator. Diagram not loaded.")
+        }
+
+        // Load the tack table
+        if let calculateVMG = calculateVMG {
+            calculateVMG.readOptimalTackTable(fileName: tackTableFileName)
+            tackTableLoaded = !calculateVMG.optimalTackTable.isEmpty
+            debugLog("Tack table loaded: \(tackTableLoaded)")
+        } else {
+            debugLog("Failed to load tack table. VMGCalculator not initialized.")
         }
     }
     
@@ -28,180 +39,200 @@ class VMGProcessor: ObservableObject {
         if let diagram = DiagramLoader.loadDiagram(from: fileName) {
             calculateVMG = VMGCalculator(diagram: diagram)
         } else {
-            print("Failed to load diagram from file: \(fileName)")
+            debugLog("Failed to load diagram from file: \(fileName)")
         }
     }
     
-    // Public method to update markerCoordinate
-    func updateMarkerCoordinate(to coordinate: CLLocationCoordinate2D) {
-        vmgData.markerCoordinate = coordinate
-    }
+    
     //public method to reset the data
     func resetVMGCalculations() {
         vmgData.reset()
+        debugLog("VMG data has been reset")
+        
+    }
+    
+    func processPerformanceRatio(maxValue: Double, currentValue: Double) -> Double {
+        
+        guard maxValue > 0 else { return 0.0 }
+        return min((currentValue / maxValue) * 100, 100) // Limit to 100%
+    }
+    
+    func processTackData(windSpeed: Double, trueWindAngle: Double) -> (optUpTWA: Double, optDnTWA: Double, maxUpVMG: Double, maxDnVMG: Double, sailingState: String, sailingStateLimit: Double)? {
+        guard tackTableLoaded, let calculateVMG = calculateVMG else {
+            debugLog("Tack table not loaded or VMGCalculator not available.")
+            return nil
+        }
+
+        // Call the interpolate function
+        let result = calculateVMG.interpolateTackTableUsingSpline(for: windSpeed, trueWindAngle: trueWindAngle)
+        
+        // Safely unwrap the components of the returned tuple
+        guard let interpolatedRow = result.interpolatedRow,
+              let sailingState = result.sailingState,
+              let sailingStateLimit = result.sailingStateLimit else {
+            debugLog("Failed to process interpolated row or determine sailing state for wind speed: \(windSpeed)")
+            return nil
+        }
+
+        // Return the processed tack data along with the sailing state
+        return (
+            optUpTWA: interpolatedRow[1],
+            optDnTWA: interpolatedRow[2],
+            maxUpVMG: interpolatedRow[5],
+            maxDnVMG: interpolatedRow[6],
+            sailingState: sailingState,
+            sailingStateLimit: sailingStateLimit
+        )
     }
     
     /// Processes VMG-related calculations based on input data
     func processVMGData(
         gpsData: GPSData?,
-        markerCoordinate: CLLocationCoordinate2D?,
-        windData: WindData?,
-        isVMGSelected: Bool
-    ) {
+        hydroData: HydroData?,
+        windData: WindData?
+    ) -> VMGData? {
         
-        // Ensure VMG calculation is selected and wind data is valid
-        guard isVMGSelected else {
-            print("VMG calculation is not selected.")
-            return
+        // Check if data is valid using the helper function and unwrap values
+        guard let boatLocation = gpsData?.boatLocation,
+              let trueWindForce = windData?.trueWindForce,
+              let trueWindAngle = windData?.trueWindAngle,
+              let trueWindDirection = windData?.trueWindDirection,
+              let speedOverGround = gpsData?.speedOverGround,
+              let speedThroughWater = hydroData?.boatSpeedLag,
+              let calculateVMG = calculateVMG else {
+            return nil
         }
+                
+        //MARK: -  Perform VMG Calculations Once Data is Valid
         
-        guard let calculateVMG = calculateVMG else {
-            print("VMGCalculator is not initialized. Load a diagram file first.")
-            return
-        }
+        let polarSpeed = calculateVMG.evaluateDiagram(windForce: trueWindForce, windAngle: trueWindAngle)
+        //take absolute value for display purposes in the progress bars and drop the negative nature of the cosine
+        let polarVMG = abs((polarSpeed) * cos(toRadians(trueWindAngle)))
 
-        // Check required data incrementally, without resetting everything
-        if windData?.trueWindForce == nil || windData?.trueWindAngle == nil {
-            
-            resetVMGCalculations()
-            print("Missing or invalid wind data for VMG calculation.")
-            return
-        }
-
-        if gpsData?.courseOverGround == nil {
-            resetVMGCalculations()
-            print("Missing or invalid course over ground (COG) data.")
-            return
-        }
+        // Calculate VMG using SOG (VMG over ground)
+        let angleToWind = abs(normalizeAngle(trueWindAngle)) // Angle between wind and course
         
-        // Proceed with calculations only if all required data is present
-        if let trueWindForce = windData?.trueWindForce,
-           let trueWindAngle = windData?.trueWindAngle,
-           let courseOverGround = gpsData?.courseOverGround {
-            // Perform VMG calculations
-            let polarSpeed = calculateVMG.evaluateDiagram(windForce: trueWindForce, windAngle: trueWindAngle)
-            print("This is the return from the EvalDiagramFUNC: \(polarSpeed)")
-            vmgData.polarSpeed = polarSpeed
-            vmgData.polarVMG = polarSpeed * cos(toRadians(trueWindAngle))
-            
-            print("Polar SPEED: \(String(describing: vmgData.polarSpeed)), polar VMG: \(String(describing: vmgData.polarVMG))")
-            // Calculate waypoint-related data if a marker is set
-            if let markerCoordinate = markerCoordinate,
-               let boatLocation = gpsData?.boatLocation {
+        // Speed Performance Calculations
+        let speedPerformanceThroughWater = processPerformanceRatio(maxValue: polarSpeed, currentValue: speedThroughWater)
+        let speedPerformanceOverGround = processPerformanceRatio(maxValue: polarSpeed, currentValue: speedOverGround)
+        
+        // VMG Performance Calculations
+        let vmgOverGround = abs(speedOverGround * cos(toRadians(angleToWind)))
+        let vmgOverGroundPerformance = processPerformanceRatio(maxValue: polarVMG, currentValue: vmgOverGround)
+        
+        let vmgThroughWater = abs(speedThroughWater * cos(toRadians(angleToWind)))
+        let vmgThroughWaterPerformance = processPerformanceRatio(maxValue: polarVMG, currentValue: vmgThroughWater)
+        
+        // Fetch tack data
+        let tackData = processTackData(windSpeed: trueWindForce, trueWindAngle: trueWindAngle)
+        let optimalUpTWA = tackData?.optUpTWA ?? 0.0
+        let optimalDnTWA = tackData?.optDnTWA ?? 0.0
+        let maxUpVMG = tackData?.maxUpVMG ?? 0.0
+        let maxDnVMG = tackData?.maxDnVMG ?? 0.0
+    
+        // Sailing State Determination
+        let sailingState = tackData?.sailingState ?? "Unknown"
+        //debugLog("Current sailing state is: [\(sailingState)]")
+        
+        // Sailing State Limit (threshold)
+        let sailingStateLimit = tackData?.sailingStateLimit
+        
+        
+        // Laylines calculation
+        let laylines = generateLaylines(
+            boatLocation: boatLocation,
+            windDirection: trueWindDirection,
+            optimalUpTWA: optimalUpTWA,
+            optimalDnTWA: optimalDnTWA,
+            sailingState: sailingState
+        )
                 
-                // Calculate distance to the marker
-                let locationA = CLLocation(latitude: boatLocation.latitude, longitude: boatLocation.longitude)
-                let locationB = CLLocation(latitude: markerCoordinate.latitude, longitude: markerCoordinate.longitude)
-                vmgData.distanceToMark = locationA.distance(from: locationB)
-                
-                let eta = calculateETA(distance: vmgData.distanceToMark, speed: gpsData?.speedOverGround)
-                print("ETA to the WP is: \(String(describing: eta))")
-                
-                DispatchQueue.main.async {
-                    self.vmgData.estTimeOfArrival = eta
-                    print("MODIFIED ETA IS: \(String(describing: self.vmgData.estTimeOfArrival))")
-                }
+        // Update VMGData
+        
+        vmgData = VMGData(
+            polarSpeed: polarSpeed,
+            polarVMG: polarVMG,
+            vmgOverGround: vmgOverGround,
+            vmgOverGroundPerformance: vmgOverGroundPerformance,
+            vmgThroughWater: vmgThroughWater,
+            vmgThroughWaterPerformance: vmgThroughWaterPerformance,
+            speedPerformanceThroughWater: speedPerformanceThroughWater,
+            speedPerformanceOverGround: speedPerformanceOverGround,
+            optimalUpTWA: optimalUpTWA,
+            optimalDnTWA: optimalDnTWA,
+            maxUpVMG: maxUpVMG,
+            maxDnVMG: maxDnVMG,
+            sailingState: sailingState,
+            sailingStateLimit: sailingStateLimit,
+            starboardLayline: laylines.starboardLayline,
+            portsideLayline: laylines.portsideLayline
+        )
 
-
-                // Calculate true mark bearing
-                let (_, trueMarkBearing) = calcOffset(boatLocation, markerCoordinate)
-                vmgData.trueMarkBearing = normalizeAngle(trueMarkBearing)
-                
-                // Calculate relative mark bearing
-                let relativeMarkBearing = normalizeAngle(trueMarkBearing - courseOverGround)
-                vmgData.relativeMarkBearing = relativeMarkBearing
-                
-                // Limit the array to the last N values (e.g., 2 values for smoothing)
-                if vmgData.relativeMarkBearingArray.count > 2 {
-                    vmgData.relativeMarkBearingArray.removeFirst()
-                }
-
-                // Smooth relative mark bearing for display
-                vmgData.relativeMarkBearingArray.append(relativeMarkBearing)
-                if vmgData.relativeMarkBearingArray.count > 1 {
-                    let sourceAngle = vmgData.relativeMarkBearingArray[0]
-                    let targetAngle = vmgData.relativeMarkBearingArray[1]
-                    let smoothedAngle = calculateShortestRotation(from: sourceAngle, to: targetAngle)
-                    vmgData.relativeMarkBearing = smoothedAngle
-                    vmgData.relativeMarkBearingArray[0] = smoothedAngle
-                    vmgData.relativeMarkBearingArray.removeLast()
-                    print("Mark Bearing Array count is: \(vmgData.relativeMarkBearingArray.count)")
-                }
-                
-                // Calculate distances to next and long tack
-                vmgData.distanceToNextTack = cos(toRadians(relativeMarkBearing)) * (vmgData.distanceToMark ?? 0)
-                vmgData.distanceToTheLongTack = cos(toRadians(90 - relativeMarkBearing)) * (vmgData.distanceToMark ?? 0)
-                
-                vmgData.etaToNextTack = calculateETA(distance: vmgData.distanceToNextTack, speed: gpsData?.speedOverGround)
-                print("ETA to next tack is: \(String(describing: vmgData.etaToNextTack))")
-
-            }
-        }
-
-        // Update waypoint VMC if course and speed are available
-        if let courseOverGround = gpsData?.courseOverGround,
-           let speedOverGround = gpsData?.speedOverGround {
-            
-            let normalizedCOG = normalizeAngle(courseOverGround)
-            vmgData.waypointVMC = vmg(speed: speedOverGround, target_angle: vmgData.trueMarkBearing, boat_angle: normalizedCOG)
-            print("VMC is: \(String(describing: vmgData.waypointVMC))")
-        }
-    }
-    // Calculate ETA given distance and speed
-    private func calculateETA(distance: Double?, speed: Double?) -> Double? {
-        guard let distance = distance, let speed = speed, speed > 0 else { return nil }
-        return distance / speed // ETA in hours
-    }
-    // Calculate shortest rotation for smooth animations
-    private func calculateShortestRotation(from oldHeading: Double, to newHeading: Double) -> Double {
-        let delta = (newHeading - oldHeading).truncatingRemainder(dividingBy: 360)
-        return delta > 180 ? delta - 360 : (delta < -180 ? delta + 360 : delta)
+        return vmgData
+        
     }
     
-    // Normalize angle to [0, 360)
-    private func normalizeAngle(_ angle: Double) -> Double {
-        var normalized = angle.truncatingRemainder(dividingBy: 360)
-        if normalized < 0 { normalized += 360 }
-        return normalized
+    func calculateLaylineCoordinates(
+        boatLocation: CLLocationCoordinate2D,
+        windDirection: Double,
+        tackAngle: Double,
+        distance: Double = 20000 // Distance in meters for layline projection
+    ) -> CLLocationCoordinate2D {
+        let earthRadius: Double = 6371000 // Earth's radius in meters
+        let laylineDirection = normalizeAngle(windDirection + tackAngle) // Adjust wind direction by tack angle
+        let laylineDirectionRad = toRadians(laylineDirection)
+
+        let lat1 = toRadians(boatLocation.latitude)
+        let lon1 = toRadians(boatLocation.longitude)
+
+        let lat2 = asin(sin(lat1) * cos(distance / earthRadius) +
+                        cos(lat1) * sin(distance / earthRadius) * cos(laylineDirectionRad))
+        let lon2 = lon1 + atan2(sin(laylineDirectionRad) * sin(distance / earthRadius) * cos(lat1),
+                                cos(distance / earthRadius) - sin(lat1) * sin(lat2))
+
+        return CLLocationCoordinate2D(latitude: toDegrees(lat2), longitude: toDegrees(lon2))
     }
-    
-    // Convert degrees to radians
-    private func toRadians(_ degrees: Double) -> Double {
-        return degrees * .pi / 180
-    }
-    
-    // Calculate distance and bearing to a waypoint
-    func calcOffset(_ coord0: CLLocationCoordinate2D,
-                    _ coord1: CLLocationCoordinate2D) -> (distance: Double, bearing: Double) {
+
+    func generateLaylines(
+        boatLocation: CLLocationCoordinate2D,
+        windDirection: Double,
+        optimalUpTWA: Double,
+        optimalDnTWA: Double,
+        sailingState: String
+    ) -> (starboardLayline: CLLocationCoordinate2D, portsideLayline: CLLocationCoordinate2D) {
+        // Normalize the wind direction to 0-360
+        let normalizedWindDirection = normalizeAngle(windDirection)
         
-        let earthRadius: Double = 6371000 // Earth's radius in meters (mean radius)
-        let degToRad: Double = .pi / 180.0
-        let radToDeg: Double = 180.0 / .pi
-        
-        // Convert coordinates to radians
-        let lat0 = coord0.latitude * degToRad
-        let lat1 = coord1.latitude * degToRad
-        let lon0 = coord0.longitude * degToRad
-        let lon1 = coord1.longitude * degToRad
-        
-        // Calculate differences
-        let dLat = lat1 - lat0
-        let dLon = lon1 - lon0
-        
-        // Haversine formula for distance
-        let a = sin(dLat / 2) * sin(dLat / 2) +
-                cos(lat0) * cos(lat1) * sin(dLon / 2) * sin(dLon / 2)
-        let c = 2 * atan2(sqrt(a), sqrt(1 - a))
-        let distance = earthRadius * c // Distance in meters
-        
-        // Formula for initial bearing
-        let y = sin(dLon) * cos(lat1)
-        let x = cos(lat0) * sin(lat1) - sin(lat0) * cos(lat1) * cos(dLon)
-        let initialBearing = atan2(y, x) * radToDeg
-        
-        // Normalize bearing to [0, 360)
-        let normalizedBearing = (initialBearing + 360).truncatingRemainder(dividingBy: 360)
-        
-        return (distance, normalizedBearing)
+        switch sailingState {
+        case "Upwind":
+            return (
+                starboardLayline: calculateLaylineCoordinates(
+                    boatLocation: boatLocation,
+                    windDirection: normalizedWindDirection,
+                    tackAngle: optimalUpTWA
+                ),
+                portsideLayline: calculateLaylineCoordinates(
+                    boatLocation: boatLocation,
+                    windDirection: normalizedWindDirection,
+                    tackAngle: -optimalUpTWA
+                )
+            )
+        case "Downwind":
+            return (
+                starboardLayline: calculateLaylineCoordinates(
+                    boatLocation: boatLocation,
+                    windDirection: normalizedWindDirection,
+                    tackAngle: optimalDnTWA
+                ),
+                portsideLayline: calculateLaylineCoordinates(
+                    boatLocation: boatLocation,
+                    windDirection: normalizedWindDirection,
+                    tackAngle: -optimalDnTWA
+                )
+            )
+        default: // Handle transition or undefined states
+            debugLog("Sailing state is in transition or undefined.")
+            return (starboardLayline: boatLocation, portsideLayline: boatLocation)
+        }
     }
 }

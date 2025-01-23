@@ -24,7 +24,7 @@ struct MultiDisplayGrid: View {
 }
 
 #Preview {
-    GeometryProvider { width, _ in
+    GeometryProvider { width, _, _ in
         MultiDisplayGrid(width: width)
     }
     .aspectRatio(contentMode: .fit)

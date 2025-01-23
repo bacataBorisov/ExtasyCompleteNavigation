@@ -11,6 +11,7 @@ struct HydroData {
     var seaWaterTemperature: Double?
     //Boat Speed Through Water
     var boatSpeedLag: Double?
+    var speedLogCalibrationCoeff: Double?
     //Boat Distance Through Water
     var totalDistance: Double?
     var distSinceReset: Double?
@@ -23,6 +24,7 @@ struct HydroData {
         
         seaWaterTemperature = nil
         boatSpeedLag = nil
+        speedLogCalibrationCoeff = nil
         totalDistance = nil
         distSinceReset = nil
         depth = nil

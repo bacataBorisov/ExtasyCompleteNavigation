@@ -60,3 +60,42 @@ public struct HVStack<Content: View>: View {
         }
     }
 }
+
+// MARK: - RoundedBackgroundView
+public struct RoundedBackgroundView<Content: View>: View {
+    let content: Content
+    let sectionPadding: CGFloat = 8
+    
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    public var body: some View {
+        ZStack {
+            Color(UIColor.systemBackground) // Background color
+                .edgesIgnoringSafeArea(.all)
+            
+            content
+                //.padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(UIColor.systemBackground))
+                        .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 3)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .padding(sectionPadding)
+        }
+    }
+}
+
+// MARK: - Helper Method to Determine is it running on iPhone or iPad
+
+struct DeviceType {
+    static var isIPhone: Bool {
+        UIDevice.current.userInterfaceIdiom == .phone
+    }
+
+    static var isIPad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
+}

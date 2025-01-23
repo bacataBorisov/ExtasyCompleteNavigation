@@ -1,15 +1,18 @@
 import SwiftUI
 
-import SwiftUI
-
 struct AnemometerView: View {
-    
     let trueWindAngle: Double
     let apparentWindAngle: Double
     let width: CGFloat
-    
+
+    @AppStorage("storedTrueWindAngle") private var storedTrueWindAngle: Double = 0.0
+    @AppStorage("storedApparentWindAngle") private var storedApparentWindAngle: Double = 0.0
+    @AppStorage("anemometerShouldAnimate") private var shouldAnimate: Bool = false
+
+    @State private var displayedTrueWindAngle: Double = 0.0
+    @State private var displayedApparentWindAngle: Double = 0.0
+
     var body: some View {
-        
         ZStack {
             // Dial Gauge Base
             Circle()
@@ -22,46 +25,85 @@ struct AnemometerView: View {
                     lineWidth: width / 14
                 )
                 .padding(width / 20 / 2)
-            
+
             // STBD Sector
             SectorView(
-                gradientColors: [Color("stbd_color_start"), Color("stbd_color_end")],
+                gradientColors: [Color.green.opacity(0.7), Color.teal.opacity(0.7)],
                 startAngle: 270,
                 lineWidth: width / 14,
                 padding: width / 20 / 2
             )
-            
+
             // PORT Sector
             SectorView(
-                gradientColors: [Color("port_color_end"), Color("port_color_start")],
+                gradientColors: [Color.red.opacity(0.7), Color.purple.opacity(0.7)],
                 startAngle: 210,
                 lineWidth: width / 14,
                 padding: width / 20 / 2
             )
-            
+
             // Dial Gauge Indicators
             DialGaugeIndicators(width: width)
-            
-            // True Wind Indicator
+
+            // True Wind Arrow
             WindArrow(
                 label: "T",
                 color: Color(UIColor.systemBlue),
-                angle: trueWindAngle,
-                fontSize: width/13,
-                offset: width / 2.15
+                delta: displayedTrueWindAngle,
+                fontSize: width / 13,
+                offset: width / 2.15,
+                shouldAnimate: shouldAnimate
             )
-            
-            // Apparent Wind Indicator
+
+            // Apparent Wind Arrow
             WindArrow(
                 label: "A",
                 color: Color(UIColor.systemPink),
-                angle: apparentWindAngle,
-                fontSize: width/13,
-                offset: width / 2.15
+                delta: displayedApparentWindAngle,
+                fontSize: width / 13,
+                offset: width / 2.15,
+                shouldAnimate: shouldAnimate
             )
         }
+        .onAppear {
+            // Restore last known values when view appears
+            displayedTrueWindAngle = storedTrueWindAngle
+            displayedApparentWindAngle = storedApparentWindAngle
+            shouldAnimate = false
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                updateArrowRotation(&displayedTrueWindAngle, to: trueWindAngle)
+                updateArrowRotation(&displayedApparentWindAngle, to: apparentWindAngle)
+                shouldAnimate = true
+            }
+        }
+        .onChange(of: trueWindAngle) { _, newAngle in
+            updateArrowRotation(&displayedTrueWindAngle, to: newAngle)
+            storedTrueWindAngle = newAngle
+        }
+        .onChange(of: apparentWindAngle) { _, newAngle in
+            updateArrowRotation(&displayedApparentWindAngle, to: newAngle)
+            storedApparentWindAngle = newAngle
+        }
     }
-    
+
+    // MARK: - Rotation Logic
+
+    private func updateArrowRotation(_ displayedAngle: inout Double, to newAngle: Double) {
+        let shortestDelta = calculateShortestRotation(from: displayedAngle, to: newAngle)
+        if shouldAnimate {
+            withAnimation(.easeInOut(duration: 1)) {
+                displayedAngle += shortestDelta
+            }
+        } else {
+            displayedAngle += shortestDelta
+        }
+    }
+
+    private func calculateShortestRotation(from sourceAngle: Double, to targetAngle: Double) -> Double {
+        let delta = (targetAngle - sourceAngle).truncatingRemainder(dividingBy: 360)
+        return delta > 180 ? delta - 360 : (delta < -180 ? delta + 360 : delta)
+    }
 }
 
 // MARK: - Subviews
@@ -71,7 +113,7 @@ struct SectorView: View {
     let startAngle: Double
     let lineWidth: CGFloat
     let padding: CGFloat
-    
+
     var body: some View {
         Circle()
             .trim(from: 0, to: 0.167)
@@ -90,13 +132,13 @@ struct SectorView: View {
 
 struct DialGaugeIndicators: View {
     let width: CGFloat
-    
+
     var body: some View {
         ZStack {
             // Long Indicators
             MyShape(sections: 12, lineLengthPercentage: 0.1)
                 .stroke(Color(UIColor.systemBackground), style: StrokeStyle(lineWidth: width / 90))
-            
+
             // Short Indicators
             MyShape(sections: 36, lineLengthPercentage: 0.03)
                 .stroke(Color(UIColor.systemBackground), style: StrokeStyle(lineWidth: width / 90))
@@ -108,142 +150,38 @@ struct DialGaugeIndicators: View {
 struct WindArrow: View {
     let label: String
     let color: Color
-    let angle: Double
+    let delta: Double
     let fontSize: CGFloat
     let offset: CGFloat
-    
+    let shouldAnimate: Bool  // Add shouldAnimate parameter
+
     var body: some View {
         ZStack {
-            Triangle()
-                .rotation(.degrees(180))
-                .scaleEffect(x: 0.12, y: 0.12)
-                .offset(y: -offset)
-                .foregroundStyle(color)
-            
+            Image(systemName: "arrowtriangle.down.fill")
+                .resizable()
+                .scaledToFit()
+                .frame(width: fontSize * 2, height: fontSize * 1.25)
+                .foregroundColor(color)
+                .offset(y: -offset * 1.02)
+
             Text(label)
-                .font(Font.custom("AppleSDGothicNeo-Bold", size: fontSize))
-                .offset(y: -offset * 1.04)
+                .font(Font.custom("AppleSDGothicNeo-Bold", size: fontSize * 0.8))
+                .offset(y: -offset * 1.035)
                 .foregroundStyle(Color(UIColor.white))
         }
-        .rotationEffect(.degrees(angle))
-        .animation(.easeInOut(duration: 1), value: angle)
+        .rotationEffect(.degrees(delta)) // Rotate the arrow by delta
+        .animation(shouldAnimate ? .easeInOut(duration: 1) : .none, value: delta) // Smooth rotation animation
     }
 }
 
 // MARK: - Preview
 #Preview {
-    GeometryProvider { width, _ in
+    GeometryProvider { width, _, _ in
         AnemometerView(
-            trueWindAngle: 48,
-            apparentWindAngle: 120, width: width
+            trueWindAngle: 350,
+            apparentWindAngle: 10,
+            width: width
         )
     }
     .aspectRatio(contentMode: .fit)
-
 }
-
-
-
-////
-////  AnemometerView.swift
-////  ExtasyCompleteNavigation
-////
-////  Created by Vasil Borisov on 22.11.24.
-////
-//import SwiftUI
-//
-//struct AnemometerView: View {
-//
-//    let trueWindAngle: Double
-//    let apparentWindAngle: Double
-//
-//    var body: some View {
-//
-//        GeometryReader{ geometry in
-//
-//            let width: CGFloat = min(geometry.size.width, geometry.size.height)
-//            let fontSizeWind = width/13
-//
-//            ZStack{
-//                //MARK: - Anemometer Section
-//                //gauge dial base
-//                Circle()
-//                    .stroke(LinearGradient(gradient: Gradient(colors: [Color("dial_gauge_start"), Color("dial_gauge_end")]), startPoint: .top, endPoint: .bottom), lineWidth: width/14)
-//                    .padding((width/20)/2)
-//                //STBD color
-//                Circle()
-//                    .trim(from: 0, to: 0.167)
-//                //make a gradient color here
-//                    .stroke(LinearGradient(gradient: Gradient(colors: [Color("stbd_color_start"), Color("stbd_color_end")]), startPoint: .topTrailing, endPoint: .bottom), lineWidth: width/14)
-//                    .padding((width/20)/2) //it gives half of the stroke width, so it is like a strokeBorder
-//                    .rotationEffect(.init(degrees: 270))
-//
-//                //PORT color
-//                Circle()
-//                    .trim(from: 0, to: 0.167)
-//                //gradient is inverted because the view is rotated 210 degrees
-//                    .stroke(LinearGradient(gradient: Gradient(colors: [Color("port_color_start"), Color("port_color_end")]), startPoint: .bottom, endPoint: .center), lineWidth: width/14)
-//                    .padding((width/20)/2)
-//                    .rotationEffect(.init(degrees: 210))
-//
-//
-//                //dial gauge indicators
-//                //long indicators
-//                MyShape(sections: 12, lineLengthPercentage: 0.1)
-//                    .stroke(Color(UIColor.systemBackground), style: StrokeStyle(lineWidth: width/90))
-//
-//                //short indicators
-//                MyShape(sections: 36, lineLengthPercentage: 0.03)
-//                    .stroke(Color(UIColor.systemBackground), style: StrokeStyle(lineWidth: width/90))
-//                    .padding(.all, width/60)
-//
-//                //True wind indicator arrow
-//                ZStack{
-//                    Triangle()
-//
-//                        .rotation(.degrees(180))
-//                        .scaleEffect(x: 0.12, y:0.12)
-//                        .offset(y: -width/2.15)
-//                        .foregroundStyle(Color(UIColor.systemBlue))
-//
-//                    Text("T")
-//                    //.scaleEffect(x: 0.12, y:0.12)
-//                        .font(Font.custom("AppleSDGothicNeo-Bold", size: fontSizeWind))
-//                        .offset(y: -width/2.1)
-//                        .foregroundStyle(Color(UIColor.white))
-//                }
-//
-////                In case there is no data for the wind, the arrow just stays at 0 degrees and doesn't move
-//                .rotationEffect(.degrees(trueWindAngle))
-//                .animation(.easeInOut(duration: 1), value: trueWindAngle)
-//                //Apparent wind indicator arrow
-//                ZStack{
-//                    Triangle()
-//                        .rotation(.degrees(180))
-//                        .scaleEffect(x: 0.12, y:0.12)
-//                        .offset(y: -width/2.15)
-//                        .foregroundStyle(Color(UIColor.systemPink))
-//                    Text("A")
-//                    //.scaleEffect(x: 0.12, y:0.12)
-//                        .font(Font.custom("AppleSDGothicNeo-Bold", size: fontSizeWind))
-//                        .offset(y: -width/2.1)
-//                        .foregroundStyle(Color(UIColor.white))
-//                }
-//
-//                //In case there is no data for the wind, the arrow just stays at 0 degrees and doesn't move
-//                .rotationEffect(.degrees(apparentWindAngle))
-//                .animation(.easeInOut(duration: 1), value: apparentWindAngle)
-//            }
-//        }
-//        .aspectRatio(contentMode: .fit)
-//    }
-//}
-//
-//#Preview {
-//
-//    return AnemometerView(
-//        trueWindAngle: 45, // Example value for true wind angle
-//        apparentWindAngle: 120 // Example value for apparent wind angle
-//    )
-//}
-//

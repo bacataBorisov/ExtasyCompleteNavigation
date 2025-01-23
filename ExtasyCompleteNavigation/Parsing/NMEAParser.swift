@@ -23,55 +23,43 @@ import MapKit
 import Observation
 import CocoaAsyncSocket
 
+
 @Observable
 class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     
+    // MARK: - Raw String (Used in Advanced Settings)
+    var latestRawData: [String] = []
     
     //MARK: - Variables that come from II - Integrated Instruments
     
     //HydroData Variables (speed log, depth, sea water temperature, etc.)
-    let hydroProcessor = HydroProcessor()
+    @ObservationIgnored let hydroProcessor = HydroProcessor()
     var hydroData: HydroData?
     
-    //CompassData Variables
-    let compassProcessor = CompassProcessor()
+    //CompassData Variables (magnetic heading)
+    @ObservationIgnored let compassProcessor = CompassProcessor()
     var compassData: CompassData?
     
-    // Wind Data Variables
-    let windProcessor = WindProcessor()
+    // Wind Data Variables (AWF, AWW, TWF, TWA)
+    @ObservationIgnored let windProcessor = WindProcessor()
     var windData: WindData?
     
     //MARK: - Variables that come from GP - external GPS
     
-    let gpsProcessor = GPSProcessor()
+    @ObservationIgnored let gpsProcessor = GPSProcessor()
     var gpsData: GPSData?
     
     //MARK: - Mark Setup Variables & VMG
     
-    //MARK: - Ignore Observation here - VMGViewModel will take care of publishing vmgData properties
-    @ObservationIgnored
-    let vmgProcessor = VMGProcessor()
+    // VMG - Calculated Values
     
-    // Expose VMG data directly
-    @ObservationIgnored
-    var vmgData: VMGData {
-        vmgProcessor.vmgData
-    }
+    @ObservationIgnored var vmgProcessor = VMGProcessor()
+    var vmgData: VMGData?
     
-    // Expose the relativeMarkBearing property from vmgData
-    var relativeMarkBearing: Double {
-        get { vmgProcessor.vmgData.relativeMarkBearing }
-        set { vmgProcessor.vmgData.relativeMarkBearing = newValue }
-    }
+    @ObservationIgnored var waypointProcessor = WaypointProcessor()
+    var waypointData: WaypointData?
     
-    var isVMGSelected: Bool = false {
-        didSet {
-            print("isVMGSelected updated to \(isVMGSelected)")
-        }
-    }
-    //Boolean values
-    
-    var isMetricSelected: Bool = false
+    //UserSettingsValues
     
     //Watchdog variables
     private var lastWindUpdateTime: Date?
@@ -84,7 +72,9 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
      This avoids relying on other parts of the code to remember to explicitly call this function after initialization.
      */
     override init() {
+        
         super.init()
+        // Assign the initialized local variable to self.vmgData
         startDataWatchdog()
     }
     
@@ -111,6 +101,11 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     //MARK: - NMEA String Processing
     
     func processRawString(rawData: String){
+            
+        DispatchQueue.main.async {
+            self.latestRawData.append(rawData)
+
+        }
         
         //Check first sign of the string
         guard rawData.first == "$" else {
@@ -121,7 +116,7 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
         //Drop the dollar sign here, and then start processing the raw data
         let strippedData = String(rawData.dropFirst())
         
-        print(rawData)
+        //debugLog(rawData)
         //MARK: - 1) Step of NMEA protocol - Calculate and Validate the Checksum
         guard UtilsNMEA.validateChecksum(strippedData) else {
             print("Invalid Checksum!")
@@ -162,68 +157,51 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
         
         //MARK: - 5) Parse Data Based on Sentence Format
         parseSentence(sentenceFormat, splitStr)
-        
-        
-        //MARK: - Update VMG Data
-        // **Call processVMGData after relevant updates**
-        if isVMGSelected {
-            vmgProcessor.processVMGData(
-                gpsData: gpsData,
-                markerCoordinate: vmgData.markerCoordinate,
-                windData: windData,
-                isVMGSelected: isVMGSelected
-            )
-        }
-        
+
     }//END OF PROCESS RAW STRING
     
     //MARK: - Functions
     
     private func parseSentence(_ format: String, _ splitStr: [String]) {
         
+        // Temporary variable to store updated data
+        var updatedHydroData: HydroData?
+        var updatedWindData: WindData?
+        var updatedGPSData: GPSData?
+        var updatedCompassData: CompassData?
+        var updatedVMGData: VMGData?
+        var updatedWaypointData: WaypointData?
+        
         switch format {
             
             //MARK: - Depth
         case "DPT":
-            hydroProcessor.processDepth(splitStr)
-            hydroData = hydroProcessor.hydroData
+            updatedHydroData = hydroProcessor.processDepth(splitStr)
+            
             
         case "HDG":
             //MARK: - Magnetic Heading with Corrected Variation
-            compassData = compassProcessor.processCompassSentence(splitStr)
+            updatedCompassData = compassProcessor.processCompassSentence(splitStr)
             
             //MARK: - Water Temperature
         case "MTW":
             //for the moment we don't have temperature sensor. I am not sure where exactly has been installed - probably in the speed log? Looks like our is not connected because we get an empty string when it has been returned. If we get a new speed log with temperature sensor we can use it. For the moment it will be skipped or just get "--"
-            hydroProcessor.processSeaTemperature(splitStr)
-            hydroData = hydroProcessor.hydroData
+            updatedHydroData = hydroProcessor.processSeaTemperature(splitStr)
             
             //MARK: - Wind Sensor Data
         case "MWV":
             
-            // Process the wind sentence using the WindProcessor
-            if let updatedWindData = windProcessor.processWindSentence(splitStr) {
-                // Update the current wind data
-                self.windData = updatedWindData
-                
-                // Record the time of the last valid wind data update
-                lastWindUpdateTime = updatedWindData.lastUpdated
-            } else {
-                // Handle invalid or missing wind data if necessary
-                print("Invalid or incomplete MWV sentence.")
-            }
+            updatedWindData = windProcessor.processWindSentence(splitStr, compassData: compassData, hydroData: hydroData)
             
             //MARK: - Boat Speed & Distance Travelled from Lag
         case "VHW":
             
-            hydroProcessor.processSpeedLog(splitStr)
-            hydroData = hydroProcessor.hydroData
+            updatedHydroData = hydroProcessor.processSpeedLog(splitStr)
             
             //Distance travelled through water in nautical miles
         case "VLW":
             
-            hydroProcessor.processDistanceTravelled(splitStr)
-            hydroData = hydroProcessor.hydroData
+            updatedHydroData = hydroProcessor.processDistanceTravelled(splitStr)
             
             //MARK: - GPS Sentences
             
@@ -251,9 +229,7 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
             //RMC - Recommended Minimum Navigation
         case "RMC":
             
-            gpsProcessor.processRMC(splitStr)
-            gpsData = gpsProcessor.gpsData
-            
+            updatedGPSData = gpsProcessor.processRMC(splitStr)
             
             //Recommended Minimum Navigation Information
         case "RMB":
@@ -269,20 +245,40 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
         default:
             break
         }
+        
+        //MARK: - Update VMG Data
+        // **Call processVMGData after relevant updates**
+        updatedVMGData =  vmgProcessor.processVMGData(
+            gpsData: gpsData,
+            hydroData: hydroData,
+            windData: windData
+        )
+        
+        //process only when there is a valid marker coordinate
+        if let _ = updatedGPSData?.markerCoordinate {
+            
+            updatedWaypointData = waypointProcessor.processWaypointData(
+                vmgData: vmgData,
+                gpsData: gpsData,
+                windData: windData
+            )
+        }
+        
+        // Updates MUST happen on the Main Thread
+        DispatchQueue.main.async { [self] in
+            
+            // Ensure the variable is used only if updated
+            if let hydro = updatedHydroData { hydroData = hydro }
+            if let wind = updatedWindData { windData = wind;lastWindUpdateTime = updatedWindData?.lastUpdated }
+            if let gps = updatedGPSData { gpsData = gps }
+            if let compass = updatedCompassData { compassData = compass }
+            if let vmg = updatedVMGData { vmgData = vmg }
+            if let waypoint = updatedWaypointData { waypointData = waypoint }
+            
+        }
+
     }//END OF PARSE SENTENCE
     
-    //MARK: - Helper Functions to Trigger VMG Calculations
-    // Synchronize VMGProcessor updates with the NMEAParser's `vmgData`
-    // Example of triggering VMG updates
-//    func processVMGData() {
-//        vmgProcessor.processVMGData(
-//            gpsData: gpsData,
-//            markerCoordinate: vmgData?.markerCoordinate, // Use the NMEAParser's vmgData
-//            windData: windData,
-//            isVMGSelected: isVMGSelected
-//        )
-//        updateVMGData() // Sync updated data to the `NMEAParser` level
-//    }
     //TODO: - Fix this because it is insane - it is just for the test
     // it has to be removed, I should parse the normalized angles straight or add this to WindData structure
     //Function to normalize values for display
@@ -302,10 +298,8 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
         case 5:
             return windData?.apparentWindDirection
         case 6:
-            if isMetricSelected {
-                if let unwrappedAWF = windData?.apparentWindForce {
-                    return unwrappedAWF*toMetersPerSecond
-                }
+            if AppSettings.metricWind {
+                return (windData?.apparentWindForce ?? 0) * toMetersPerSecond
             } else {
                 return windData?.apparentWindForce
             }
@@ -314,10 +308,8 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
         case 8:
             return windData?.trueWindDirection
         case 9:
-            if isMetricSelected {
-                if let unwrappedTWF = windData?.trueWindForce {
-                    return unwrappedTWF*toMetersPerSecond
-                }
+            if AppSettings.metricWind {
+                return (windData?.trueWindForce ?? 0) * toMetersPerSecond
             } else {
                 return windData?.trueWindForce
             }
@@ -325,33 +317,9 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
             return gpsData?.courseOverGround
         case 11:
             return gpsData?.speedOverGround
-        case 12:
-            return vmgData.polarSpeed
-        case 13:
-            return vmgData.waypointVMC
-        case 14:
-            return vmgData.polarVMG
-        case 15:
-            return vmgData.trueMarkBearing
-        case 16:
-            return vmgData.distanceToMark
-        case 17:
-            if let unwrappedDistance = vmgData.distanceToMark, let speed = gpsData?.speedOverGround {
-                
-                return unwrappedDistance / speed
-            }
-        case 18:
-            if let unwrappedTackDistance = vmgData.distanceToNextTack, let speed = gpsData?.speedOverGround {
-                
-                return unwrappedTackDistance / speed
-            }
-            
-        case 19:
-            return vmgData.relativeMarkBearing
         default:
             return nil
         }
-        return nil
     }//END OF displayValue function
 }
 

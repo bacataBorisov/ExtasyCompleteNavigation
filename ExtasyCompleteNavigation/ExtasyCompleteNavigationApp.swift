@@ -1,73 +1,70 @@
-//
-//  ExtasyCompleteNavigationApp.swift
-//  ExtasyCompleteNavigation
-//
-//  Created by Vasil Borisov on 13.06.23.
-//
-
 import SwiftUI
 import SwiftData
 
 @main
-
 struct ExtasyCompleteNavigationApp: App {
-        
-    //init model container here for waypoint, so the preview on the detaildWPView will work.
-    //it is different than the example givens but this way work, I still don't know why
+    
     let modelContainer: ModelContainer
     
+    // Environment properties
+    @State private var navigationManager = NavigationManager()
+    @State private var settingsManager = SettingsManager()
+    
+    // Splash screen state
+    @State private var showSplashScreen = true
+    
+    @StateObject private var audioManager = AudioManager() // Persisted audio manager instance
+    
     init() {
-      do {
-          
-          
-          let config = ModelConfiguration(for:  Waypoints.self,
+        // Initialize default settings
+        DefaultSettings.initializeDefaults()
+        
+        do {
+            let config = ModelConfiguration(for: Waypoints.self,
+                                            Matrix.self,
+                                            UltimateMatrix.self,
+                                            isStoredInMemoryOnly: true)
+            
+            modelContainer = try ModelContainer(for: Waypoints.self,
                                                 Matrix.self,
                                                 UltimateMatrix.self,
-                                                UserSettingsMenu.self,
-                                                BearingToMarkUnitsMenu.self,
-                                                NauticalDistance.self,
-                                                NextTackNauticalDistance.self,
-                                                SwitchCoordinatesView.self,
-                                                isStoredInMemoryOnly: true)
-          
-          modelContainer = try ModelContainer(for:  Waypoints.self,
-                                                    Matrix.self,
-                                                    UltimateMatrix.self,
-                                                    UserSettingsMenu.self,
-                                                    BearingToMarkUnitsMenu.self,
-                                                    NauticalDistance.self,
-                                                    NextTackNauticalDistance.self,
-                                                    SwitchCoordinatesView.self,
-                                                    configurations: config)
-      } catch {
-        fatalError("Could not initialize ModelContainer for these guys")
-      }
+                                                configurations: config)
+        } catch {
+            fatalError("Could not initialize ModelContainer for these guys")
+        }
+        // Start playing music as soon as the app launches
     }
-
-
-    //MARK: - Environment Property for the NMEAReader Class
-    @State private var navigationManager = NavigationManager()
     
     var body: some Scene {
         WindowGroup {
-            //inject the data into the views
-            ContentView()
-                .environment(navigationManager.udpHandler)
-                .environment(navigationManager.nmeaParser)
-                .environment(navigationManager)
-                //.environment(vmgProcessor) // Inject VMGProcessor into the environment
-
+            ZStack {
+                ContentView()
+                
+                if showSplashScreen {
+                    SplashScreenView()
+                        .transition(.opacity)
+                        .onAppear {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
+                                    showSplashScreen = false  // Remove splash screen with fade-out
+                                
+                            }
+                        }
+                }
+            }
+            .animation(.easeInOut, value: showSplashScreen)
+            .environment(navigationManager.udpHandler)
+            .environment(navigationManager.nmeaParser)
+            .environment(navigationManager)
+            .environment(settingsManager)
+            .environmentObject(audioManager)
+            .onAppear{
+                audioManager.playMusic()
+            }
         }
-        //creating container for the SwiftData
         .modelContainer(for: [
             Waypoints.self,
             Matrix.self,
-            UltimateMatrix.self,
-            UserSettingsMenu.self,
-            BearingToMarkUnitsMenu.self,
-            NauticalDistance.self,
-            NextTackNauticalDistance.self,
-            SwitchCoordinatesView.self])
-
+            UltimateMatrix.self
+        ])
     }
 }

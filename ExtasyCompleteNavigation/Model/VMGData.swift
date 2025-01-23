@@ -9,39 +9,55 @@ import Foundation
 import CoreLocation
 
 struct VMGData {
-    // MARK: - Waypoint & Distance Variables
-    var markerCoordinate: CLLocationCoordinate2D? // Waypoint coordinates
-    var distanceToMark: Double? // Distance to the waypoint in meters
-    var estTimeOfArrival: Double? // Estimated Time of Arrival to the waypoint
-    var markBearing: Double? // Absolute bearing to the waypoint
-    var relativeMarkBearing: Double = 0 // Relative bearing to the waypoint
-    var relativeMarkBearingArray: [Double] = [] // History of relative bearings for smoothing
-    var trueMarkBearing: Double = 0 // True bearing to the waypoint
     
+
     // MARK: - VMG Values
     var polarSpeed: Double? // Speed derived from polar diagram
     var polarVMG: Double? // Velocity Made Good for optimal angles
-    var waypointVMC: Double? // Velocity Made on Course to a specific waypoint
     
-    // Tack Calculations
-    var distanceToNextTack: Double? // Distance to the next tack in meters
-    var etaToNextTack: Double? // Estimated time to next tack in seconds
-    var distanceToTheLongTack: Double? // Distance to the longer tack in meters
+    var vmgOverGround: Double? //current VMG using SOG
+    var vmgOverGroundPerformance: Double? // Performance Ratio
+
+    var vmgThroughWater: Double? // currentVMG using speed log
+    var vmgThroughWaterPerformance: Double? // currentVMG using speed log
+    
+    var speedPerformanceThroughWater: Double? // this will be performance using speed log
+    var speedPerformanceOverGround: Double? // speed performance using SOG
+    
+    // MARK: - Values from the Optimal Tack Table
+    
+    var optimalUpTWA: Double? // optimal attack angle upwind
+    var optimalDnTWA: Double? // optimal attack angle downwind
+    var maxUpVMG: Double?     // max speed upWind
+    var maxDnVMG: Double?     // max speed downWind
+    
+    // MARK: - Tack Properties
+    var sailingState: String? // "Upwind" or "Downwind"
+    var sailingStateLimit: Double?
+    
+    // MARK: - Laylines
+    var starboardLayline: CLLocationCoordinate2D?
+    var portsideLayline: CLLocationCoordinate2D?
+
     
     // MARK: - Utility
     mutating func reset() {
-        markerCoordinate = nil
-        distanceToMark = nil
-        estTimeOfArrival = nil
-        markBearing = nil
-        relativeMarkBearing = 0
-        relativeMarkBearingArray = []
-        trueMarkBearing = 0
+
         polarSpeed = nil
         polarVMG = nil
-        waypointVMC = nil
-        distanceToNextTack = nil
-        etaToNextTack = nil
-        distanceToTheLongTack = nil
+        vmgOverGround = nil
+        vmgOverGroundPerformance = nil
+        vmgThroughWaterPerformance = nil
+        vmgThroughWater = nil
+        speedPerformanceThroughWater = nil
+        speedPerformanceOverGround = nil
+        optimalDnTWA = nil
+        optimalUpTWA = nil
+        maxDnVMG = nil
+        maxUpVMG = nil
+        sailingState = nil
+        sailingStateLimit = nil
+        starboardLayline = nil
+        portsideLayline = nil
     }
 }

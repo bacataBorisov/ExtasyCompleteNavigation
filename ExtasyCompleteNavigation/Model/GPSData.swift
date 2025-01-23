@@ -8,6 +8,8 @@
 import CoreLocation
 
 struct GPSData {
+    
+    var isGPSDataValid: Bool = false
     var latitude: Double?
     var longitude: Double?
     
@@ -23,15 +25,22 @@ struct GPSData {
     var speedOverGroundKmh: Double? // SOG in km/h
     var utcTime: String?
     var gpsDate: String?
+    var markerName: String?
+    var markerCoordinate: CLLocationCoordinate2D? // Waypoint coordinates
+    var isTargetSelected: Bool = false
 
     mutating func reset() {
+        
+        isGPSDataValid = false
         latitude = nil
         longitude = nil
-
+        markerCoordinate = nil
+        markerName = nil
         courseOverGround = nil
         speedOverGround = nil
         speedOverGroundKmh = nil
         utcTime = nil
         gpsDate = nil
+        isTargetSelected = false
     }
 }

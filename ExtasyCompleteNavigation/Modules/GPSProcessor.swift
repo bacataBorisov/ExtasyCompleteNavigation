@@ -1,68 +1,128 @@
-//
-//  GPSProcessor.swift
-//  ExtasyCompleteNavigation
-//
-//  Created by Vasil Borisov on 21.11.24.
-//
-//  For the moment I rely on one source of GPS - it is external one, since the one integrated with B&N 'II'
-//  does not work.
-//  In case we fix it I need to fix the code and decide how to proceed - choose one at a time or average for both
-//  for better accuracy
-//  To be decided later on
-//
+import CoreLocation
 
 class GPSProcessor {
-    private(set) var gpsData = GPSData()
+    // Serial queue for thread safety
+    private let serialQueue = DispatchQueue(label: "com.extasy.waypointProcessor")
+    
+    var gpsData = GPSData() // Internal GPSData instance
 
-    func processGLL(_ splitStr: [String]) {
+    // Kalman filters for noisy parameters
+    private var kalmanFilterLatitude = KalmanFilter(initialValue: 0.0, processNoise: 1e-4, measurementNoise: 1e-2)
+    private var kalmanFilterLongitude = KalmanFilter(initialValue: 0.0, processNoise: 1e-4, measurementNoise: 1e-2)
+    private var kalmanFilterSOG = KalmanFilter(initialValue: 0.0)
+    private var kalmanFilterCOG = KalmanFilter(initialValue: 0.0)
+    
+    // MARK: - Public Methods
+    func updateMarker(to coordinate: CLLocationCoordinate2D, _ name: String) {
+        serialQueue.async { [self] in
+            gpsData.markerName = name
+            gpsData.markerCoordinate = coordinate
+            gpsData.isTargetSelected = true
+            
+            debugLog("Marker updated to \(name), coordinates: \(coordinate.latitude), \(coordinate.longitude), [\(gpsData.isTargetSelected)]")
+        }
+    }
+    
+    func disableMarker() {
+        serialQueue.async { [self] in
+            gpsData.isTargetSelected = false
+            gpsData.markerName = nil
+            gpsData.markerCoordinate = nil
+        }
+    }
+    
+    func processGLL(_ splitStr: [String]) -> GPSData {
         guard splitStr.count >= 6 else {
             print("Invalid GLL Sentence!")
-            return
+            gpsData.isGPSDataValid = false
+            return gpsData
         }
-        gpsData.latitude = toCLLDegreesLat(value: splitStr[2], direction: splitStr[3])
-        gpsData.longitude = toCLLDegreesLon(value: splitStr[4], direction: splitStr[5])
+
+        gpsData.isGPSDataValid = true
+        // Apply Kalman filter to latitude and longitude
+        let rawLatitude = toCLLDegreesLat(value: splitStr[2], direction: splitStr[3])
+        let rawLongitude = toCLLDegreesLon(value: splitStr[4], direction: splitStr[5])
+        
+//        if let rawLat = rawLatitude {
+//            gpsData.latitude = kalmanFilterLatitude.update(measurement: rawLat)
+//        }
+//        if let rawLon = rawLongitude {
+//            gpsData.longitude = kalmanFilterLongitude.update(measurement: rawLon)
+//        }
+        gpsData.latitude = rawLatitude
+        gpsData.longitude = rawLongitude
+        
+        return gpsData
     }
 
-    func processRMC(_ splitStr: [String]) {
+    func processRMC(_ splitStr: [String]) -> GPSData {
         guard splitStr.count >= 11, splitStr[3] == "A" else {
             print("Invalid RMC Sentence!")
-            return
+            gpsData.isGPSDataValid = false
+            return gpsData
         }
+        
+        gpsData.isGPSDataValid = true
         gpsData.utcTime = splitStr[2]
-        gpsData.latitude = toCLLDegreesLat(value: splitStr[4], direction: splitStr[5])
-        gpsData.longitude = toCLLDegreesLon(value: splitStr[6], direction: splitStr[7])
-        gpsData.courseOverGround = Double(splitStr[9])
-        gpsData.speedOverGround = Double(splitStr[8])
-        gpsData.gpsDate = splitStr[10]
-        if let sog = gpsData.speedOverGround {
-            gpsData.speedOverGroundKmh = sog * 1.852 // Convert knots to km/h
+        
+        // Apply Kalman filter to latitude and longitude
+        let rawLatitude = toCLLDegreesLat(value: splitStr[4], direction: splitStr[5])
+        let rawLongitude = toCLLDegreesLon(value: splitStr[6], direction: splitStr[7])
+        
+//        if let rawLat = rawLatitude {
+//            gpsData.latitude = kalmanFilterLatitude.update(measurement: rawLat)
+//        }
+//        if let rawLon = rawLongitude {
+//            gpsData.longitude = kalmanFilterLongitude.update(measurement: rawLon)
+//        }
+
+        gpsData.latitude = rawLatitude
+        gpsData.longitude = rawLongitude
+        
+        // Apply Kalman filter to COG and SOG
+        if let rawCOG = Double(splitStr[9]) {
+            gpsData.courseOverGround = kalmanFilterCOG.update(measurement: rawCOG)
         }
+        if let rawSOG = Double(splitStr[8]) {
+            gpsData.speedOverGround = kalmanFilterSOG.update(measurement: rawSOG)
+            gpsData.speedOverGroundKmh = gpsData.speedOverGround! * 1.852 // Convert knots to km/h
+        }
+        
+        gpsData.gpsDate = splitStr[10]
+        return gpsData
     }
 
-    func processGGA(_ splitStr: [String]) {
+    func processGGA(_ splitStr: [String]) -> GPSData {
         guard splitStr.count >= 7 else {
             print("Invalid GGA Sentence!")
-            return
+            gpsData.isGPSDataValid = false
+
+            return gpsData
         }
-        gpsData.latitude = toCLLDegreesLat(value: splitStr[2], direction: splitStr[3])
-        gpsData.longitude = toCLLDegreesLon(value: splitStr[4], direction: splitStr[5])
-        // Other GGA-specific processing can be added here
+        gpsData.isGPSDataValid = true
+
+        // Apply Kalman filter to latitude and longitude
+        let rawLatitude = toCLLDegreesLat(value: splitStr[2], direction: splitStr[3])
+        let rawLongitude = toCLLDegreesLon(value: splitStr[4], direction: splitStr[5])
+        
+        if let rawLat = rawLatitude {
+            gpsData.latitude = kalmanFilterLatitude.update(measurement: rawLat)
+        }
+        if let rawLon = rawLongitude {
+            gpsData.longitude = kalmanFilterLongitude.update(measurement: rawLon)
+        }
+        
+        return gpsData
     }
 
-    func resetGPSData() {
+    @discardableResult
+    func resetGPSData() -> GPSData {
         gpsData.reset()
+        print("GPS data has been reset.")
+        return gpsData
     }
-    
-    //MARK: - Coordinates Conversion
-    
-    /*Better and more generalized function to convert coordinates into decimal*/
-    //MARK: - Generalized Coordinates Conversion
-    /// Converts NMEA coordinate format `(d)ddmm.mmmm` into decimal degrees.
-    ///
-    /// - Parameters:
-    ///   - value: The coordinate value as a string.
-    ///   - direction: The direction as a string (`N`, `S`, `E`, `W`).
-    /// - Returns: The converted decimal degrees or `nil` if input is invalid.
+
+    // MARK: - Coordinates Conversion
     func toDecimalDegrees(value: String, direction: String) -> Double? {
         guard value.count >= 4 else { return nil } // Ensure the value has at least 4 characters for `ddmm.mmmm`.
         
@@ -83,44 +143,4 @@ class GPSProcessor {
     func toCLLDegreesLon(value: String, direction: String) -> Double? {
         return toDecimalDegrees(value: value, direction: direction)
     }
-    
-    
-    //The format for NMEA coordinates is (d)ddmm.mmmm
-    //d=degrees and m=minutes
-    //There are 60 minutes in a degree so divide the minutes by 60 and add that to the degrees.
-//    func toCLLDegreesLat(value: String, direction: String) -> Double? {
-//        
-//        //print("PRINTING FROM COORDINATES LAT FUNCTION")
-//        //print("string: \(value), direction: \(direction)")
-//        
-//        if let deg = (Double(value.dropLast(7))), var min = (Double(value.dropFirst(2))) {
-//            min /= 60
-//            //print("minutes: \(min)")
-//            let latitude = deg + min
-//            
-//            //print("final latitute: \(latitude)")
-//            return (direction == "N" ? latitude : -latitude)
-//        }
-//        return nil
-//    }
-//    
-//    func toCLLDegreesLon(value: String, direction: String) -> Double? {
-//        
-//        //print("PRINTING FROM COORDINATES LON FUNCTION")
-//        //print("string: \(value), direction: \(direction)")
-//        
-//        if let deg = (Double(value.dropLast(7))), var min = (Double(value.dropFirst(3))) {
-//            
-//            min /= 60
-//            let longtitude = deg + min
-//            //print("final latitute: \(longtitude)")
-//            
-//            return (direction == "E" ? longtitude : -longtitude)
-//        }
-//        
-//        return nil
-//    }
-    
-
 }
-

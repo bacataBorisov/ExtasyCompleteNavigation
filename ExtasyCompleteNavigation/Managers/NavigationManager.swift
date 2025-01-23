@@ -21,8 +21,15 @@ class NavigationManager {
     init() {
         // Connect UDPHandler to NMEAParser
         udpHandler.onDataReceived = { rawData in
+            
+            // MARK: - Commented variables are for measuring processing time - avg for now is ~0.2 ms
+            //let startTime = CFAbsoluteTimeGetCurrent()
+            
             self.nmeaParser.processRawString(rawData: rawData)
+            
+            //let elapsedTime = (CFAbsoluteTimeGetCurrent() - startTime) * 1000 // Convert to milliseconds
+            //debugLog("Processing Time: \(elapsedTime) ms")
         }
-        udpHandler.start()
+        udpHandler.startListening()
     }
 }

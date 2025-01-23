@@ -24,6 +24,15 @@ struct RawNavigationDataView: View {
                 dataGroup(header: "AWS", value: navigationReadings.windData?.apparentWindForce, unit: " kn")
                 dataGroup(header: "TWA", value: navigationReadings.windData?.trueWindAngle, unit: "°")
                 dataGroup(header: "TWS", value: navigationReadings.windData?.trueWindForce, unit: " kn")
+                dataGroup(header: "Polar Speed (pSPD)", value: navigationReadings.vmgData?.polarSpeed, unit: " kn")
+                dataGroup(header: "Polar VMG", value: navigationReadings.vmgData?.polarVMG, unit: "")
+                dataGroup(header: "Opt Angle UpWind", value: navigationReadings.vmgData?.optimalUpTWA, unit: "°")
+                dataGroup(header: "Opt Angle DownWind", value: navigationReadings.vmgData?.optimalDnTWA, unit: "°")
+                dataGroup(header: "Max VMG UpWind", value: navigationReadings.vmgData?.maxUpVMG, unit: " kn")
+                dataGroup(header: "Max VMG DownWind", value: navigationReadings.vmgData?.maxDnVMG, unit: " kn")
+
+
+
             }
             .font(.subheadline)
             
@@ -34,16 +43,10 @@ struct RawNavigationDataView: View {
                 dataGroup(header: "Longitude", value: navigationReadings.gpsData?.longitude, unit: "")
                 dataGroup(header: "Course Over Ground", value: navigationReadings.gpsData?.courseOverGround, unit: "°")
                 dataGroup(header: "Speed Over Ground", value: navigationReadings.gpsData?.speedOverGround, unit: " kn")
-                dataGroup(header: "Polar Speed (pSPD)", value: navigationReadings.vmgData.polarSpeed, unit: " kn")
-                dataGroup(header: "Polar VMG", value: navigationReadings.vmgData.polarVMG, unit: "")
-                dataGroup(header: "Current VMC", value: navigationReadings.vmgData.waypointVMC, unit: "")
-                dataGroup(header: "Distance to Waypoint", value: navigationReadings.vmgData.distanceToMark, unit: "")
-                dataGroup(header: "Distance to Next Tack", value: navigationReadings.vmgData.distanceToNextTack, unit: "")
-                dataGroup(header: "ETA", value: navigationReadings.vmgData.estTimeOfArrival, unit: "")
-                dataGroup(header: "ETA", value: navigationReadings.vmgData.etaToNextTack, unit: "")
-
-
-
+                dataGroup(header: "Current VMC", value: navigationReadings.waypointData?.currentTackVMC, unit: "")
+                dataGroup(header: "Distance to Waypoint", value: navigationReadings.waypointData?.distanceToMark, unit: "")
+                dataGroup(header: "ETA to Waypoint", value: navigationReadings.waypointData?.etaToWaypoint, unit: "")
+                dataGroup(header: "ETA to Next Tack", value: navigationReadings.waypointData?.etaToNextTack, unit: "")
 
             }
             .font(.subheadline)
