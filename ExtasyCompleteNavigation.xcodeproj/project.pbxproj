@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		0608FE3A2D29C8DA0079A03D /* iPhoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0608FE392D29C8D70079A03D /* iPhoneView.swift */; };
-		0621D1192CFD0D6C009C062F /* ExtasyCompleteNavigation-SA-Diagram.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 0621D1182CFD0D6C009C062F /* ExtasyCompleteNavigation-SA-Diagram.pdf */; };
 		063650382B671592002AF39C /* SmallCornerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 063650372B671592002AF39C /* SmallCornerView.swift */; };
 		0641C3F32A9AF061008799BC /* DisplayCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0641C3F22A9AF061008799BC /* DisplayCell.swift */; };
 		0647304F2D275C7E009BCF9A /* CalibrateSpeedLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0647304E2D275C78009BCF9A /* CalibrateSpeedLog.swift */; };
@@ -24,6 +23,7 @@
 		066311B62A38DB6C00AAE263 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 066311B52A38DB6C00AAE263 /* Preview Assets.xcassets */; };
 		066CCD892B59D4DB00381E2E /* WaypointDetailedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 066CCD882B59D4DB00381E2E /* WaypointDetailedView.swift */; };
 		066FD0EF2D41784200FE7AF1 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 066FD0EE2D41783D00FE7AF1 /* AudioManager.swift */; };
+		066FD0F12D42EE8E00FE7AF1 /* ExtasyNavigation-SoftwareArchitectureMap.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 066FD0F02D42EE8E00FE7AF1 /* ExtasyNavigation-SoftwareArchitectureMap.pdf */; };
 		067388CB2D3C5F01002C9C54 /* iPhoneVMGView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067388CA2D3C5F01002C9C54 /* iPhoneVMGView.swift */; };
 		067388CD2D3C7893002C9C54 /* iPhoneMultiDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067388CC2D3C7893002C9C54 /* iPhoneMultiDisplay.swift */; };
 		067388CF2D3C7CDF002C9C54 /* iPhoneDisplayCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067388CE2D3C7CDF002C9C54 /* iPhoneDisplayCell.swift */; };
@@ -97,7 +97,6 @@
 
 /* Begin PBXFileReference section */
 		0608FE392D29C8D70079A03D /* iPhoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPhoneView.swift; sourceTree = "<group>"; };
-		0621D1182CFD0D6C009C062F /* ExtasyCompleteNavigation-SA-Diagram.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "ExtasyCompleteNavigation-SA-Diagram.pdf"; sourceTree = "<group>"; };
 		063650372B671592002AF39C /* SmallCornerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmallCornerView.swift; sourceTree = "<group>"; };
 		0641C3F22A9AF061008799BC /* DisplayCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayCell.swift; sourceTree = "<group>"; };
 		0647304E2D275C78009BCF9A /* CalibrateSpeedLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrateSpeedLog.swift; sourceTree = "<group>"; };
@@ -114,6 +113,7 @@
 		066311B52A38DB6C00AAE263 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		066CCD882B59D4DB00381E2E /* WaypointDetailedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointDetailedView.swift; sourceTree = "<group>"; };
 		066FD0EE2D41783D00FE7AF1 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
+		066FD0F02D42EE8E00FE7AF1 /* ExtasyNavigation-SoftwareArchitectureMap.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "ExtasyNavigation-SoftwareArchitectureMap.pdf"; sourceTree = "<group>"; };
 		067388CA2D3C5F01002C9C54 /* iPhoneVMGView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPhoneVMGView.swift; sourceTree = "<group>"; };
 		067388CC2D3C7893002C9C54 /* iPhoneMultiDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPhoneMultiDisplay.swift; sourceTree = "<group>"; };
 		067388CE2D3C7CDF002C9C54 /* iPhoneDisplayCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPhoneDisplayCell.swift; sourceTree = "<group>"; };
@@ -203,7 +203,7 @@
 		0621D1172CFD0D57009C062F /* Docs */ = {
 			isa = PBXGroup;
 			children = (
-				0621D1182CFD0D6C009C062F /* ExtasyCompleteNavigation-SA-Diagram.pdf */,
+				066FD0F02D42EE8E00FE7AF1 /* ExtasyNavigation-SoftwareArchitectureMap.pdf */,
 			);
 			path = Docs;
 			sourceTree = "<group>";
@@ -577,8 +577,8 @@
 				06ABCE2E2AA162600067DCAA /* NMEASentencesExtasy in Resources */,
 				066311B62A38DB6C00AAE263 /* Preview Assets.xcassets in Resources */,
 				06529FA42D40734000CE6B66 /* share_your_passion.m4a in Resources */,
+				066FD0F12D42EE8E00FE7AF1 /* ExtasyNavigation-SoftwareArchitectureMap.pdf in Resources */,
 				06A840FB2D1C97AE002FA7E4 /* optimal_tack.txt in Resources */,
-				0621D1192CFD0D6C009C062F /* ExtasyCompleteNavigation-SA-Diagram.pdf in Resources */,
 				06FC30D32CBC13BE00E5DBF9 /* diagram.txt in Resources */,
 				066311B32A38DB6C00AAE263 /* Assets.xcassets in Resources */,
 			);
