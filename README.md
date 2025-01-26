@@ -98,6 +98,10 @@ Ensure you are on the same network as the device sending data on port 4950. The 
 <img src="./assets/iPhone_group_view_light.png" alt="iPhone Screenshots Light" width="1200">
 <img src="./assets/iPhone_group_view_dark.png" alt="iPhone Screenshots Dark" width="1200">
 
+## **iPad Screenshots - Light & Dark Mode**  
+<img src="./assets/iPad_group_view_light.png" alt="iPad Screenshots Light" width="1200">
+<img src="./assets/iPad_group_view_dark.png" alt="iPad Screenshots Dark" width="1200">
+
 ### **Highlighted Features**
 
 - **📡 Real-Time Data Visualization**  
