@@ -17,9 +17,6 @@ struct InfoWaypointSection: View {
             //let totalWidth = geometry.size.width
             let sectionPadding: CGFloat = 8
             
-            //                let titleFont = Font.system(size: totalWidth * 0.05, weight: .bold)
-            //                let dataFont = Font.system(size: totalWidth * 0.04, weight: .regular)
-            
             VStack(spacing: sectionPadding){
                 
                 WaypointCard(title: "", subtitle: "", destination: WaypointListView())
@@ -27,6 +24,7 @@ struct InfoWaypointSection: View {
                 InformationCard()
             }
             .padding(.bottom, sectionPadding)
+            .padding(.trailing, sectionPadding)
             
         }
     }

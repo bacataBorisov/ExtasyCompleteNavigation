@@ -126,7 +126,9 @@ struct VMGSimpleView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 3)
                     .padding(.bottom, sectionPadding)
+                    .padding(.trailing, sectionPadding)
                 )
+                
                 .onChange(of: navigationReadings.waypointData?.currentTackRelativeBearing) { _, _ in
                     handleTackLogic()
                 }

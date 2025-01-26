@@ -216,8 +216,6 @@ struct MapView: View {
 
     private func initializeMapView() {
         
-
-        
         // Ensure we have valid GPS data before initializing the map
         guard let gpsData = navigationReadings.gpsData, gpsData.isGPSDataValid else {
             if retryCount < maxRetryAttempts {
