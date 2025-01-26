@@ -53,6 +53,11 @@ struct PerformanceDoubleBarView: View {
                                 )
                                 .animation(.easeInOut(duration: 0.8), value: topBarPerformance)
                         }
+
+                        Text(barLabel)
+                            .font(.headline)
+                            .foregroundColor(Color("display_font"))
+                            .frame(maxWidth: .infinity, alignment: .center) // Center align the bar label
                         
                         // Label
                         HStack {
@@ -61,12 +66,6 @@ struct PerformanceDoubleBarView: View {
                                 .foregroundColor(.black)
                                 .padding(.leading, 8)
                             
-                            Spacer() // Push the `barLabel` to the center
-
-                            Text(barLabel)
-                                .font(.headline)
-                                .foregroundColor(Color("display_font"))
-                                .frame(maxWidth: .infinity, alignment: .center) // Center align the bar label
 
                             Spacer() // Push the max label to the right
 

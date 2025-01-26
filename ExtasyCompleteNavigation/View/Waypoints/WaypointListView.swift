@@ -14,7 +14,7 @@ struct WaypointListView: View {
     private var sortedWaypoints: [Waypoints] {
         waypoints.sorted { $0.title.lowercased() < $1.title.lowercased() }
     }
-    
+
     var body: some View {
         VStack(spacing: 4) {
             if DeviceType.isIPhone {
@@ -65,9 +65,9 @@ struct WaypointListView: View {
             debugLog("Waypoints updated, refreshing view.")
         }
     }
-    
+
     private func refreshView() {
-        displayedWaypoints = Array(waypoints.prefix(batchSize))
+        displayedWaypoints = Array(sortedWaypoints.prefix(batchSize))
         currentBatchIndex = displayedWaypoints.count
     }
 
@@ -99,15 +99,10 @@ struct WaypointListView: View {
     private func waypointListView() -> some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 0) {
-                ForEach(displayedWaypoints.indices, id: \.self) { index in
-                    let waypoint = sortedWaypoints[index]
-
+                ForEach(sortedWaypoints, id: \.self) { waypoint in
                     waypointRow(waypoint)
                         .padding(.horizontal)
                         .contentShape(Rectangle()) // Ensure tappable area
-                        .onAppear {
-                            loadMoreWaypointsIfNeeded(currentIndex: index)
-                        }
                         .contextMenu {
                             waypointContextMenu(waypoint)
                         }
@@ -134,8 +129,7 @@ struct WaypointListView: View {
 
     // MARK: - Pagination Logic
     private func loadInitialWaypoints() {
-        let sorted = waypoints.sorted { $0.title.lowercased() < $1.title.lowercased() }
-        displayedWaypoints = Array(sorted.prefix(batchSize))
+        displayedWaypoints = Array(sortedWaypoints.prefix(batchSize))
         currentBatchIndex = displayedWaypoints.count
     }
 
@@ -143,13 +137,13 @@ struct WaypointListView: View {
         guard currentIndex == displayedWaypoints.count - 1 else { return }
 
         // Ensure we do not go out of bounds
-        guard currentBatchIndex < waypoints.count else { return }
+        guard currentBatchIndex < sortedWaypoints.count else { return }
 
-        let nextBatchEnd = min(currentBatchIndex + batchSize, waypoints.count)
+        let nextBatchEnd = min(currentBatchIndex + batchSize, sortedWaypoints.count)
 
         // Safely create the next batch range
         if currentBatchIndex < nextBatchEnd {
-            let nextBatch = waypoints[currentBatchIndex..<nextBatchEnd]
+            let nextBatch = sortedWaypoints[currentBatchIndex..<nextBatchEnd]
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 displayedWaypoints.append(contentsOf: nextBatch)

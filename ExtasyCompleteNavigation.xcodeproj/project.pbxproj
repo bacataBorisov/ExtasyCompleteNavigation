@@ -176,6 +176,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		066FD0F22D42F40000FE7AF1 /* NMEATestScripts */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = NMEATestScripts; sourceTree = "<group>"; };
 		069EEA772CECCA6B00357A05 /* ExtasyCompleteNavigationTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ExtasyCompleteNavigationTests; sourceTree = "<group>"; };
 		06C0D8CA2CE6ABE6001B258A /* Utilities */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Utilities; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -268,6 +269,7 @@
 				06C0D8C72CCD9CF0001B258A /* Model */,
 				06C0D8C82CCD9CFD001B258A /* View */,
 				06C0D8CA2CE6ABE6001B258A /* Utilities */,
+				066FD0F22D42F40000FE7AF1 /* NMEATestScripts */,
 				0621D1172CFD0D57009C062F /* Docs */,
 				06F483BB2A8F256500B701EC /* Resources */,
 				066311B42A38DB6C00AAE263 /* PreviewContent */,
@@ -517,6 +519,7 @@
 				069EEA7B2CECCA6B00357A05 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
+				066FD0F22D42F40000FE7AF1 /* NMEATestScripts */,
 				069EEA772CECCA6B00357A05 /* ExtasyCompleteNavigationTests */,
 			);
 			name = ExtasyCompleteNavigationTests;

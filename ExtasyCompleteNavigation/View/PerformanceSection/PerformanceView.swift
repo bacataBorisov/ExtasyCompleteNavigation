@@ -62,7 +62,7 @@ struct PerformanceView: View {
                                 topBarValue: navigationReadings.waypointData?.currentTackVMCDisplay ?? 0,
                                 bottomBarValue: navigationReadings.waypointData?.oppositeTackVMCDisplay ?? 0,
                                 maxPolarValue: navigationReadings.waypointData?.maxTackPolarVMC ?? 0,
-                                barLabel: "VMC Performance",
+                                barLabel: "VMC",
                                 topBarLabel: "Current Tack",
                                 bottomBarLabel: "Opposite Tack",
                                 topBarPerformance: navigationReadings.waypointData?.currentTackVMCPerformance ?? 0,
