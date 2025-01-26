@@ -1,6 +1,6 @@
 # Extasy Complete Navigation
 
-[📱 Check out the iPhone demo video](https://github.com/bacataBorisov/ExtasyCompleteNavigation/blob/main/assets/iPhone-Demo-4k.mov)
+[📱 Check out the iPhone demo video](https://youtube.com/shorts/T2OzuNGgfEw)
 
 ## Project description
 
