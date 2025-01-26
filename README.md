@@ -1,5 +1,7 @@
 # Extasy Complete Navigation
 
+[📱 Check out the iPhone demo video](https://youtube.com/shorts/8IrxOd2wyQo?feature=share)
+
 ## Project description
 
 This app was designed for a particular sailing boat but can be further developed to fit the needs of any other boat or vessel that works with the NMEA standard. It uses a Raspberry Pi connected to the B&G serial bus, receiving NMEA signals from various sensors (speed, wind, magnetic compass, depth, GPS). NMEA strings are sent over Wi-Fi via socket communication on port 4950, and the data is displayed in a user-friendly way on iOS devices (iPhone, iPad). 
@@ -8,9 +10,50 @@ This app was designed for a particular sailing boat but can be further developed
 
 Key Features:
 
-- Displays real-time data from boat sensors.
-- Includes a polar diagram of the boat (S/Y Extasy - Beneteau First 40.7) for performance optimization.
-- Useful during races for quick data access without manual calculations.
+## **Key Features of Extasy Complete Navigation**
+
+- **📡 Real-time Data Display**  
+  - Receives live sensor data via Wi-Fi from the boat's NMEA system.  
+  - Displays key navigation metrics such as speed, heading, depth, and wind.
+
+- **⛵ Polar Diagram Integration**  
+  - Optimizes sailing performance using the boat's predefined polar speeds.  
+  - Helps achieve the best sailing efficiency based on wind and speed conditions.
+
+- **📊 Multi Display View**  
+  - Fully customizable display to track important sailing metrics.  
+  - Persistent session settings allow users to save their preferred layout.  
+  - Tap-to-swap feature enables quick reconfiguration of displayed values.
+
+- **🗺️ Waypoint Management**  
+  - Add, edit, and navigate to waypoints with an intuitive interface.  
+  - Display waypoint position on the map with directional indicators.
+
+- **🚨 Alarms & Alerts**  
+  - Depth alarm triggers when water depth falls below a critical threshold.  
+  - Future updates will allow customization of alarms for other parameters.
+
+- **⚙️ Customizable Settings**  
+  - Configure units (e.g., knots, meters, nautical miles) for different parameters.  
+  - Option to view raw NMEA sensor data for troubleshooting and insights.  
+  - Planned improvements include adjustable alarm thresholds and user preferences.
+
+- **🔀 Multiple Display Modes**  
+  - Switch between different views, including multi-display and ultimate display.  
+  - A hidden display view reveals additional navigation information.
+
+- **📍 Boat and Waypoint Tracking**  
+  - Displays real-time boat position and heading relative to waypoints.  
+  - Provides an estimated time of arrival (ETA) and velocity made good (VMG).  
+  - Shows waypoint bearing (BTM) with an intuitive indicator.
+
+- **💾 Persistent Data Storage**  
+  - Saves user preferences and configurations across sessions.  
+  - Ensures consistent UI layout even after restarting the app.
+
+- **🌊 NMEA 0183 Protocol Compatibility**  
+  - Works seamlessly with industry-standard NMEA 0183 data streams.  
+  - Compatible with a variety of sensors, including GPS, wind, and depth instruments.
 
 The app is developed in accordance with the [NMEA 0183 protocol v. 3.01.](https://www.plaisance-pratique.com/IMG/pdf/NMEA0183-2.pdf)
 
@@ -42,80 +85,52 @@ Ensure you are on the same network as the device sending data on port 4950. The 
 - TWS - True Wind Speed (or True Wind Force)
 - COG - Course Over Ground (comes from the GPS)
 - SOG - Speed Over Ground (comes from the GPS)
-- pSPD - Polar Speed (max speed of the boat according to the polar diagram under certain conditions)
 - VMC - Velocity Made Good on course
 - VMG - Velocity Made Good
 - BTM - Bearing to Mark (or Bearing to Waypoint)
 - DTM - Distance to Mark (or Distance to Waypoint)
 - ETA - Estimated Time of Arrival
-- TckETA - Estimated Time of Arrival to the next tack
-- tD - Distance to Next Tack
-- WPPOS - Position of the Waypoint
-- BPOS - Position of the Boat
 
 ### Note: These values are used on S/Y Extasy but can be modified in the code as needed.
 
-### *Multi Display*
+## iPhone Screenshots
 
-<img width="400" alt="multi_display" src="https://github.com/user-attachments/assets/502eb7c4-01e1-47f8-abaa-e3b506c9b008">
+### **Multi Display View**
+<img src="./assets/iPhoneScreenshots/map_multidisplay_view.jpeg" alt="Multi Display View" width="400">
 
-The Multi Display shows various values and is persistent across sessions. Tap on different sectors to select desired values. If a value is already displayed, it will swap places with the new selection. An alarm is set for depth if it goes below 5 meters, which will be adjustable in future updates.
+The Multi Display View provides a customizable dashboard displaying key sailing metrics such as Boat Speed (BSPD), Apparent Wind Speed (AWS), Course Over Ground (COG), and Sea Water Temperature (SWT). Users can tap on values to configure their preferred layout.
 
-<img width="400" alt="multi_display_menu" src="https://github.com/user-attachments/assets/4c66f0ad-67c0-4c50-8f7f-50091a379805">
+---
 
-Alarm is set for the depth if it goes below 5 mtrs - the segment will be colored in red. It is fixed in the code but added in the settings menu in the future. Other alarms can be further developed to fit the needs of the person using it.
+### **Ultimate Display View**
+<img src="./assets/iPhoneScreenshots/map_ultimate_view.jpeg" alt="Ultimate Display View" width="400">
 
-### *Ultimate Display*
+The Ultimate Display View offers an intuitive compass-style interface, showing boat speed, apparent wind data, and the boat's heading. This view is designed for quick visual reference while sailing.
 
-<img width="400" alt="ultimate_display" src="https://github.com/user-attachments/assets/8b670670-c7b5-48b6-9b19-df2ac22ccdb8">
+---
 
-The Ultimate Display shows heading and wind angles. It includes settings, map, and waypoints menus accessible via buttons in the center. Corners are tappable and will chage different value via pop-up menu. Configuration of the view is persistent across sessions. 
+### **Performance View**
+<img src="./assets/iPhoneScreenshots/map_performance_view.jpeg" alt="Performance View" width="400">
 
-<img width="400" alt="corners_menu" src="https://github.com/user-attachments/assets/5a2d73f1-08e4-4115-8511-bcc3b56354a1">
+The Performance View displays important sailing data, including Speed Over Ground (SOG), Velocity Made Good (VMG), and performance comparison between current and opposite tack speeds. Gradient colors visually indicate performance levels.
 
-*Settings Menu*
+---
 
-<img width="400" alt="settings_menu" src="https://github.com/user-attachments/assets/f191794e-de58-4082-bb8f-70f266655026">
+### **Waypoint VMG View**
+<img src="./assets/iPhoneScreenshots/map_waypoint_vmg_view.jpeg" alt="Waypoint VMG View" width="400">
 
-**Settings:** Configure wind speed units, read raw sensor data. Glossary and set alarms are under development.
+The Waypoint VMG View provides detailed waypoint tracking, including estimated arrival time (ETA), distance to mark, and calculated time to tack. This view helps sailors optimize their route and manage tacking strategy effectively.
 
-*Map*
+---
 
-<img width="400" alt="map" src="https://github.com/user-attachments/assets/2212e0c1-3507-4281-9041-2d8dbfcbae29">
+### **Waypoint List View**
+<img src="./assets/iPhoneScreenshots/map_waypoint_view.jpeg" alt="Waypoint List View" width="400">
 
-**Map:** Display boat and waypoint positions. It is not a professional nautical chart and it serves for information purposes only. It is not recommended for navigation.
-
-*Waypoints*
-
-<img width="400" alt="waypoints" src="https://github.com/user-attachments/assets/4dffbc0e-56ca-46cb-8361-42bec16044d2">
-
-**Waypoints:** Add and manage waypoints with options to enter coordinates manually or capture boat's current coordinates.
-
-<img width="400" alt="new_waypoint" src="https://github.com/user-attachments/assets/9153742a-8bcc-42b7-b1e7-baf3e05bfc34">
-
-Once the waypoint has been selected as a target, a small green arrow will be shown on the Ultimate Display indicating the bearing to that mark (BTM). The map will be updated with the position of the mark as an yellow pyramid with its name. 
-
-<img width="400" alt="mark_ultimate_displai" src="https://github.com/user-attachments/assets/504b4c57-369f-4dfb-969f-db72724fa394">
-
-*BTM indicated by the small green arrow*
-
-<img width="400" alt="map_mark" src="https://github.com/user-attachments/assets/6700bb7d-1f42-4b5e-aae9-39eca1f81669">
-
-*Mark shown on the map*
-
-In addition to those two, a hidden display view appears which can be accessed by sliding the multidisplay to the left. That reveals more information about the waypoint and the boat.
-
-<img width="400" alt="vmc_view" src="https://github.com/user-attachments/assets/6b86a23d-d796-49bb-a346-b060e5f2f4ae">
-
-The VMC sector will be colored green or red depending on the VMC value - green is better, red is worse. Tapping on some of the segments changes the units - DTW & tD can be seen in meters, boat lengths, nautical miles and cables.
-
-Tapping on the WPPOS will toggle between waypoint (mark) and boat position.
-
-Once the waypoint has been de-selected as target the view will disappear as well as the small green arrow and the position on the map, returning to the original view.
+The Waypoint List View allows users to add, manage, and navigate to saved waypoints. The list displays waypoint names and positions, with an option to add new waypoints manually or by capturing the boat's current location.
 
 ## **Documentation**
 
-This is a navigation application project, featuring modular MVVM architecture. For a detailed look at the project's structure, refer to the [Software Architecture Diagram](https://github.com/bacataBorisov/ExtasyCompleteNavigation/blob/main/ExtasyCompleteNavigation/Docs/ExtasyCompleteNavigation-SA-Diagram.pdf).
+This is a navigation application project, featuring modular MVVM architecture. For a detailed look at the project's structure, refer to the [Software Architecture Diagram](https://github.com/bacataBorisov/ExtasyCompleteNavigation/blob/main/ExtasyCompleteNavigation/Docs/ExtasyNavigation-SoftwareArchitectureMap.pdf).
 
 ## **Authors and Acknowledgment**
 
@@ -126,14 +141,52 @@ ExtasyCompleteNavigation was created by **[Vasil Borisov](https://github.com/bac
 
 ## **Changelog**
 
-- **1.0.0:** Initial release
-- **1.1.0:** - 2024-11-30
-### Refactored
+### **2.0.0 - [25-Jan-2025]**
+#### **New Features**
+- **Enhanced Multi-Display View:**  
+  - Improved layout customization with persistent session settings.
+  - Added tap-to-swap functionality for dynamic value reordering.
+
+- **Optimized Performance Section:**  
+  - Refined performance metrics visualization with gradient indicators.
+  - Added support for tracking optimal and opposite tack speeds.
+
+- **Waypoint Management Overhaul:**  
+  - Enhanced waypoint tracking with better ETA and distance calculations.
+  - Introduced a waypoint list for easier navigation and organization.
+
+- **New iPhone and iPad Layouts:**  
+  - Optimized UI for different screen sizes.
+  - Improved readability and responsiveness across devices.
+
+#### **Refactored**
+- Introduced a more structured software architecture to align with best practices.
+- Enhanced organization of files into logical layers (Data, Business, and Presentation).
+- Implemented `SettingsManager` to manage user preferences efficiently.
+
+#### **Bug Fixes**
+- Fixed incorrect wind direction calculations under certain conditions.
+- Resolved issues related to GPS data loss during background operation.
+- Improved stability when switching between different display views.
+
+#### **Performance Improvements**
+- Optimized data processing to reduce CPU and memory usage.
+- Improved app responsiveness during high data input rates.
+- Enhanced data caching for better offline performance.
+
+---
+
+### **1.1.0 - [30-Nov-2024]**
+#### **Refactored**
 - Codebase refactored to improve modularity and maintainability.
 - Introduced a more structured software architecture to align with best practices.
 - Enhanced organization of files into logical layers (Data, Business, and Presentation).
 
 No breaking changes. This update improves code quality for future development.
+
+---
+
+### **1.0.0 - Initial release**
 
 ## **Contact**
 
