@@ -1,6 +1,6 @@
 # Extasy Complete Navigation
 
-[📱 Check out the iPhone demo video](https://youtube.com/shorts/8IrxOd2wyQo?feature=share)
+[📱 Check out the iPhone demo video](https://github.com/bacataBorisov/ExtasyCompleteNavigation/blob/main/assets/iPhone-Demo-4k.mov)
 
 ## Project description
 
@@ -93,41 +93,29 @@ Ensure you are on the same network as the device sending data on port 4950. The 
 
 ### Note: These values are used on S/Y Extasy but can be modified in the code as needed.
 
-## iPhone Screenshots
+## **iPhone Screenshots - Light & Dark Mode**  
 
-### **Multi Display View**
-<img src="./assets/iPhoneScreenshots/map_multidisplay_view.jpeg" alt="Multi Display View" width="400">
+<img src="./assets/iPhone_group_view_light.png" alt="iPhone Screenshots Light" width="1200">
+<img src="./assets/iPhone_group_view_dark.png" alt="iPhone Screenshots Dark" width="1200">
 
-The Multi Display View provides a customizable dashboard displaying key sailing metrics such as Boat Speed (BSPD), Apparent Wind Speed (AWS), Course Over Ground (COG), and Sea Water Temperature (SWT). Users can tap on values to configure their preferred layout.
+### **Highlighted Features**
 
----
+- **📡 Real-Time Data Visualization**  
+  - Display crucial sailing metrics such as Boat Speed (BSPD), Apparent Wind Speed (AWS), Course Over Ground (COG), and Sea Water Temperature (SWT).
 
-### **Ultimate Display View**
-<img src="./assets/iPhoneScreenshots/map_ultimate_view.jpeg" alt="Ultimate Display View" width="400">
+- **📊 Multi Display View**  
+  - A customizable dashboard for tracking essential performance parameters with an easy-to-use tap-to-swap layout.
 
-The Ultimate Display View offers an intuitive compass-style interface, showing boat speed, apparent wind data, and the boat's heading. This view is designed for quick visual reference while sailing.
+- **📍 Waypoint Management**  
+  - Add, view, and navigate waypoints with detailed information, including distance to mark (DTM), estimated time of arrival (ETA), and upwind/downwind indicators.
 
----
+- **⚡ Advanced Performance Tracking**  
+  - Monitor your sailing efficiency with real-time performance comparisons.  
+  - Color-coded progress bars provide instant visual feedback on sailing conditions and performance.
 
-### **Performance View**
-<img src="./assets/iPhoneScreenshots/map_performance_view.jpeg" alt="Performance View" width="400">
-
-The Performance View displays important sailing data, including Speed Over Ground (SOG), Velocity Made Good (VMG), and performance comparison between current and opposite tack speeds. Gradient colors visually indicate performance levels.
-
----
-
-### **Waypoint VMG View**
-<img src="./assets/iPhoneScreenshots/map_waypoint_vmg_view.jpeg" alt="Waypoint VMG View" width="400">
-
-The Waypoint VMG View provides detailed waypoint tracking, including estimated arrival time (ETA), distance to mark, and calculated time to tack. This view helps sailors optimize their route and manage tacking strategy effectively.
-
----
-
-### **Waypoint List View**
-<img src="./assets/iPhoneScreenshots/map_waypoint_view.jpeg" alt="Waypoint List View" width="400">
-
-The Waypoint List View allows users to add, manage, and navigate to saved waypoints. The list displays waypoint names and positions, with an option to add new waypoints manually or by capturing the boat's current location.
-
+- **🌙 Day & Night Modes**  
+  - Ensures readability and usability in varying lighting conditions, with light mode for daytime clarity and dark mode for nighttime sailing.
+ 
 ## **Documentation**
 
 This is a navigation application project, featuring modular MVVM architecture. For a detailed look at the project's structure, refer to the [Software Architecture Diagram](https://github.com/bacataBorisov/ExtasyCompleteNavigation/blob/main/ExtasyCompleteNavigation/Docs/ExtasyNavigation-SoftwareArchitectureMap.pdf).
