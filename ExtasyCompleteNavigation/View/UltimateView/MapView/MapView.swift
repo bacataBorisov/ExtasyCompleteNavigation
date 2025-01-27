@@ -16,22 +16,15 @@ struct MapView: View {
     @State private var animatedPortsideLayline: CLLocationCoordinate2D?
     @State private var timer: Timer?
     @State private var mapCameraPosition: MapCameraPosition = .automatic
-    
-    @State private var retryCount = 0
-    private let maxRetryAttempts = 10
-    
-    @AppStorage("isMapInitialized") private var firstTimeMapInit: Bool = false // Persist zoom level
-    @AppStorage("savedZoomLevel") private var savedZoomLevel: Double = 200000 // Persist zoom level
-    @AppStorage("savedCenterLat") private var savedCenterLat: Double = 0.0
-    @AppStorage("savedCenterLon") private var savedCenterLon: Double = 0.0
-    @AppStorage("isPositionSet") private var isPositionSet: Bool = false
+    @State private var initialPositionSet = false
 
-    
-    @State private var allowZoomUpdate = false
-    
-    @State private var zoomLevel: Double = 200000
-    @State private var lastSavedZoomLevel: Double = 200000
-    
+
+    @AppStorage("savedCenterLat") private var savedCenterLat: Double = .nan
+    @AppStorage("savedCenterLon") private var savedCenterLon: Double = .nan
+    @AppStorage("savedZoomLevel") private var savedZoomLevel: Double = 200000
+
+    @State private var allowSave = false // To prevent premature saving
+
     @State private var starboardIntersection: CLLocationCoordinate2D?
     @State private var portsideIntersection: CLLocationCoordinate2D?
     
@@ -43,7 +36,7 @@ struct MapView: View {
             MapReader { reader in
                 
                 // Main Map with rounded corners
-                Map(position: $mapCameraPosition, scope: mapScope, content: {
+                Map(position: $mapCameraPosition, interactionModes: [.pan, .zoom], scope: mapScope, content: {
                     boatAnnotation() // Boat a=][nnotation with animation
                     waypointAnnotations()
                     if navigationReadings.gpsData?.isTargetSelected == true && navigationReadings.waypointData?.isVMCNegative == false {
@@ -54,38 +47,50 @@ struct MapView: View {
                         laylinePolylines(opacity: navigationReadings.gpsData?.isTargetSelected == true ? 0.4 : 1.0) // Wind mode laylines with adjusted opacity
                     }
                 })
+                .onAppear {
+                    allowSave = false
+                    
+                    // Check if a saved position exists
+                    if !savedCenterLat.isNaN, !savedCenterLon.isNaN {
+                        // Use saved position
+                        let lastPosition = CLLocationCoordinate2D(latitude: savedCenterLat, longitude: savedCenterLon)
+                        mapCameraPosition = .camera(MapCamera(centerCoordinate: lastPosition, distance: savedZoomLevel))
+                    } else if let boatLocation = navigationReadings.gpsData?.boatLocation {
+                        // Use boat's position if no saved position
+                        savedCenterLat = boatLocation.latitude
+                        savedCenterLon = boatLocation.longitude
+                        mapCameraPosition = .camera(MapCamera(centerCoordinate: boatLocation, distance: savedZoomLevel))
+                    }
+
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        allowSave = true
+                    }
+                    setupAnimationTimer()
+                }
+                .onDisappear {
+                    // Save the map position on disappearance if allowed
+                    if allowSave {
+                        if let camera = mapCameraPosition.camera {
+                            savedCenterLat = camera.centerCoordinate.latitude
+                            savedCenterLon = camera.centerCoordinate.longitude
+                            savedZoomLevel = camera.distance
+                        }
+                    }
+                    timer?.invalidate() // Stop the timer when the view disappears
+                }
                 .onMapCameraChange { context in
+                    guard allowSave else { return }
+
                     let newCenter = context.camera.centerCoordinate
                     let newDistance = context.camera.distance
 
-                    // Save the center coordinates and zoom level only if they have changed significantly
-                    let positionChanged = abs(newCenter.latitude - savedCenterLat) > 0.0001 ||
-                                          abs(newCenter.longitude - savedCenterLon) > 0.0001
-                    let zoomChanged = abs(newDistance - savedZoomLevel) > 100
+                    savedCenterLat = newCenter.latitude
+                    savedCenterLon = newCenter.longitude
+                    savedZoomLevel = newDistance
 
-                    if positionChanged || zoomChanged {
-                        savedCenterLat = newCenter.latitude
-                        savedCenterLon = newCenter.longitude
-                        
-                        if !firstTimeMapInit {
-                            zoomLevel = 200000  // Set the default zoom level only on first init
-                            firstTimeMapInit = true
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                                allowZoomUpdate = true
-                            }
-                        } else if allowZoomUpdate {
-                            zoomLevel = max(newDistance, 50000) // Prevent zoom from going too low
-                        }
-                        
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                            if zoomLevel != lastSavedZoomLevel || positionChanged {
-                                lastSavedZoomLevel = zoomLevel
-                                savedZoomLevel = zoomLevel
-                                debugLog("Updated map position: Lat \(savedCenterLat), Lon \(savedCenterLon), Zoom \(savedZoomLevel)")
-                            }
-                        }
-                    }
+                    debugLog("Updated map position: Lat \(savedCenterLat), Lon \(savedCenterLon), Zoom \(savedZoomLevel)")
                 }
+
                 // User taps and waypoint is being created
                 .onTapGesture() { screenCoord in
                     if let pinLocation = reader.convert(screenCoord, from: .local) {
@@ -99,7 +104,6 @@ struct MapView: View {
                 MapCompass(scope: mapScope).mapControlVisibility(.hidden)
                 
             }
-            // extension is at the bottom of the file
             .if(DeviceType.isIPad) { view in
                 view
                     .clipShape(RoundedRectangle(cornerRadius: 12)) // Round corners
@@ -134,16 +138,6 @@ struct MapView: View {
                     IconButton(systemName: "location.fill", color: Color.blue.opacity(0.8))
                 }
                 
-                //                // Zoom Controls (HStack for + and -)
-                //                HStack(spacing: 5) {
-                //                    Button(action: zoomOut) {
-                //                        IconButton(systemName: "minus.magnifyingglass", color: Color.gray.opacity(0.8))
-                //                    }
-                //                    Button(action: zoomIn) {
-                //                        IconButton(systemName: "plus.magnifyingglass", color: Color.gray.opacity(0.8))
-                //                    }
-                //                }
-                
                 // Wind Mode Button (enabled even if waypoint is selected)
                 Button(action: {
                     settingsManager.isWindModeActive.toggle()
@@ -174,18 +168,6 @@ struct MapView: View {
             .padding(.trailing, 26)
             .padding(.top, 26)
         }
-        .onAppear {
-            restoreZoomLevel()
-            setupAnimationTimer() // Start the timer for periodic updates
-            initializeMapView()
-            
-        }
-        
-        .onDisappear {
-            saveZoomLevel()
-            timer?.invalidate() // Stop the timer when the view disappears
-            
-        }
         .navigationBarHidden(true) // Hide the navigation bar
     }
     
@@ -198,89 +180,14 @@ struct MapView: View {
             
         }
     }
-    
-    // MARK: - Zoom Persistence
-    private func saveZoomLevel() {
-        savedZoomLevel = zoomLevel
-        debugLog("Zoom level saved: \(savedZoomLevel)")
+
+    private func restoreMapState() {
+        guard !initialPositionSet else { return } // Prevent double-setting of position
+        let lastPosition = CLLocationCoordinate2D(latitude: savedCenterLat, longitude: savedCenterLon)
+        mapCameraPosition = .camera(MapCamera(centerCoordinate: lastPosition, distance: savedZoomLevel))
+        debugLog("Restored last known position: Lat \(savedCenterLat), Lon \(savedCenterLon)")
+        initialPositionSet = true
     }
-    
-    private func restoreZoomLevel() {
-        zoomLevel = savedZoomLevel
-        debugLog("Zoom level restored: \(zoomLevel)")
-    }
-    
-
-
-
-
-    private func initializeMapView() {
-        
-        // Ensure we have valid GPS data before initializing the map
-        guard let gpsData = navigationReadings.gpsData, gpsData.isGPSDataValid else {
-            if retryCount < maxRetryAttempts {
-                debugLog("Waiting for valid GPS data... Attempt \(retryCount + 1) of \(maxRetryAttempts)")
-                
-                // Retry initialization after a short delay if GPS data is not yet valid
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                    retryCount += 1
-                    initializeMapView()
-                }
-            } else {
-                debugLog("Max retry attempts reached. Using last known or default map center.")
-                fallbackToLastKnownOrDefaultLocation()
-            }
-            return
-        }
-
-        // Reset retry count upon successful GPS fix
-        retryCount = 0
-
-        // Check if saved map position is valid
-        let isValidLat = savedCenterLat >= -90.0 && savedCenterLat <= 90.0
-        let isValidLon = savedCenterLon >= -180.0 && savedCenterLon <= 180.0
-        let isValidZoom = savedZoomLevel > 0.0 && savedZoomLevel < 5000000 // Reasonable zoom range
-
-        if isPositionSet && isValidLat && isValidLon && isValidZoom {
-            // Restore the last known position of the map
-            let lastPosition = CLLocationCoordinate2D(latitude: savedCenterLat, longitude: savedCenterLon)
-            mapCameraPosition = .camera(MapCamera(centerCoordinate: lastPosition, distance: savedZoomLevel))
-            debugLog("Restored last known position: \(lastPosition.latitude), \(lastPosition.longitude) with zoom \(savedZoomLevel)")
-        } else {
-            if gpsData.isGPSDataValid, let boatLocation = gpsData.boatLocation {
-                // If a valid GPS fix is available, center the map on the boat's position
-                mapCameraPosition = .camera(MapCamera(centerCoordinate: boatLocation, distance: 200000))
-                savedCenterLat = boatLocation.latitude
-                savedCenterLon = boatLocation.longitude
-                savedZoomLevel = 200000
-                isPositionSet = true  // Mark position as set
-                debugLog("Centered map on boat location with default zoom \(savedZoomLevel)")
-            } else {
-                fallbackToLastKnownOrDefaultLocation()
-            }
-        }
-    }
-
-    // Function to fallback to the last known position or default location
-    private func fallbackToLastKnownOrDefaultLocation() {
-        let isValidLastLat = savedCenterLat >= -90.0 && savedCenterLat <= 90.0
-        let isValidLastLon = savedCenterLon >= -180.0 && savedCenterLon <= 180.0
-        let isValidLastZoom = savedZoomLevel > 0.0 && savedZoomLevel < 5000000
-
-        if isValidLastLat && isValidLastLon && isValidLastZoom {
-            let lastKnownLocation = CLLocationCoordinate2D(latitude: savedCenterLat, longitude: savedCenterLon)
-            mapCameraPosition = .camera(MapCamera(centerCoordinate: lastKnownLocation, distance: savedZoomLevel))
-            debugLog("Using last known location: \(lastKnownLocation.latitude), \(lastKnownLocation.longitude) with zoom \(savedZoomLevel)")
-        } else {
-            let defaultLocation = CLLocationCoordinate2D(latitude: 0.0, longitude: 0.0)
-            mapCameraPosition = .camera(MapCamera(centerCoordinate: defaultLocation, distance: 200000))
-            savedCenterLat = 0.0
-            savedCenterLon = 0.0
-            savedZoomLevel = 200000
-            debugLog("No valid last known location. Using default map center at 0.0, 0.0 with zoom \(savedZoomLevel)")
-        }
-    }
-    
     
     // Center the map on the boat's current location
     private func centerBoat() {
@@ -332,7 +239,7 @@ struct MapView: View {
     
     private func updateCameraPosition() {
         if let boatLocation = animatedBoatLocation {
-            mapCameraPosition = .camera(MapCamera(centerCoordinate: boatLocation, distance: zoomLevel))
+            mapCameraPosition = .camera(MapCamera(centerCoordinate: boatLocation, distance: savedZoomLevel))
         }
     }
     

@@ -5,8 +5,8 @@ struct SplashScreenView: View {
     @Environment(NMEAParser.self) private var navigationReadings
 
     @State private var isActive = false // Controls transition to the main view
-    @State private var fadeOut = false // Controls fade-out animation
-    @State private var fadeIn = false  // Controls fade-in animation
+    @State private var fadeOut = false  // Controls fade-out animation
+    @State private var fadeIn = false   // Controls fade-in animation
     @StateObject private var speechManager = SpeechManager() // Use an ObservableObject for speech
     @EnvironmentObject private var audioManager: AudioManager  // Persisted audio manager instance
 
@@ -65,7 +65,7 @@ struct SplashScreenView: View {
                 Spacer()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-            .opacity(fadeOut ? 0 : 1) // gradually fadeIN
+            .opacity(fadeOut ? 0 : 1) // gradually fade IN
         }
         .onAppear {
             // Fade-in animation for content
@@ -73,15 +73,19 @@ struct SplashScreenView: View {
                 fadeIn = true
             }
             
-            // Start welcome message
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                speechManager.playWelcomeMessage("Hello Bori! Welcome onboard!")
+            // Offload speech synthesis to a background queue with appropriate QoS
+            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.5) {
+                Task { @MainActor in
+                    speechManager.playWelcomeMessage("Hello Bori! Welcome onboard!")
+                }
             }
 
-            // Start fade-out animation after a delay
+            // UI-related animation should still be on the main thread
             DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
                 withAnimation(.easeInOut(duration: 2)) {
                     fadeOut = true
+                }
+                Task { @MainActor in
                     audioManager.fadeOutMusic()  // Gradually fade out the music
                 }
             }
@@ -90,7 +94,6 @@ struct SplashScreenView: View {
 }
 
 // MARK: - Speech Manager
-@MainActor
 class SpeechManager: ObservableObject {
     private var speechSynthesizer: AVSpeechSynthesizer
 
@@ -98,6 +101,7 @@ class SpeechManager: ObservableObject {
         self.speechSynthesizer = AVSpeechSynthesizer()
     }
 
+    @MainActor
     func playWelcomeMessage(_ message: String) {
         let speechUtterance = AVSpeechUtterance(string: message)
 

@@ -181,17 +181,33 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "CF4D8DA3-9183-4295-B499-873E3DE4545A"
+            uuid = "C3899D30-6380-4033-94E7-878D4337EFF1"
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "ExtasyCompleteNavigation/View/UltimateView/MapView/MapView.swift"
+            filePath = "ExtasyCompleteNavigation/View/UltimateView/UltimateView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "180"
-            endingLineNumber = "180"
-            landmarkName = "body"
-            landmarkType = "24">
+            startingLineNumber = "184"
+            endingLineNumber = "184"
+            landmarkName = "checkSlotMenu(a:oldValue:forType:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "B3516AE6-9B36-46E6-937C-F3C574DF949C"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ExtasyCompleteNavigation/View/UltimateView/UltimateView.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "183"
+            endingLineNumber = "183"
+            landmarkName = "checkSlotMenu(a:oldValue:forType:)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

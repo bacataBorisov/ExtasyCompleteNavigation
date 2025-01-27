@@ -129,11 +129,8 @@ struct UltimateView: View {
                 }
             }//END OF ZSTACK
         }//END OF GEOMETRY
-        //.ignoresSafeArea()
         .aspectRatio(1, contentMode: .fit)
-        //.scaleEffect(x: 0.95, y: 0.95)
         .padding()
-        
         
         //MARK: - Save / Load Data Config in the Display
         
@@ -185,49 +182,6 @@ struct UltimateView: View {
         
         return a
     }
-    
-    //old working version
-    //    func checkSlotMenu(a: Int, oldValue: Int, forType: String) -> Int {
-    //
-    //        switch forType {
-    //        case "speed":
-    //            //check if the slot is already taken
-    //            let check = speedCorners.contains(a)
-    //            //print(check)
-    //            //check which one is the correct position
-    //            if check == true {
-    //                for index in 0..<speedCorners.count {
-    //                    //once found exchange the displays
-    //                    if a == speedCorners[index] {
-    //                        speedCorners[index] = oldValue
-    //                        return a
-    //                    }
-    //                }
-    //                //if the slot is not taken, just return the value
-    //            } else {
-    //                return a
-    //            }
-    //        default:
-    //            //check if the slot is already taken
-    //            let check = angleCorners.contains(a)
-    //            //print(check)
-    //            //check which one is the correct position
-    //            if check == true {
-    //                for index in 0..<angleCorners.count {
-    //                    //once found exchange the displays
-    //                    if a == angleCorners[index] {
-    //                        angleCorners[index] = oldValue
-    //                        return a
-    //                    }
-    //                }
-    //                //if the slot is not taken, just return the value
-    //            } else {
-    //                return a
-    //            }
-    //        }
-    //        return -1
-    //    }
-    
 }
 #Preview {
     UltimateView()

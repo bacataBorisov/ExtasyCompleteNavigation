@@ -10,7 +10,7 @@ struct ExtasyCompleteNavigationApp: App {
     @State private var navigationManager = NavigationManager()
     @State private var settingsManager = SettingsManager()
     
-    // Splash screen state
+    // Splash screen state - MARK: -> false during debug
     @State private var showSplashScreen = true
     
     @StateObject private var audioManager = AudioManager() // Persisted audio manager instance
