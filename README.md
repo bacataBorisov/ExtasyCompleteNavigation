@@ -1,6 +1,6 @@
 # Extasy Complete Navigation
 
-[📱 Check out the iPhone demo video](https://youtube.com/shorts/T2OzuNGgfEw)
+[📱 Check out the iPhone demo video](https://drive.google.com/file/d/1rVJDbGBMlsVFmgOLY960FpXGMJToISZk/view?usp=sharing)
 
 ## Project description
 
