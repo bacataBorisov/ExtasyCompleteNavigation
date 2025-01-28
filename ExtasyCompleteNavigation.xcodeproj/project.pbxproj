@@ -25,8 +25,6 @@
 		066FD0EF2D41784200FE7AF1 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 066FD0EE2D41783D00FE7AF1 /* AudioManager.swift */; };
 		066FD0F12D42EE8E00FE7AF1 /* ExtasyNavigation-SoftwareArchitectureMap.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 066FD0F02D42EE8E00FE7AF1 /* ExtasyNavigation-SoftwareArchitectureMap.pdf */; };
 		067388CB2D3C5F01002C9C54 /* iPhoneVMGView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067388CA2D3C5F01002C9C54 /* iPhoneVMGView.swift */; };
-		067388CD2D3C7893002C9C54 /* iPhoneMultiDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067388CC2D3C7893002C9C54 /* iPhoneMultiDisplay.swift */; };
-		067388CF2D3C7CDF002C9C54 /* iPhoneDisplayCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067388CE2D3C7CDF002C9C54 /* iPhoneDisplayCell.swift */; };
 		067388D12D3DAC32002C9C54 /* ReadRawNMEA.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067388D02D3DAC2B002C9C54 /* ReadRawNMEA.swift */; };
 		0674D44B2B5B340F0000E20F /* WaypointFIllForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0674D44A2B5B340F0000E20F /* WaypointFIllForm.swift */; };
 		06823F272D1CC70600BA5180 /* TackAlignmentBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06823F262D1CC70600BA5180 /* TackAlignmentBar.swift */; };
@@ -61,8 +59,6 @@
 		06A525852CF4B75F00532A51 /* CustomShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A525842CF4B75C00532A51 /* CustomShapes.swift */; };
 		06A525892CF4BD9800532A51 /* CompassLabelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A525882CF4BD9800532A51 /* CompassLabelView.swift */; };
 		06A5258B2CF4BDC300532A51 /* GaugeMarkerCompass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A5258A2CF4BDC300532A51 /* GaugeMarkerCompass.swift */; };
-		06A525902CF5D2CD00532A51 /* MultiDisplayMatrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A5258F2CF5D2C600532A51 /* MultiDisplayMatrix.swift */; };
-		06A525922CF5D2F700532A51 /* UltimateViewMatrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A525912CF5D2F100532A51 /* UltimateViewMatrix.swift */; };
 		06A840F02D18DCCE002FA7E4 /* SplashScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A840EF2D18DCCE002FA7E4 /* SplashScreenView.swift */; };
 		06A840F22D1C2884002FA7E4 /* WaypointData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A840F12D1C2880002FA7E4 /* WaypointData.swift */; };
 		06A840F42D1C2893002FA7E4 /* WaypointProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06A840F32D1C288A002FA7E4 /* WaypointProcessor.swift */; };
@@ -115,8 +111,6 @@
 		066FD0EE2D41783D00FE7AF1 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
 		066FD0F02D42EE8E00FE7AF1 /* ExtasyNavigation-SoftwareArchitectureMap.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "ExtasyNavigation-SoftwareArchitectureMap.pdf"; sourceTree = "<group>"; };
 		067388CA2D3C5F01002C9C54 /* iPhoneVMGView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPhoneVMGView.swift; sourceTree = "<group>"; };
-		067388CC2D3C7893002C9C54 /* iPhoneMultiDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPhoneMultiDisplay.swift; sourceTree = "<group>"; };
-		067388CE2D3C7CDF002C9C54 /* iPhoneDisplayCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPhoneDisplayCell.swift; sourceTree = "<group>"; };
 		067388D02D3DAC2B002C9C54 /* ReadRawNMEA.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadRawNMEA.swift; sourceTree = "<group>"; };
 		0674D44A2B5B340F0000E20F /* WaypointFIllForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointFIllForm.swift; sourceTree = "<group>"; };
 		06823F262D1CC70600BA5180 /* TackAlignmentBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TackAlignmentBar.swift; sourceTree = "<group>"; };
@@ -153,8 +147,6 @@
 		06A525842CF4B75C00532A51 /* CustomShapes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomShapes.swift; sourceTree = "<group>"; };
 		06A525882CF4BD9800532A51 /* CompassLabelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompassLabelView.swift; sourceTree = "<group>"; };
 		06A5258A2CF4BDC300532A51 /* GaugeMarkerCompass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GaugeMarkerCompass.swift; sourceTree = "<group>"; };
-		06A5258F2CF5D2C600532A51 /* MultiDisplayMatrix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiDisplayMatrix.swift; sourceTree = "<group>"; };
-		06A525912CF5D2F100532A51 /* UltimateViewMatrix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UltimateViewMatrix.swift; sourceTree = "<group>"; };
 		06A840EF2D18DCCE002FA7E4 /* SplashScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenView.swift; sourceTree = "<group>"; };
 		06A840F12D1C2880002FA7E4 /* WaypointData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointData.swift; sourceTree = "<group>"; };
 		06A840F32D1C288A002FA7E4 /* WaypointProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointProcessor.swift; sourceTree = "<group>"; };
@@ -352,8 +344,6 @@
 			isa = PBXGroup;
 			children = (
 				06823F372D23563D00BA5180 /* AppSettings.swift */,
-				06A525912CF5D2F100532A51 /* UltimateViewMatrix.swift */,
-				06A5258F2CF5D2C600532A51 /* MultiDisplayMatrix.swift */,
 				181601E02AD0F20700D6D31B /* DisplayCells.swift */,
 				06A5255C2CF077AB00532A51 /* Waypoints.swift */,
 			);
@@ -390,7 +380,6 @@
 			isa = PBXGroup;
 			children = (
 				18EDC55A2ACD052C003C82B2 /* MultiDisplay.swift */,
-				067388CC2D3C7893002C9C54 /* iPhoneMultiDisplay.swift */,
 				06A5257C2CF28BE300532A51 /* DisplayMenu.swift */,
 			);
 			path = MultiDisplay;
@@ -427,7 +416,6 @@
 		06A525952CF5E33100532A51 /* Common */ = {
 			isa = PBXGroup;
 			children = (
-				067388CE2D3C7CDF002C9C54 /* iPhoneDisplayCell.swift */,
 				0641C3F22A9AF061008799BC /* DisplayCell.swift */,
 				06F61EA42D10FF59005EA416 /* PerformanceDoubleBarView.swift */,
 				06A840F82D1C8A5B002FA7E4 /* PerformanceSingleBarView.swift */,
@@ -602,11 +590,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				06A840F42D1C2893002FA7E4 /* WaypointProcessor.swift in Sources */,
-				067388CD2D3C7893002C9C54 /* iPhoneMultiDisplay.swift in Sources */,
 				066FD0EF2D41784200FE7AF1 /* AudioManager.swift in Sources */,
 				067388D12D3DAC32002C9C54 /* ReadRawNMEA.swift in Sources */,
 				069EEA592CEB503400357A05 /* NavigationManager.swift in Sources */,
-				067388CF2D3C7CDF002C9C54 /* iPhoneDisplayCell.swift in Sources */,
 				06823F362D23562300BA5180 /* UserDefaultsKeys.swift in Sources */,
 				0674D44B2B5B340F0000E20F /* WaypointFIllForm.swift in Sources */,
 				069EEA562CEB4A1500357A05 /* UDPHandler.swift in Sources */,
@@ -655,7 +641,6 @@
 				0686F5352CEF5D51007EE554 /* VMGProcessor.swift in Sources */,
 				06A525892CF4BD9800532A51 /* CompassLabelView.swift in Sources */,
 				0686F5282CEF40CE007EE554 /* HydroData.swift in Sources */,
-				06A525922CF5D2F700532A51 /* UltimateViewMatrix.swift in Sources */,
 				06F61EA72D12454E005EA416 /* VMGSimpleView.swift in Sources */,
 				067388CB2D3C5F01002C9C54 /* iPhoneVMGView.swift in Sources */,
 				0647304F2D275C7E009BCF9A /* CalibrateSpeedLog.swift in Sources */,
@@ -666,7 +651,6 @@
 				06823F382D23563D00BA5180 /* AppSettings.swift in Sources */,
 				069EEA6A2CEB893200357A05 /* WindProcessor.swift in Sources */,
 				066CCD892B59D4DB00381E2E /* WaypointDetailedView.swift in Sources */,
-				06A525902CF5D2CD00532A51 /* MultiDisplayMatrix.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

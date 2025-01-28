@@ -100,5 +100,4 @@ struct DisplayCell: View {
 #Preview {
     DisplayCell(cell: displayCell[1], valueID: 1)
         .environment(NMEAParser())
-        .modelContainer(for: [Matrix.self])
 }

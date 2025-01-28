@@ -49,22 +49,19 @@ struct MapView: View {
                 })
                 .onAppear {
                     allowSave = false
-                    
-                    // Check if a saved position exists
+
                     if !savedCenterLat.isNaN, !savedCenterLon.isNaN {
                         // Use saved position
                         let lastPosition = CLLocationCoordinate2D(latitude: savedCenterLat, longitude: savedCenterLon)
                         mapCameraPosition = .camera(MapCamera(centerCoordinate: lastPosition, distance: savedZoomLevel))
-                    } else if let boatLocation = navigationReadings.gpsData?.boatLocation {
-                        // Use boat's position if no saved position
-                        savedCenterLat = boatLocation.latitude
-                        savedCenterLon = boatLocation.longitude
-                        mapCameraPosition = .camera(MapCamera(centerCoordinate: boatLocation, distance: savedZoomLevel))
+                        debugLog("Using saved map position: Lat \(savedCenterLat), Lon \(savedCenterLon), Zoom \(savedZoomLevel)")
+                        allowSave = true
+                    } else {
+                        // Wait for `boatLocation` to become available
+                        debugLog("Waiting for boat location...")
+                        waitForBoatLocationAndInitialize()
                     }
 
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                        allowSave = true
-                    }
                     setupAnimationTimer()
                 }
                 .onDisappear {
@@ -170,7 +167,25 @@ struct MapView: View {
         }
         .navigationBarHidden(true) // Hide the navigation bar
     }
-    
+    private func waitForBoatLocationAndInitialize() {
+        DispatchQueue.global(qos: .userInitiated).async {
+            while navigationReadings.gpsData?.boatLocation == nil {
+                // Polling loop to wait until `boatLocation` becomes available
+                usleep(100_000) // Sleep for 100ms to avoid excessive CPU usage
+            }
+
+            DispatchQueue.main.async {
+                if let boatLocation = navigationReadings.gpsData?.boatLocation {
+                    savedCenterLat = boatLocation.latitude
+                    savedCenterLon = boatLocation.longitude
+                    savedZoomLevel = 200000
+                    mapCameraPosition = .camera(MapCamera(centerCoordinate: boatLocation, distance: savedZoomLevel))
+                    debugLog("Boat location found. Centering map: Lat \(boatLocation.latitude), Lon \(boatLocation.longitude), Zoom \(savedZoomLevel)")
+                    allowSave = true
+                }
+            }
+        }
+    }
     // Timer for periodic location updates
     private func setupAnimationTimer() {
         timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in

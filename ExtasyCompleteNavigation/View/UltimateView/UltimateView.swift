@@ -6,188 +6,196 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct UltimateView: View {
     
-    //the source for the data to be displayed
     @Environment(NMEAParser.self) private var navigationReadings
     @Environment(SettingsManager.self) private var settingsManager
-    
-    
-    @State private var speedCorners: [Int] = [3, 11]
-    @State private var angleCorners: [Int] = [4, 7]
-    
-    @Query var data: [UltimateMatrix]
-    @Environment(\.modelContext) var context
 
+    // Individual AppStorage for each corner's display value
+    @AppStorage("speedCorner0") private var speedCorner0: Int = 3
+    @AppStorage("speedCorner1") private var speedCorner1: Int = 11
+    @AppStorage("angleCorner0") private var angleCorner0: Int = 4
+    @AppStorage("angleCorner1") private var angleCorner1: Int = 7
+
+    // Trigger for UI refresh
+    // Animated values for smooth UI refresh
+    @State private var animatedValues: [Int] = []
+    
     var body: some View {
-        
-        GeometryProvider{ width, geometry, height in
-            
+        GeometryProvider { width, geometry, _ in
             ZStack {
-                //MARK: - Section with Settings, Map, Waypoints
+                // MARK: - Settings, Map, Waypoints Section
                 UltimateNavigationView()
-                //MARK: - Corners Display
-                HStack(){
-                    Menu {
-                        ForEach(displayCell){ cell in
-                            if cell.tag == "speed" {
-                                Button(action: {
-                                    speedCorners[0] = checkSlotMenu(a: cell.id, oldValue: speedCorners[0], forType: "speed")
-                                }, label: {
-                                    Text(cell.name)
-                                })
-                            }
-                        }
-                    } label: {
-                        //MARK: - The Whole Cell is a Big Button
-                        //Top Left Corner - speed value
-                        SmallCornerView(cell: displayCell[speedCorners[0]],
-                                        valueID: speedCorners[0],
-                                        nameAlignment: .bottomLeading,
-                                        valueAlignment: .topTrailing,
-                                        stringSpecifier: "%.1f")
-                    }
-                    Spacer(minLength: width/1.45)
-                    Menu {
-                        ForEach(displayCell){ cell in
-                            if cell.tag == "wind" {
-                                Button(action: {
-                                    angleCorners[0] = checkSlotMenu(a: cell.id, oldValue: angleCorners[0], forType: "wind")
-                                    
-                                }, label: {
-                                    Text(cell.name)
-                                })
-                            }
-                        }
-                    } label: {
-                        //Top Right Corner - angle values
-                        SmallCornerView(cell: displayCell[angleCorners[0]],
-                                        valueID: angleCorners[0],
-                                        nameAlignment: .bottomTrailing,
-                                        valueAlignment: .topLeading,
-                                        stringSpecifier: "%.f")
-                        
-                    }
+
+                // MARK: - Corners Display
+                // Top row: Speed (left) and Angle (right)
+                HStack {
+                    menuCornerView(
+                        aspectRatio: 1,
+                        currentValue: $speedCorner0,
+                        allowedTag: "speed",
+                        nameAlignment: .bottomLeading,
+                        valueAlignment: .topTrailing,
+                        stringSpecifier: "%.1f"
+                    )
+                    Spacer(minLength: width / 1.45)
+                    menuCornerView(
+                        aspectRatio: 1,
+                        currentValue: $angleCorner0,
+                        allowedTag: "wind",
+                        nameAlignment: .bottomTrailing,
+                        valueAlignment: .topLeading,
+                        stringSpecifier: "%.f"
+                    )
                 }
                 .frame(width: width, height: width, alignment: .top)
-                
-                HStack{
-                    Menu(){
-                        ForEach(displayCell){ cell in
-                            if cell.tag == "wind" {
-                                Button(action: {
-                                    angleCorners[1] = checkSlotMenu(a: cell.id, oldValue: angleCorners[1], forType: "wind")
-                                    
-                                }, label: {
-                                    Text(cell.name)
-                                })
-                            }
-                        }
-                    } label: {
-                        //Bottom Left Corner - angles
-                        SmallCornerView(cell: displayCell[angleCorners[1]],
-                                        valueID: angleCorners[1],
-                                        nameAlignment: .topLeading,
-                                        valueAlignment: .bottomTrailing,
-                                        stringSpecifier: "%.f")
-                        
-                    }
-                    Spacer(minLength: width/1.45)
-                    Menu {
-                        ForEach(displayCell){ cell in
-                            if cell.tag == "speed" {
-                                Button(action: {
-                                    speedCorners[1] = checkSlotMenu(a: cell.id, oldValue: speedCorners[1], forType: "speed")
-                                }, label: {
-                                    Text(cell.name)
-                                })
-                            }
-                        }
-                    } label: {
-                        //Bottom Right Corner - speed
-                        SmallCornerView(cell: displayCell[speedCorners[1]],
-                                        valueID: speedCorners[1],
-                                        nameAlignment: .topTrailing,
-                                        valueAlignment: .bottomLeading,
-                                        stringSpecifier: "%.1f")
-                    }
+
+                // Bottom row: Angle (left) and Speed (right)
+                HStack {
+                    menuCornerView(
+                        aspectRatio: 1,
+                        currentValue: $angleCorner1,
+                        allowedTag: "wind",
+                        nameAlignment: .topLeading,
+                        valueAlignment: .bottomTrailing,
+                        stringSpecifier: "%.f"
+                    )
+                    Spacer(minLength: width / 1.45)
+                    menuCornerView(
+                        aspectRatio: 1,
+                        currentValue: $speedCorner1,
+                        allowedTag: "speed",
+                        nameAlignment: .topTrailing,
+                        valueAlignment: .bottomLeading,
+                        stringSpecifier: "%.1f"
+                    )
                 }
                 .frame(width: width, height: width, alignment: .bottom)
-                
-                //MARK: - Anemometer Section
-                AnemometerView(trueWindAngle: navigationReadings.windData?.trueWindAngle ?? 0, apparentWindAngle: navigationReadings.windData?.apparentWindAngle ?? 0, width: width)
-                
-                //MARK: - Compass Section
-                //TODO: - Fix compass to show properly the wrapped angles
+
+                // MARK: - Anemometer Section
+                AnemometerView(
+                    trueWindAngle: navigationReadings.windData?.trueWindAngle ?? 0,
+                    apparentWindAngle: navigationReadings.windData?.apparentWindAngle ?? 0,
+                    width: width
+                )
+
+                // MARK: - Compass Section
                 CompassView(width: width, geometry: geometry)
-                
-                //                    //MARK: - Bearing to Mark Marker
+
+                // MARK: - Bearing to Mark Marker
                 if navigationReadings.gpsData?.isTargetSelected == true {
                     BearingMarkerView(width: width)
                 }
-            }//END OF ZSTACK
-        }//END OF GEOMETRY
+            } // END ZSTACK
+            .animation(.easeInOut(duration: 0.3), value: animatedValues) // Smooth animations for updates
+        } // END GEOMETRY
         .aspectRatio(1, contentMode: .fit)
         .padding()
-        
-        //MARK: - Save / Load Data Config in the Display
-        
-        .onAppear {
-            if let lastModel = data.last {
-                speedCorners = lastModel.ultimateSpeed
-                angleCorners = lastModel.ultimateAngle
-            } else {
-                let initialModel = UltimateMatrix(ultimateSpeed: [3, 11], ultimateAngle: [4, 7])
-                context.insert(initialModel)
-            }
-            
-        }
-        .onChange(of: speedCorners) { _, _ in
-            updateUltimateMatrix()
-        }
-        .onChange(of: angleCorners) { _, _ in
-            updateUltimateMatrix()
-        }
-        
-    }//END OF BODY
-    
-    //MARK: - Helper function for updating UltimateMatrix .onAppear & .onChange
-    private func updateUltimateMatrix() {
-        let model = UltimateMatrix(ultimateSpeed: speedCorners, ultimateAngle: angleCorners)
-        context.insert(model)
     }
-    //MARK: - Check for Duplicate Values in the Other Cells
-    //optimized version
-    func checkSlotMenu(a: Int, oldValue: Int, forType: String) -> Int {
-        // Determine which array to check based on the type
-        var corners = forType == "speed" ? speedCorners : angleCorners
-        
-        // Check if the value already exists in the array
-        if let index = corners.firstIndex(of: a) {
-            // Swap the values
-            corners[index] = oldValue
-        } else {
-            // Add the new value if it doesn't exist
-            return a
+
+    // MARK: - Menu Corner View
+    /// Creates a menu-based corner display view
+    private func menuCornerView(
+        aspectRatio: CGFloat,
+        currentValue: Binding<Int>,
+        allowedTag: String,
+        nameAlignment: Alignment,
+        valueAlignment: Alignment,
+        stringSpecifier: String
+    ) -> some View {
+        Menu {
+            ForEach(0..<displayCell.count, id: \.self) { newIndex in
+                if displayCell[newIndex].tag == allowedTag {
+                    Button(action: {
+                        debugLog("Before button press: \(currentValue.wrappedValue) (\(displayCell[currentValue.wrappedValue].name))")
+                        debugLog("Button pressed for value: \(newIndex) (\(displayCell[newIndex].name))")
+                        handleSelection(newValue: newIndex, currentValue: currentValue, tag: allowedTag)
+                    }) {
+                        Text(displayCell[newIndex].name)
+                    }
+                }
+            }
+        } label: {
+            SmallCornerView(
+                cell: displayCell[currentValue.wrappedValue],
+                valueID: currentValue.wrappedValue,
+                nameAlignment: nameAlignment,
+                valueAlignment: valueAlignment,
+                stringSpecifier: stringSpecifier
+            )
         }
-        
-        // Update the corresponding array
-        if forType == "speed" {
-            speedCorners = corners
+    }
+
+    // MARK: - Handle Selection
+    /// Handles the selection of a new value, checks for duplicates, and swaps values if necessary
+    private func handleSelection(newValue: Int, currentValue: Binding<Int>, tag: String) {
+        if let duplicateIndex = findDuplicate(newValue: newValue, currentValue: currentValue.wrappedValue, tag: tag) {
+            debugLog("Duplicate detected: \(newValue) already exists in cell\(duplicateIndex)")
+            swapValues(newValue: newValue, duplicateIndex: duplicateIndex, currentValue: currentValue)
         } else {
-            angleCorners = corners
+            debugLog("Value \(newValue) selected for \(currentValue.wrappedValue)")
+            currentValue.wrappedValue = newValue
+            refreshAnimatedValues()
         }
-        
-        return a
+    }
+
+    // MARK: - Find Duplicate
+    /// Finds duplicate values in the corresponding category (speed or wind)
+    private func findDuplicate(newValue: Int, currentValue: Int, tag: String) -> Int? {
+        let allValues = tag == "speed" ? [speedCorner0, speedCorner1] : [angleCorner0, angleCorner1]
+        if let duplicateIndex = allValues.firstIndex(of: newValue), newValue != currentValue {
+            debugLog("Duplicate found at index: \(duplicateIndex) for value: \(newValue)")
+            return duplicateIndex
+        }
+        debugLog("No duplicate found for value: \(newValue)")
+        return nil
+    }
+
+    // MARK: - Swap Values
+    /// Swaps values between the current cell and the duplicate cell
+    private func swapValues(newValue: Int, duplicateIndex: Int, currentValue: Binding<Int>) {
+        let originalValue = currentValue.wrappedValue
+
+        debugLog("Original values: [\(speedCorner0), \(speedCorner1), \(angleCorner0), \(angleCorner1)]")
+
+        // Swap values based on the tag (speed or wind)
+        if [speedCorner0, speedCorner1].contains(originalValue) {
+            // Speed category
+            if duplicateIndex == 0 {
+                speedCorner0 = originalValue
+            } else if duplicateIndex == 1 {
+                speedCorner1 = originalValue
+            }
+        } else {
+            // Wind category
+            if duplicateIndex == 0 {
+                angleCorner0 = originalValue
+            } else if duplicateIndex == 1 {
+                angleCorner1 = originalValue
+            }
+        }
+
+        // Update the current cell with the new value
+        currentValue.wrappedValue = newValue
+
+        // Log the final state
+        debugLog("Swapped \(newValue) with \(originalValue): Final values: [\(speedCorner0), \(speedCorner1), \(angleCorner0), \(angleCorner1)]")
+
+        // Trigger UI refresh
+        refreshAnimatedValues()
+    }
+
+    // MARK: - Smooth UI Animation Refresh
+    /// Updates the animatedValues array to trigger a smooth refresh animation
+    private func refreshAnimatedValues() {
+        animatedValues = [speedCorner0, speedCorner1, angleCorner0, angleCorner1]
     }
 }
+
 #Preview {
     UltimateView()
         .environment(NMEAParser())
         .environment(SettingsManager())
-        .modelContainer(for: [
-            UltimateMatrix.self,
-            Waypoints.self])
+        .modelContainer(for: [Waypoints.self])
 }

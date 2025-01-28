@@ -67,8 +67,6 @@ struct iPadView: View {
         .environment(NMEAParser())
         .environment(SettingsManager())
         .modelContainer(for: [
-            Matrix.self,
-            UltimateMatrix.self,
             Waypoints.self,
         ])
 }

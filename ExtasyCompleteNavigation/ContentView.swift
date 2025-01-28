@@ -25,8 +25,6 @@ struct ContentView: View {
         .environment(NMEAParser())
         .environment(SettingsManager())
         .modelContainer(for: [
-            Matrix.self,
-            UltimateMatrix.self,
             Waypoints.self,
         ])
 }

@@ -21,13 +21,9 @@ struct ExtasyCompleteNavigationApp: App {
         
         do {
             let config = ModelConfiguration(for: Waypoints.self,
-                                            Matrix.self,
-                                            UltimateMatrix.self,
                                             isStoredInMemoryOnly: true)
             
             modelContainer = try ModelContainer(for: Waypoints.self,
-                                                Matrix.self,
-                                                UltimateMatrix.self,
                                                 configurations: config)
         } catch {
             fatalError("Could not initialize ModelContainer for these guys")
@@ -61,10 +57,6 @@ struct ExtasyCompleteNavigationApp: App {
                 audioManager.playMusic()
             }
         }
-        .modelContainer(for: [
-            Waypoints.self,
-            Matrix.self,
-            UltimateMatrix.self
-        ])
+        .modelContainer(for: Waypoints.self)
     }
 }
