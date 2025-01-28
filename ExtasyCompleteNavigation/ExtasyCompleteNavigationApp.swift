@@ -28,7 +28,6 @@ struct ExtasyCompleteNavigationApp: App {
         } catch {
             fatalError("Could not initialize ModelContainer for these guys")
         }
-        // Start playing music as soon as the app launches
     }
     
     var body: some Scene {
