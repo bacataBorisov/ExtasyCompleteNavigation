@@ -2,7 +2,7 @@
 
 [📱 Check out the iPhone demo video](https://drive.google.com/file/d/1rVJDbGBMlsVFmgOLY960FpXGMJToISZk/view?usp=sharing)
 
-[􀮕 Check out the iPad demo video](https://drive.google.com/file/d/1omNMziGSfN7exxU7LXaitJ29QClQm2Oh/view?usp=sharing)
+[🖥️ Check out the iPad demo video](https://drive.google.com/file/d/1omNMziGSfN7exxU7LXaitJ29QClQm2Oh/view?usp=sharing)
 
 
 ## Project description
