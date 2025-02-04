@@ -1,125 +1,154 @@
 import Foundation
 
 class WindProcessor {
-    // Separate instance to keep the last known valid data
     private var lastKnownWindData: WindData = WindData()
-    
-    // Kalman Filters for smoothing wind data
+
     private var kalmanFilterAppWindForce = KalmanFilter(initialValue: 0.0)
-    //slightly adjusted for less filtering - need more tests
     private var kalmanFilterTrueWindForce = KalmanFilter(initialValue: 0.0, processNoise: 1e-3, measurementNoise: 1e-2)
     private var kalmanFilterAppWindAngle = KalmanFilter(initialValue: 0.0)
-    //slightly adjusted for less filtering - need more tests
     private var kalmanFilterTrueWindAngle = KalmanFilter(initialValue: 0.0, processNoise: 1e-3, measurementNoise: 1e-2)
-    
-    // Process wind data (general function)
+
     func processWindSentence(_ splitStr: [String], compassData: CompassData?, hydroData: HydroData?) -> WindData? {
         guard splitStr.count >= 7, splitStr[6] == "A" else {
             print("Invalid MWV Sentence!")
             return lastKnownWindData
         }
-        
-        // Get the last known wind data
+
         var windData = lastKnownWindData
         let heading = compassData?.normalizedHeading ?? 0
         let speedThroughWater = hydroData?.boatSpeedLag ?? 0
-        
-        // Process Apparent Wind (AW) or True Wind (TW) based on identifier
+
         if splitStr[3] == "R" {
-            windData = processApparentWind(splitStr, windData: windData, heading: heading)
+            windData = processApparentWind(splitStr, windData: windData, heading: heading, stw: speedThroughWater)
         } else if splitStr[3] == "T" {
-            windData = processTrueWind(splitStr, windData: windData, heading: heading)
+            windData = processTrueWind(splitStr, windData: windData, heading: heading, stw: speedThroughWater)
         }
-        
-        // If true wind is available, calculate apparent wind based on true wind data
-        if let twa = windData.trueWindAngle, let twf = windData.trueWindForce {
-            windData = calculateApparentWind(windData, twa: twa, twf: twf, stw: speedThroughWater, heading: heading)
-        }
-        
-        windData.lastUpdated = Date() // Update watchdog timer
-        lastKnownWindData = windData // Store the last known valid data
+
+        windData.lastUpdated = Date()
+        lastKnownWindData = windData
         return windData
     }
-    
-    // Process apparent wind data
-    private func processApparentWind(_ splitStr: [String], windData: WindData, heading: Double) -> WindData {
+
+    // Process apparent wind data and calculate true wind
+    private func processApparentWind(_ splitStr: [String], windData: WindData, heading: Double, stw: Double) -> WindData {
         var updatedWindData = windData
-        
-        // Apply Kalman filter to apparent wind force
+
         if let rawAppWindForce = Double(splitStr[4]) {
+            updatedWindData.rawApparentWindForce = rawAppWindForce
             updatedWindData.apparentWindForce = kalmanFilterAppWindForce.update(measurement: rawAppWindForce)
         }
-        
-        // Apply Kalman filter to apparent wind angle
+
         if let rawAWA = Double(splitStr[2]) {
-            updatedWindData.apparentWindAngle = kalmanFilterAppWindAngle.update(measurement: normalizeAngle(rawAWA))
-            if let unwrappedAWA = updatedWindData.apparentWindAngle,
-               let unwrappedAWF = updatedWindData.apparentWindForce {
-                updatedWindData.apparentWindDirection = calculateWindDirection(unwrappedAWF, unwrappedAWA, heading)
+            let normalizedRawAWA = normalizeAngle(rawAWA)
+            updatedWindData.rawApparentWindAngle = normalizedRawAWA
+
+            if let rawForce = updatedWindData.rawApparentWindForce {
+                updatedWindData.rawApparentWindDirection = calculateWindDirection(rawForce, normalizedRawAWA, heading)
+            }
+
+            updatedWindData.apparentWindAngle = kalmanFilterAppWindAngle.update(measurement: normalizedRawAWA)
+
+            if let awa = updatedWindData.apparentWindAngle, let awf = updatedWindData.apparentWindForce {
+                updatedWindData.apparentWindDirection = calculateWindDirection(awf, awa, heading)
             }
         }
-        
+
+        // Calculate True Wind from Apparent Wind
+        updatedWindData = calculateTrueWind(updatedWindData, awa: updatedWindData.apparentWindAngle, awf: updatedWindData.apparentWindForce, stw: stw, heading: heading)
+
         return updatedWindData
     }
-    
-    // Process true wind data
-    private func processTrueWind(_ splitStr: [String], windData: WindData, heading: Double) -> WindData {
+
+    // Process true wind data and calculate apparent wind
+    private func processTrueWind(_ splitStr: [String], windData: WindData, heading: Double, stw: Double) -> WindData {
         var updatedWindData = windData
-        
-        // Apply Kalman filter to true wind force
+
         if let rawTrueWindForce = Double(splitStr[4]) {
+            updatedWindData.rawTrueWindForce = rawTrueWindForce
             updatedWindData.trueWindForce = kalmanFilterTrueWindForce.update(measurement: rawTrueWindForce)
         }
-        
-        // Apply Kalman filter to true wind angle
+
         if let rawTWA = Double(splitStr[2]) {
-            updatedWindData.trueWindAngle = kalmanFilterTrueWindAngle.update(measurement: normalizeAngle(rawTWA))
-            if let unwrappedTWA = updatedWindData.trueWindAngle, let unwrappedTWF = updatedWindData.trueWindForce {
-                updatedWindData.trueWindDirection = calculateWindDirection(unwrappedTWF, unwrappedTWA, heading)
+            let normalizedRawTWA = normalizeAngle(rawTWA)
+            updatedWindData.rawTrueWindAngle = normalizedRawTWA
+
+            if let rawForce = updatedWindData.rawTrueWindForce {
+                updatedWindData.rawTrueWindDirection = calculateWindDirection(rawForce, normalizedRawTWA, heading)
+            }
+
+            updatedWindData.trueWindAngle = kalmanFilterTrueWindAngle.update(measurement: normalizedRawTWA)
+
+            if let twa = updatedWindData.trueWindAngle, let twf = updatedWindData.trueWindForce {
+                updatedWindData.trueWindDirection = calculateWindDirection(twf, twa, heading)
             }
         }
-        
+
+        // Calculate Apparent Wind from True Wind
+        updatedWindData = calculateApparentWind(updatedWindData, twa: updatedWindData.trueWindAngle, twf: updatedWindData.trueWindForce, stw: stw, heading: heading)
+
         return updatedWindData
     }
-    
-    // Calculate Apparent Wind from True Wind
-    private func calculateApparentWind(_ windData: WindData, twa: Double, twf: Double, stw: Double, heading: Double) -> WindData {
+
+    // Calculate True Wind from Apparent Wind
+    private func calculateTrueWind(_ windData: WindData, awa: Double?, awf: Double?, stw: Double, heading: Double) -> WindData {
         var updatedWindData = windData
-        
-        // Calculate Apparent Wind Speed
-        let apparentSpeed = sqrt(pow(twf, 2) + pow(stw, 2) + 2 * twf * stw * cos(deg2rad(twa)))
-        updatedWindData.apparentWindForce = apparentSpeed
-        
-        // Calculate Apparent Wind Angle
-        let apparentAngle = atan2(twf * sin(deg2rad(twa)), stw + twf * cos(deg2rad(twa)))
-        updatedWindData.apparentWindAngle = normalizeAngle(rad2deg(apparentAngle))
-        
-        // Calculate Apparent Wind Direction
-        if let awa = updatedWindData.apparentWindAngle {
-            updatedWindData.apparentWindDirection = calculateWindDirection(apparentSpeed, awa, heading)
+
+        guard let awa = awa, let awf = awf else { return updatedWindData }
+
+        // Calculate raw true wind speed
+        let rawTrueWindSpeed = sqrt(pow(awf, 2) + pow(stw, 2) - 2 * awf * stw * cos(toRadians(awa)))
+        updatedWindData.rawTrueWindForce = rawTrueWindSpeed
+        updatedWindData.trueWindForce = kalmanFilterTrueWindForce.update(measurement: rawTrueWindSpeed)
+
+        // Calculate raw true wind angle
+        let rawTrueWindAngle = atan2(awf * sin(toRadians(awa)), stw - awf * cos(toRadians(awa)))
+        let normalizedRawTWA = normalizeAngle(toDegrees(rawTrueWindAngle))
+        updatedWindData.rawTrueWindAngle = normalizedRawTWA
+        updatedWindData.trueWindAngle = kalmanFilterTrueWindAngle.update(measurement: normalizedRawTWA)
+
+        // Calculate raw true wind direction
+        updatedWindData.rawTrueWindDirection = calculateWindDirection(rawTrueWindSpeed, normalizedRawTWA, heading)
+
+        // Calculate filtered true wind direction
+        if let twa = updatedWindData.trueWindAngle {
+            updatedWindData.trueWindDirection = calculateWindDirection(updatedWindData.trueWindForce, twa, heading)
         }
-        
+
         return updatedWindData
     }
-    
+
+    // Calculate Apparent Wind from True Wind
+    private func calculateApparentWind(_ windData: WindData, twa: Double?, twf: Double?, stw: Double, heading: Double) -> WindData {
+        var updatedWindData = windData
+
+        guard let twa = twa, let twf = twf else { return updatedWindData }
+
+        // Calculate raw apparent wind speed
+        let rawApparentSpeed = sqrt(pow(twf, 2) + pow(stw, 2) + 2 * twf * stw * cos(toRadians(twa)))
+        updatedWindData.rawApparentWindForce = rawApparentSpeed
+        updatedWindData.apparentWindForce = kalmanFilterAppWindForce.update(measurement: rawApparentSpeed)
+
+        // Calculate raw apparent wind angle
+        let rawApparentAngle = atan2(twf * sin(toRadians(twa)), stw + twf * cos(toRadians(twa)))
+        let normalizedRawAWA = normalizeAngle(toDegrees(rawApparentAngle))
+        updatedWindData.rawApparentWindAngle = normalizedRawAWA
+        updatedWindData.apparentWindAngle = kalmanFilterAppWindAngle.update(measurement: normalizedRawAWA)
+
+        // Calculate raw apparent wind direction
+        updatedWindData.rawApparentWindDirection = calculateWindDirection(rawApparentSpeed, normalizedRawAWA, heading)
+
+        // Calculate filtered apparent wind direction
+        if let awa = updatedWindData.apparentWindAngle {
+            updatedWindData.apparentWindDirection = calculateWindDirection(updatedWindData.apparentWindForce, awa, heading)
+        }
+
+        return updatedWindData
+    }
+
     // MARK: - Helper Functions
-    
-    private func calculateWindDirection(_ force: Double, _ angle: Double, _ heading: Double) -> Double {
-        guard force > 0.001 else { return 0 }
+
+    private func calculateWindDirection(_ force: Double?, _ angle: Double, _ heading: Double) -> Double {
+        guard let force = force, force > 0.001 else { return 0 }
         return normalizeAngle(angle + heading)
-    }
-    
-    private func normalizeAngle(_ angle: Double) -> Double {
-        var normalized = angle.truncatingRemainder(dividingBy: 360)
-        if normalized < 0 { normalized += 360 }
-        return normalized
-    }
-    
-    private func deg2rad(_ degrees: Double) -> Double {
-        return degrees * .pi / 180
-    }
-    
-    private func rad2deg(_ radians: Double) -> Double {
-        return radians * 180 / .pi
     }
 }

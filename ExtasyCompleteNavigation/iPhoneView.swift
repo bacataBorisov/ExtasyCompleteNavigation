@@ -67,7 +67,7 @@ struct iPhoneView: View {
     // Dynamically manage bottom views based on waypoint selection
     private var availableBottomViews: [IdentifiedView] {
         if navigationReadings.gpsData?.isTargetSelected == true,
-           let waypointName = navigationReadings.gpsData?.markerName, !waypointName.isEmpty {
+           let waypointName = navigationReadings.gpsData?.waypointName, !waypointName.isEmpty {
             return allViews.map { view in
                 view.label == "WaypointList"
                     ? IdentifiedView(view: AnyView(iPhoneVMGView(waypointName: waypointName)), label: "VMGView")
@@ -80,7 +80,7 @@ struct iPhoneView: View {
 
     private func updateBottomViews() {
         if navigationReadings.gpsData?.isTargetSelected == true,
-           let waypointName = navigationReadings.gpsData?.markerName, !waypointName.isEmpty {
+           let waypointName = navigationReadings.gpsData?.waypointName, !waypointName.isEmpty {
             allViews[3] = IdentifiedView(view: AnyView(iPhoneVMGView(waypointName: waypointName)), label: "VMGView")
         } else {
             allViews[3] = IdentifiedView(view: AnyView(WaypointListView()), label: "WaypointList")

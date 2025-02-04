@@ -6,8 +6,6 @@
 //
 import Foundation
 
-
-
 // DEBUG log wrapper helper function
 // TODO: - think about extending the functionality of the function with timestamp and logs to file here
 public func debugLog(_ message: String) {

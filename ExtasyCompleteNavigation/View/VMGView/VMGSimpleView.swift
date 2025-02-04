@@ -197,7 +197,7 @@ struct VMGSimpleView: View {
     // MARK: - Button Actions
     private func deselectWaypoint() {
         navigationReadings.waypointProcessor.resetWaypointCalculations()
-        navigationReadings.gpsProcessor.gpsData.markerCoordinate = nil
+        navigationReadings.gpsProcessor.gpsData.waypointLocation = nil
         navigationReadings.gpsProcessor.disableMarker()
     }
     

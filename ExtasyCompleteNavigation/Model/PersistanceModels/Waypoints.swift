@@ -3,7 +3,7 @@ import SwiftData
 
 @Model
 class Waypoints: Identifiable {
-    @Attribute(.unique) var title = ""
+    var title = ""
     var lat: Double?
     var lon: Double?
     var isTargetSelected: Bool = false

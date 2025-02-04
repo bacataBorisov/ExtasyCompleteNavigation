@@ -26,7 +26,7 @@ struct iPadView: View {
                         MultiDisplay()
                             .frame(height: geometry.size.height * 0.65)
                         NavigationStack {
-                            VMGSimpleView(waypointName: navigationReadings.gpsData?.markerName ?? "Mark Unknown")
+                            VMGSimpleView(waypointName: navigationReadings.gpsData?.waypointName ?? "Mark Unknown")
                                 .frame(height: geometry.size.height * 0.35)
                                 .transition(.asymmetric(
                                     insertion: .move(edge: .trailing).combined(with: .opacity),

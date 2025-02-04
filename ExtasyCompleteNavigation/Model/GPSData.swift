@@ -10,10 +10,16 @@ import CoreLocation
 struct GPSData {
     
     var isGPSDataValid: Bool = false
+    
+    // Raw data fields
+    var rawLatitude: Double?
+    var rawLongitude: Double?
+    var rawCourseOverGround: Double?
+    var rawSpeedOverGround: Double?
+    
+    // Filtered Data Fields
     var latitude: Double?
     var longitude: Double?
-    
-    // Computed property for CLLocationCoordinate2D
     var boatLocation: CLLocationCoordinate2D? {
         guard let latitude = latitude, let longitude = longitude else {
             return nil
@@ -25,17 +31,21 @@ struct GPSData {
     var speedOverGroundKmh: Double? // SOG in km/h
     var utcTime: String?
     var gpsDate: String?
-    var markerName: String?
-    var markerCoordinate: CLLocationCoordinate2D? // Waypoint coordinates
+    var waypointName: String?
+    var waypointLocation: CLLocationCoordinate2D? // Waypoint coordinates
     var isTargetSelected: Bool = false
 
     mutating func reset() {
         
         isGPSDataValid = false
+        rawLatitude = nil
+        rawLongitude = nil
+        rawCourseOverGround = nil
+        rawSpeedOverGround = nil
         latitude = nil
         longitude = nil
-        markerCoordinate = nil
-        markerName = nil
+        waypointLocation = nil
+        waypointName = nil
         courseOverGround = nil
         speedOverGround = nil
         speedOverGroundKmh = nil

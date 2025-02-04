@@ -22,6 +22,8 @@ class HydroProcessor {
             print("Invalid Depth Data!")
             return nil
         }
+        // Store raw depth
+        hydroData.rawDepth = depthValue
         
         // Apply Kalman filtering to smooth the depth value
         if let filteredDepth = depthFilter?.update(measurement: depthValue) {
@@ -40,6 +42,9 @@ class HydroProcessor {
             return nil
         }
         
+        // Store raw sea water temperature
+        hydroData.rawSeaWaterTemperature = temperature
+        
         // Apply Kalman filtering to smooth the temperature value
         if let filteredTemperature = temperatureFilter?.update(measurement: temperature) {
             hydroData.seaWaterTemperature = filteredTemperature
@@ -56,6 +61,9 @@ class HydroProcessor {
             print("Invalid Speed Log Data!")
             return nil
         }
+        
+        // Store raw boat speed (before filtering)
+        hydroData.rawBoatSpeedLag = speedLog
         
         let calibrationCoefficient = hydroData.speedLogCalibrationCoeff ?? 1.0
         let calibratedSpeed = speedLog * calibrationCoefficient

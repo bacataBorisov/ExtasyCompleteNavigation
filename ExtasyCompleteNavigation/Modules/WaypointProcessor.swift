@@ -33,7 +33,7 @@ class WaypointProcessor {
     ) -> WaypointData? {
         serialQueue.sync { [self] in
             guard let polarSpeed = vmgData?.polarSpeed,
-                  let markerCoordinate = gpsData?.markerCoordinate,
+                  let markerCoordinate = gpsData?.waypointLocation,
                   let boatLocation = gpsData?.boatLocation,
                   let courseOverGround = gpsData?.courseOverGround,
                   let speedOverGround = gpsData?.speedOverGround,

@@ -17,6 +17,7 @@
 		064730632D29A64D009BCF9A /* PerformanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 064730622D29A63E009BCF9A /* PerformanceView.swift */; };
 		064ACD622A9EE3430018E449 /* NMEAParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 064ACD612A9EE3430018E449 /* NMEAParser.swift */; };
 		06529FA42D40734000CE6B66 /* share_your_passion.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 06529FA32D40734000CE6B66 /* share_your_passion.m4a */; };
+		065AAD7C2D4FFC2200F7A1ED /* AdvancedSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 065AAD7B2D4FFC2200F7A1ED /* AdvancedSettingsView.swift */; };
 		066311AF2A38DB6B00AAE263 /* ExtasyCompleteNavigationApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 066311AE2A38DB6B00AAE263 /* ExtasyCompleteNavigationApp.swift */; };
 		066311B12A38DB6B00AAE263 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 066311B02A38DB6B00AAE263 /* ContentView.swift */; };
 		066311B32A38DB6C00AAE263 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 066311B22A38DB6C00AAE263 /* Assets.xcassets */; };
@@ -102,6 +103,7 @@
 		064730622D29A63E009BCF9A /* PerformanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceView.swift; sourceTree = "<group>"; };
 		064ACD612A9EE3430018E449 /* NMEAParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NMEAParser.swift; sourceTree = "<group>"; };
 		06529FA32D40734000CE6B66 /* share_your_passion.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = share_your_passion.m4a; sourceTree = "<group>"; };
+		065AAD7B2D4FFC2200F7A1ED /* AdvancedSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedSettingsView.swift; sourceTree = "<group>"; };
 		066311AB2A38DB6B00AAE263 /* ExtasyCompleteNavigation.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ExtasyCompleteNavigation.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		066311AE2A38DB6B00AAE263 /* ExtasyCompleteNavigationApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtasyCompleteNavigationApp.swift; sourceTree = "<group>"; };
 		066311B02A38DB6B00AAE263 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -283,9 +285,10 @@
 		06823F322D220AF200BA5180 /* SettingsView */ = {
 			isa = PBXGroup;
 			children = (
-				067388D02D3DAC2B002C9C54 /* ReadRawNMEA.swift */,
 				069EEA4F2CEB31F400357A05 /* SettingsMenuView.swift */,
 				0647304E2D275C78009BCF9A /* CalibrateSpeedLog.swift */,
+				065AAD7B2D4FFC2200F7A1ED /* AdvancedSettingsView.swift */,
+				067388D02D3DAC2B002C9C54 /* ReadRawNMEA.swift */,
 			);
 			path = SettingsView;
 			sourceTree = "<group>";
@@ -625,6 +628,7 @@
 				06A5255D2CF077AB00532A51 /* Waypoints.swift in Sources */,
 				069EEA8A2CECD28D00357A05 /* CompassProcessor.swift in Sources */,
 				06F61EA52D10FF59005EA416 /* PerformanceDoubleBarView.swift in Sources */,
+				065AAD7C2D4FFC2200F7A1ED /* AdvancedSettingsView.swift in Sources */,
 				06A525852CF4B75F00532A51 /* CustomShapes.swift in Sources */,
 				0647305F2D29A535009BCF9A /* InfoWaypointSection.swift in Sources */,
 				06F483BD2A8F258300B701EC /* AvailableFontsSwiftUI.swift in Sources */,
@@ -793,6 +797,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ExtasyCompleteNavigation/ExtasyCompleteNavigation.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ExtasyCompleteNavigation/PreviewContent\"";
@@ -802,6 +807,7 @@
 				INFOPLIST_FILE = ExtasyCompleteNavigation/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "We need access for communication with the navigational instruments";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "To provide seamless navigation tracking.";
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Location access is required even when the app is not in use.";
@@ -819,6 +825,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bacata.ExtasyCompleteNavigation;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -831,6 +838,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ExtasyCompleteNavigation/ExtasyCompleteNavigation.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ExtasyCompleteNavigation/PreviewContent\"";
@@ -840,6 +848,7 @@
 				INFOPLIST_FILE = ExtasyCompleteNavigation/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "We need access for communication with the navigational instruments";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "To provide seamless navigation tracking.";
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Location access is required even when the app is not in use.";
@@ -857,6 +866,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bacata.ExtasyCompleteNavigation;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

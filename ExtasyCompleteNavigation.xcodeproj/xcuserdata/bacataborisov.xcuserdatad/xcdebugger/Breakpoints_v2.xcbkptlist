@@ -149,22 +149,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "A1DC5CEF-F4FC-4EE8-B559-3D4AAF5E4365"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "ExtasyCompleteNavigation/Parsing/NMEAParser.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "261"
-            endingLineNumber = "261"
-            landmarkName = "parseSentence(_:_:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             uuid = "F4568230-9B97-49F1-8AAF-509F63227AD7"
             shouldBeEnabled = "No"
             ignoreCount = "0"
@@ -175,6 +159,22 @@
             startingLineNumber = "196"
             endingLineNumber = "196"
             landmarkName = "calculateTackState(currentHeading:intersection1:intersection2:boatLocation:trueWindDirection:sailingState:optimalUpAngle:optimalDownAngle:twaThreshold:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "67A6DB50-99DC-43AE-B4CF-2242D06CB2D3"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ExtasyCompleteNavigation/View/UltimateView/SettingsView/AdvancedSettingsView.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "97"
+            endingLineNumber = "97"
+            landmarkName = "syncFilesToiCloud()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

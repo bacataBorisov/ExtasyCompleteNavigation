@@ -262,7 +262,7 @@ struct MapView: View {
     private func adjustZoomLevel() {
         if navigationReadings.gpsData?.isTargetSelected == true,
            let boatLocation = navigationReadings.gpsData?.boatLocation,
-           let waypointLocation = navigationReadings.gpsData?.markerCoordinate {
+           let waypointLocation = navigationReadings.gpsData?.waypointLocation {
             
             // Calculate the region spanning the boat and waypoint
             let latitudeDelta = abs(boatLocation.latitude - waypointLocation.latitude) * 1.5 // Add padding
@@ -379,9 +379,9 @@ struct MapView: View {
     @MapContentBuilder
     private func waypointAnnotations() -> some MapContent {
         if navigationReadings.gpsData?.isTargetSelected == true,
-           let lat = navigationReadings.gpsData?.markerCoordinate?.latitude,
-           let lon = navigationReadings.gpsData?.markerCoordinate?.longitude,
-           let title = navigationReadings.gpsData?.markerName {
+           let lat = navigationReadings.gpsData?.waypointLocation?.latitude,
+           let lon = navigationReadings.gpsData?.waypointLocation?.longitude,
+           let title = navigationReadings.gpsData?.waypointName {
             Annotation("", coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lon)) {
                 VStack(spacing: 4) {
                     // System image (pyramid) in orange
@@ -452,11 +452,11 @@ struct MapView: View {
                 MapPolyline(coordinates: [boatLocation, starboardIntersection])
                     .stroke(Color.purple.opacity(0.7), lineWidth: 2)
                 
-                if let waypointCoordinate = navigationReadings.gpsData?.markerCoordinate {
+                if let waypointCoordinate = navigationReadings.gpsData?.waypointLocation {
                     MapPolyline(coordinates: [starboardIntersection, waypointCoordinate])
                         .stroke(Color.orange.opacity(0.7), lineWidth: 2)
                 }
-            } else if let waypointCoordinate = navigationReadings.gpsData?.markerCoordinate {
+            } else if let waypointCoordinate = navigationReadings.gpsData?.waypointLocation {
                 MapPolyline(coordinates: [boatLocation, waypointCoordinate])
                     .stroke(Color.yellow.opacity(0.7), lineWidth: 2)
             }
@@ -466,11 +466,11 @@ struct MapView: View {
                 MapPolyline(coordinates: [boatLocation, portsideIntersection])
                     .stroke(Color.purple.opacity(0.7), lineWidth: 2)
                 
-                if let waypointCoordinate = navigationReadings.gpsData?.markerCoordinate {
+                if let waypointCoordinate = navigationReadings.gpsData?.waypointLocation {
                     MapPolyline(coordinates: [portsideIntersection, waypointCoordinate])
                         .stroke(Color.orange.opacity(0.7), lineWidth: 2)
                 }
-            } else if let waypointCoordinate = navigationReadings.gpsData?.markerCoordinate {
+            } else if let waypointCoordinate = navigationReadings.gpsData?.waypointLocation {
                 MapPolyline(coordinates: [boatLocation, waypointCoordinate])
                     .stroke(Color.yellow.opacity(0.7), lineWidth: 2)
             }

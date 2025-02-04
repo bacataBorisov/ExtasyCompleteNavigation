@@ -65,6 +65,9 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     private var lastWindUpdateTime: Date?
     private var dataTimeout: TimeInterval = 30 // Timeout in seconds
     
+    // Data Logger
+    let dataLogger = DataLogger()
+    private var logTimer: Timer?
     
     //MARK: - Watchod Logic and Mechanism
     /**
@@ -76,6 +79,49 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
         super.init()
         // Assign the initialized local variable to self.vmgData
         startDataWatchdog()
+        startPeriodicLogging()
+    }
+    
+    // Start logging every 5 seconds
+    func startPeriodicLogging() {
+        logTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
+            self?.logData()
+        }
+    }
+    
+    // MARK: - Centralized Logging Method
+    private func logData() {
+        guard let gps = gpsData else {
+            debugLog("GPS data is not available. Skipping log entry.")
+            return
+        }
+        // Always log raw data
+        dataLogger.logRawData(
+            gpsData: gps,
+            hydroData: hydroData ?? HydroData(),
+            compassData: compassData ?? CompassData(),
+            windData: windData ?? WindData()
+        )
+        // Always log general data, even if no waypoint is selected
+        dataLogger.logFilteredDataWaypointNotSelected(
+            gpsData: gps,
+            hydroData: hydroData ?? HydroData(),
+            compassData: compassData ?? CompassData(),
+            windData: windData ?? WindData(),
+            vmgData: vmgData ?? VMGData()
+        )
+
+        // If a waypoint is selected, additionally log waypoint-specific data
+        if gps.isTargetSelected, let waypoint = waypointData {
+            dataLogger.logWaypointData(
+                gpsData: gps,
+                hydroData: hydroData ?? HydroData(),
+                compassData: compassData ?? CompassData(),
+                windData: windData ?? WindData(),
+                vmgData: vmgData ?? VMGData(),
+                waypointData: waypoint
+            )
+        }
     }
     
     func startDataWatchdog() {
@@ -255,7 +301,7 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
         )
         
         //process only when there is a valid marker coordinate
-        if let _ = updatedGPSData?.markerCoordinate {
+        if let _ = updatedGPSData?.waypointLocation {
             
             updatedWaypointData = waypointProcessor.processWaypointData(
                 vmgData: vmgData,

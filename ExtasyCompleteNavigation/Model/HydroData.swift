@@ -7,21 +7,30 @@
 
 struct HydroData {
     
-    //Sea Water Temperature
+    // Raw data fields
+    var rawDepth: Double?
+    var rawSeaWaterTemperature: Double?
+    var rawBoatSpeedLag: Double?
+    
+    // Filtered Data Fields
+    // Sea Water Temperature
     var seaWaterTemperature: Double?
-    //Boat Speed Through Water
+    // Boat Speed Through Water
     var boatSpeedLag: Double?
     var speedLogCalibrationCoeff: Double?
-    //Boat Distance Through Water
+    // Boat Distance Through Water
     var totalDistance: Double?
     var distSinceReset: Double?
-    //Depth
+    // Depth
     var depth: Double?
     var depthTriggerAlarm: Bool = false
     
-    //Utility to reset hydro data
+    // Utility to reset hydro data
     mutating func reset() {
         
+        rawDepth = nil
+        rawSeaWaterTemperature = nil
+        rawBoatSpeedLag = nil
         seaWaterTemperature = nil
         boatSpeedLag = nil
         speedLogCalibrationCoeff = nil

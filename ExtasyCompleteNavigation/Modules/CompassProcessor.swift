@@ -26,8 +26,14 @@ class CompassProcessor {
         let direction = splitStr[6]
         let correctedHeading = correctedHeading(heading: rawHeading, variation: variation, direction: direction)
         
+        // Update the raw value
+        compassData.rawMagneticHeading = correctedHeading
+        
         // Normalize the corrected heading
         let normalized = normalizeAngle(correctedHeading)
+        
+        // Update the raw normalized heading
+        compassData.rawNormalizedHeading = normalized
         
         // Apply Kalman filtering to the normalized heading
         if let filteredNormalizedHeading = normalizedHeadingFilter?.update(measurement: normalized) {
@@ -42,10 +48,5 @@ class CompassProcessor {
     // Corrects the heading based on magnetic variation
     private func correctedHeading(heading: Double, variation: Double, direction: String) -> Double {
         return (direction == "E") ? (heading + variation) : (heading - variation)
-    }
-
-    // Normalizes the angle to the range [0, 360)
-    private func normalizeAngle(_ angle: Double) -> Double {
-        return angle.truncatingRemainder(dividingBy: 360) + (angle < 0 ? 360 : 0)
     }
 }

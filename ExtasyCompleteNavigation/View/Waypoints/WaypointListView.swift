@@ -161,8 +161,8 @@ struct WaypointListView: View {
                     .foregroundColor(.primary)
 
                 if navigationReadings.gpsData?.isTargetSelected == true,
-                   waypoint.lat == navigationReadings.gpsData?.markerCoordinate?.latitude,
-                   waypoint.lon == navigationReadings.gpsData?.markerCoordinate?.longitude {
+                   waypoint.lat == navigationReadings.gpsData?.waypointLocation?.latitude,
+                   waypoint.lon == navigationReadings.gpsData?.waypointLocation?.longitude {
                     Text("Selected Target")
                         .font(.caption)
                         .foregroundColor(.green)
@@ -172,8 +172,8 @@ struct WaypointListView: View {
         }
         .padding(.all, 10)
         .background(navigationReadings.gpsData?.isTargetSelected == true &&
-                    waypoint.lat == navigationReadings.gpsData?.markerCoordinate?.latitude &&
-                    waypoint.lon == navigationReadings.gpsData?.markerCoordinate?.longitude ? Color.green.opacity(0.2) : Color.clear)
+                    waypoint.lat == navigationReadings.gpsData?.waypointLocation?.latitude &&
+                    waypoint.lon == navigationReadings.gpsData?.waypointLocation?.longitude ? Color.green.opacity(0.2) : Color.clear)
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
@@ -187,8 +187,8 @@ struct WaypointListView: View {
             }
 
             if navigationReadings.gpsData?.isTargetSelected == true &&
-                waypoint.lat == navigationReadings.gpsData?.markerCoordinate?.latitude &&
-                waypoint.lon == navigationReadings.gpsData?.markerCoordinate?.longitude {
+                waypoint.lat == navigationReadings.gpsData?.waypointLocation?.latitude &&
+                waypoint.lon == navigationReadings.gpsData?.waypointLocation?.longitude {
                 Button {
                     deselectWaypoint()
                 } label: {
@@ -225,7 +225,7 @@ struct WaypointListView: View {
 
     private func deselectWaypoint() {
         navigationReadings.waypointProcessor.resetWaypointCalculations()
-        navigationReadings.gpsProcessor.gpsData.markerCoordinate = nil
+        navigationReadings.gpsProcessor.gpsData.waypointLocation = nil
         navigationReadings.gpsProcessor.disableMarker()
     }
 }

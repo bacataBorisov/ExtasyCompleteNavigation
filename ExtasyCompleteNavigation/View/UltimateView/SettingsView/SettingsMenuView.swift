@@ -3,8 +3,8 @@ import SwiftUI
 struct SettingsMenuView: View {
     @Environment(SettingsManager.self) private var settingsManager
     @Environment(NMEAParser.self) private var navigationReadings
-    @State private var showRawNMEA = false
-    
+    @State private var showAdvancedSettings = false
+
     var body: some View {
         List {
             // General Settings
@@ -20,7 +20,7 @@ struct SettingsMenuView: View {
             CompactRow(title: "View Glossary", icon: "book.fill", destination: GlossaryView())
             
             // Advanced Settings (Full-screen Navigation)
-            Button(action: { showRawNMEA.toggle() }) {
+            Button(action: { showAdvancedSettings.toggle() }) {
                 CompactRow(title: "Advanced", icon: "gearshape.2.fill", destination: EmptyView())
             }
             .buttonStyle(.plain)
@@ -28,11 +28,13 @@ struct SettingsMenuView: View {
         .listStyle(.insetGrouped)
         .listSectionSpacing(8)
         .navigationTitle("Settings")
-        .fullScreenCover(isPresented: $showRawNMEA) {
-            ReadRawNMEA()
+        .fullScreenCover(isPresented: $showAdvancedSettings) {
+            AdvancedSettingsView()
         }
     }
 }
+
+
 
 // MARK: - CompactRow Component
 struct CompactRow<Destination: View>: View {
@@ -44,12 +46,12 @@ struct CompactRow<Destination: View>: View {
         NavigationLink(destination: destination) {
             HStack(spacing: 12) {
                 Image(systemName: icon)
-                    .foregroundColor(.gray) // Matches system accent color
+                    .foregroundColor(.gray)
                     .font(.system(size: 20))
                 
                 Text(title)
-                    .font(.subheadline) // Adjust font size
-                    .padding(.vertical, 6) // Add compact vertical padding
+                    .font(.subheadline)
+                    .padding(.vertical, 6)
             }
         }
     }

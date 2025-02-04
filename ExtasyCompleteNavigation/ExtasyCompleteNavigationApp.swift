@@ -18,15 +18,15 @@ struct ExtasyCompleteNavigationApp: App {
     init() {
         // Initialize default settings
         DefaultSettings.initializeDefaults()
-        
+
         do {
-            let config = ModelConfiguration(for: Waypoints.self,
-                                            isStoredInMemoryOnly: true)
+            let config = ModelConfiguration(for: Waypoints.self)
             
-            modelContainer = try ModelContainer(for: Waypoints.self,
-                                                configurations: config)
+            modelContainer = try ModelContainer(for: Waypoints.self, configurations: config)
+            debugLog("ModelContainer initialized successfully.")
+            
         } catch {
-            fatalError("Could not initialize ModelContainer for these guys")
+            fatalError("Could not initialize ModelContainer: \(error.localizedDescription)")
         }
     }
     
