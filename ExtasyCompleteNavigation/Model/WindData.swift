@@ -4,37 +4,39 @@
 //
 //  Created by Vasil Borisov on 18.11.24.
 //
+
 import Foundation
 
 struct WindData {
     
-    // Raw Data Fields
-    var rawApparentWindAngle: Double?
-    var rawApparentWindForce: Double?
-    var rawApparentWindDirection: Double?
+    // MARK: - Raw Data Fields (Used for Raw Data Logging)
+    var rawApparentWindAngle: Double? = nil    // Raw Apparent Wind Angle (AWA)
+    var rawApparentWindForce: Double? = nil    // Raw Apparent Wind Speed (AWS)
+    var rawApparentWindDirection: Double? = nil // Raw Apparent Wind Direction (AWD)
     
-    var rawTrueWindAngle: Double?
-    var rawTrueWindForce: Double?
-    var rawTrueWindDirection: Double?
+    var rawTrueWindAngle: Double? = nil        // Raw True Wind Angle (TWA)
+    var rawTrueWindForce: Double? = nil        // Raw True Wind Speed (TWS)
+    var rawTrueWindDirection: Double? = nil    // Raw True Wind Direction (TWD)
     
-    // Filtered Data Fields
-    var apparentWindAngle: Double?      // Apparent Wind Angle (AWA)
-    var apparentWindForce: Double?     // Apparent Wind Speed (AWS)
-    var apparentWindDirection: Double? // Apparent Wind Direction (AWD)
+    // MARK: - Filtered Data Fields
+    var apparentWindAngle: Double? = nil       // Filtered Apparent Wind Angle (AWA)
+    var apparentWindForce: Double? = nil       // Filtered Apparent Wind Speed (AWS)
+    var apparentWindDirection: Double? = nil   // Filtered Apparent Wind Direction (AWD)
     
-    var trueWindAngle: Double?         // True Wind Angle (TWA)
-    var trueWindForce: Double?         // True Wind Speed (TWS)
-    var trueWindDirection: Double?     // True Wind Direction (TWD)
+    var trueWindAngle: Double? = nil           // Filtered True Wind Angle (TWA)
+    var trueWindForce: Double? = nil           // Filtered True Wind Speed (TWS)
+    var trueWindDirection: Double? = nil       // Filtered True Wind Direction (TWD)
     
-    var lastUpdated: Date?
+    var lastUpdated: Date? = nil               // Timestamp of the last wind data update
     
-    // Utility for resetting the data (optional)
-    //If your application needs to reset the wind data after processing or to prepare for new data input, the reset() function ensures all properties are cleared efficiently.
+    // MARK: - Utility Methods
+    
+    /// Resets all wind data fields to their default state
     mutating func reset() {
-        
         rawApparentWindAngle = nil
         rawApparentWindForce = nil
         rawApparentWindDirection = nil
+        
         rawTrueWindAngle = nil
         rawTrueWindForce = nil
         rawTrueWindDirection = nil
@@ -42,10 +44,13 @@ struct WindData {
         apparentWindAngle = nil
         apparentWindForce = nil
         apparentWindDirection = nil
+        
         trueWindAngle = nil
         trueWindForce = nil
         trueWindDirection = nil
+        
         lastUpdated = nil
+        
+        debugLog("Wind data has been reset.")
     }
 }
-

@@ -51,16 +51,12 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     
     //MARK: - Mark Setup Variables & VMG
     
-    // VMG - Calculated Values
-    
     @ObservationIgnored var vmgProcessor = VMGProcessor()
     var vmgData: VMGData?
     
     @ObservationIgnored var waypointProcessor = WaypointProcessor()
     var waypointData: WaypointData?
-    
-    //UserSettingsValues
-    
+        
     //Watchdog variables
     private var lastWindUpdateTime: Date?
     private var dataTimeout: TimeInterval = 30 // Timeout in seconds
@@ -325,48 +321,24 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
 
     }//END OF PARSE SENTENCE
     
-    //TODO: - Fix this because it is insane - it is just for the test
-    // it has to be removed, I should parse the normalized angles straight or add this to WindData structure
-    //Function to normalize values for display
+    // MARK: - Display Value Normalization (TODO: Refactor Later)
     func displayValue(a: Int) -> Double? {
-        
         switch a {
-        case 0:
-            return hydroData?.depth
-        case 1:
-            return compassData?.normalizedHeading
-        case 2:
-            return hydroData?.seaWaterTemperature
-        case 3:
-            return hydroData?.boatSpeedLag
-        case 4:
-            return windData?.apparentWindAngle
-        case 5:
-            return windData?.apparentWindDirection
-        case 6:
-            if AppSettings.metricWind {
-                return (windData?.apparentWindForce ?? 0) * toMetersPerSecond
-            } else {
-                return windData?.apparentWindForce
-            }
-        case 7:
-            return windData?.trueWindAngle
-        case 8:
-            return windData?.trueWindDirection
-        case 9:
-            if AppSettings.metricWind {
-                return (windData?.trueWindForce ?? 0) * toMetersPerSecond
-            } else {
-                return windData?.trueWindForce
-            }
-        case 10:
-            return gpsData?.courseOverGround
-        case 11:
-            return gpsData?.speedOverGround
-        default:
-            return nil
+        case 0: return hydroData?.depth
+        case 1: return compassData?.normalizedHeading
+        case 2: return hydroData?.seaWaterTemperature
+        case 3: return hydroData?.boatSpeedLag
+        case 4: return windData?.apparentWindAngle
+        case 5: return windData?.apparentWindDirection
+        case 6: return AppSettings.metricWind ? (windData?.apparentWindForce ?? 0) * toMetersPerSecond : windData?.apparentWindForce
+        case 7: return windData?.trueWindAngle
+        case 8: return windData?.trueWindDirection
+        case 9: return AppSettings.metricWind ? (windData?.trueWindForce ?? 0) * toMetersPerSecond : windData?.trueWindForce
+        case 10: return gpsData?.courseOverGround
+        case 11: return gpsData?.speedOverGround
+        default: return nil
         }
-    }//END OF displayValue function
+    }
 }
 
 

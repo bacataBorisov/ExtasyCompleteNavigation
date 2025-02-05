@@ -10,68 +10,62 @@ import CoreLocation
 
 struct WaypointData {
     
-    // MARK: - Coordinates & Name
+    // MARK: - Coordinates & Navigation Details
+    var boatLocation: CLLocationCoordinate2D?         // Current boat location
+    var waypointCoordinate: CLLocationCoordinate2D?   // Target waypoint coordinates
     
-    var boatLocation: CLLocationCoordinate2D? // Boat's current location
-    var waypointCoordinate: CLLocationCoordinate2D? // Target waypoint coordinates
-
-    // MARK: - Distance Calculations
-    var distanceToMark: Double? // Distance from the boat to the waypoint (in meters)
+    // MARK: - Distance & Bearing Calculations
+    var distanceToMark: Double?                      // Distance from boat to waypoint (in meters)
+    var trueMarkBearing: Double?                     // True bearing from boat to waypoint
     
-    // MARK: - Time Calculations
-    var tripDurationToWaypoint: Double? // Estimated Time of Arrival to the waypoint
-    var etaToWaypoint: Date?
+    // MARK: - Time & ETA Calculations
+    var tripDurationToWaypoint: Double?              // Estimated trip duration to the waypoint
+    var etaToWaypoint: Date?                         // Estimated Time of Arrival (ETA) at the waypoint
     
-    var tackDistance: Double? // distance to the current tack intersection
-    var tackDuration: Double? // estimated time spent on this tack
-    var distanceOnOppositeTack: Double?
-    var tripDurationOnOppositeTack: Double?
-    var etaToNextTack: Date? // ETA to the next tack
-
-    // MARK: - Bearings
-    var trueMarkBearing: Double? // True bearing to the waypoint
-    var currentTackState: String?
-    var currentTackRelativeBearing: Double? // Relative bearing to the waypoint
-    var oppositeTackState: String?
-    var oppositeTackRelativeBearing: Double? // Relative bearing on the opposite tack
-
-    // MARK: - Tack Calculations
-    var currentTackVMC: Double? // VMC to the waypoint
-    var currentTackVMCDisplay: Double?
-    var oppositeTackVMC: Double?
-    var oppositeTackVMCDisplay: Double?
-    var currentTackVMCPerformance: Double?
-    var oppositeTackVMCPerformance: Double?
-
-    // MARK: - Max Polar VMC
+    var tackDistance: Double?                        // Distance to tack intersection
+    var tackDuration: Double?                        // Estimated time on the current tack
     
-    var polarVMC: Double? // max theoretical VMC to the waypoint
-    var maxTackPolarVMC: Double? //hold the max between both tacks
-
-    // MARK: - Velocity Made on Course (VMC)
-
-    var isVMCNegative: Bool = false
+    var distanceOnOppositeTack: Double?              // Distance on the opposite tack
+    var tripDurationOnOppositeTack: Double?          // Estimated time on the opposite tack
+    var etaToNextTack: Date?                         // ETA to the next tack
     
-    // MARK: - Laylines
+    // MARK: - Tack State & Relative Bearings
+    var currentTackState: String?                    // Current tack direction ("Port" or "Starboard")
+    var currentTackRelativeBearing: Double?          // Relative bearing to waypoint on the current tack
     
-    var starboardLayline: Layline?           // Starboard layline from boat to waypoint
-    var portsideLayline: Layline?            // Portside layline from boat to waypoint
-    var extendedStarboardLayline: Layline?  // Starboard layline extended beyond waypoint
-    var extendedPortsideLayline: Layline?   // Portside layline extended beyond waypoint
-    var starboardIntersection: (intersection: CLLocationCoordinate2D, distanceBoat: Double, distanceWaypoint: Double)? // point of intersection
-    var portsideIntersection: (intersection: CLLocationCoordinate2D, distanceBoat: Double, distanceWaypoint: Double)? // point of intersection
-
-
+    var oppositeTackState: String?                   // Opposite tack direction
+    var oppositeTackRelativeBearing: Double?         // Relative bearing on the opposite tack
+    
+    // MARK: - Velocity Made on Course (VMC) Calculations
+    var currentTackVMC: Double?                      // VMC to waypoint on the current tack
+    var currentTackVMCDisplay: Double?               // Display value for current tack VMC
+    var currentTackVMCPerformance: Double?           // VMC performance on the current tack
+    
+    var oppositeTackVMC: Double?                     // VMC to waypoint on the opposite tack
+    var oppositeTackVMCDisplay: Double?              // Display value for opposite tack VMC
+    var oppositeTackVMCPerformance: Double?          // VMC performance on the opposite tack
+    
+    var polarVMC: Double?                            // Theoretical maximum VMC from polar diagrams
+    var maxTackPolarVMC: Double?                     // Maximum polar VMC between both tacks
+    
+    var isVMCNegative: Bool = false                  // Indicates if VMC is negative (moving away from waypoint)
+    
+    // MARK: - Laylines & Intersections
+    var starboardLayline: Layline?                   // Starboard layline from boat to waypoint
+    var portsideLayline: Layline?                    // Portside layline from boat to waypoint
+    
+    var extendedStarboardLayline: Layline?           // Extended starboard layline beyond waypoint
+    var extendedPortsideLayline: Layline?            // Extended portside layline beyond waypoint
+    
+    var starboardIntersection: (intersection: CLLocationCoordinate2D, distanceBoat: Double, distanceWaypoint: Double)?
+    var portsideIntersection: (intersection: CLLocationCoordinate2D, distanceBoat: Double, distanceWaypoint: Double)?
+    
     // MARK: - Reset Function
+    /// Resets all waypoint-related data to its default state
     mutating func reset() {
-        // Coordinates
-        //boatLocation = nil
         waypointCoordinate = nil
-        
-        // Distance
         distanceToMark = nil
         
-        // Time Calculations
         tripDurationToWaypoint = nil
         etaToWaypoint = nil
         tackDistance = nil
@@ -80,27 +74,25 @@ struct WaypointData {
         tripDurationOnOppositeTack = nil
         etaToNextTack = nil
         
-        // Bearings
         trueMarkBearing = nil
         currentTackState = nil
         currentTackRelativeBearing = nil
         
-        // Opposite Tack Calculations
         oppositeTackState = nil
-        oppositeTackRelativeBearing = nil // Relative bearing on the opposite tack
-        oppositeTackVMC = nil
-        oppositeTackVMCDisplay = nil
+        oppositeTackRelativeBearing = nil
         
-        // VMC
         currentTackVMC = nil
         currentTackVMCDisplay = nil
-        polarVMC = nil
         currentTackVMCPerformance = nil
-        oppositeTackVMCPerformance = nil
-        maxTackPolarVMC = nil
         
-        // Laylines
-        // MARK: - Laylines
+        oppositeTackVMC = nil
+        oppositeTackVMCDisplay = nil
+        oppositeTackVMCPerformance = nil
+        
+        polarVMC = nil
+        maxTackPolarVMC = nil
+        isVMCNegative = false
+        
         starboardLayline = nil
         portsideLayline = nil
         extendedStarboardLayline = nil
@@ -108,7 +100,6 @@ struct WaypointData {
         starboardIntersection = nil
         portsideIntersection = nil
         
+        debugLog("Waypoint data has been reset.")
     }
 }
-
-

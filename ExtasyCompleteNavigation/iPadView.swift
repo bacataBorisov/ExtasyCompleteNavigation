@@ -3,7 +3,7 @@ import SwiftUI
 struct iPadView: View {
     @Environment(NMEAParser.self) private var navigationReadings
     @State private var isTargetSelected: Bool = false // State for target selection animation
-
+    
     var body: some View {
         GeometryReader { geometry in
             HStack(alignment: .top, spacing: 16) {
@@ -12,12 +12,12 @@ struct iPadView: View {
                     NavigationStack {
                         UltimateView()
                             .frame(height: geometry.size.height * 0.65)
-                            //.background(Color.red.opacity(0.2)) // Debugging background
+                        //.background(Color.red.opacity(0.2)) // Debugging background
                     }
-
+                    
                     PerformanceView()
                         .frame(height: geometry.size.height * 0.35)
-                        //.background(Color.blue.opacity(0.2)) // Debugging background
+                    //.background(Color.blue.opacity(0.2)) // Debugging background
                 }
                 .frame(maxHeight: geometry.size.height)
                 // Right Section: MultiDisplay and VMGSimpleView
@@ -33,7 +33,7 @@ struct iPadView: View {
                                     removal: .move(edge: .trailing).combined(with: .opacity)
                                 ))
                         }
-
+                        
                     } else {
                         MultiDisplay()
                             .frame(height: geometry.size.height * 0.65)
@@ -41,7 +41,7 @@ struct iPadView: View {
                             InfoWaypointSection()
                                 .frame(height: geometry.size.height * 0.35)
                         }
-
+                        
                     }
                 }
                 .frame(maxHeight: geometry.size.height)
@@ -55,7 +55,7 @@ struct iPadView: View {
         }
         .animation(.easeInOut(duration: 1), value: isTargetSelected) // Ensure smooth animations
     }
-
+    
     // MARK: - Update Target State
     private func updateTargetState() {
         isTargetSelected = navigationReadings.gpsData?.isTargetSelected ?? false

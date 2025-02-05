@@ -9,48 +9,56 @@ import CoreLocation
 
 struct GPSData {
     
+    // MARK: - Validation State
     var isGPSDataValid: Bool = false
-    
-    // Raw data fields
-    var rawLatitude: Double?
-    var rawLongitude: Double?
-    var rawCourseOverGround: Double?
-    var rawSpeedOverGround: Double?
-    
-    // Filtered Data Fields
-    var latitude: Double?
-    var longitude: Double?
-    var boatLocation: CLLocationCoordinate2D? {
-        guard let latitude = latitude, let longitude = longitude else {
-            return nil
-        }
-        return CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-    }
-    var courseOverGround: Double? // COG
-    var speedOverGround: Double? // SOG in knots
-    var speedOverGroundKmh: Double? // SOG in km/h
-    var utcTime: String?
-    var gpsDate: String?
-    var waypointName: String?
-    var waypointLocation: CLLocationCoordinate2D? // Waypoint coordinates
     var isTargetSelected: Bool = false
 
+    // MARK: - Raw Data Fields (Used for Raw Data Logging)
+    var rawLatitude: Double? = nil
+    var rawLongitude: Double? = nil
+    var rawCourseOverGround: Double? = nil
+    var rawSpeedOverGround: Double? = nil
+    
+    // MARK: - Filtered Data Fields
+    var latitude: Double? = nil
+    var longitude: Double? = nil
+    var courseOverGround: Double? = nil  // COG
+    var speedOverGround: Double? = nil   // SOG in knots
+    var speedOverGroundKmh: Double? = nil // SOG in km/h
+    var utcTime: String? = nil
+    var gpsDate: String? = nil
+
+    // MARK: - Waypoint Data
+    var waypointName: String? = nil
+    var waypointLocation: CLLocationCoordinate2D? = nil
+
+    // MARK: - Computed Property for Boat Location
+    var boatLocation: CLLocationCoordinate2D? {
+        guard let lat = latitude, let lon = longitude else { return nil }
+        return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+    }
+
+    // MARK: - Reset Method
     mutating func reset() {
-        
         isGPSDataValid = false
+        isTargetSelected = false
+
         rawLatitude = nil
         rawLongitude = nil
         rawCourseOverGround = nil
         rawSpeedOverGround = nil
+
         latitude = nil
         longitude = nil
-        waypointLocation = nil
-        waypointName = nil
         courseOverGround = nil
         speedOverGround = nil
         speedOverGroundKmh = nil
         utcTime = nil
         gpsDate = nil
-        isTargetSelected = false
+
+        waypointName = nil
+        waypointLocation = nil
+
+        debugLog("GPS data has been reset.")
     }
 }
