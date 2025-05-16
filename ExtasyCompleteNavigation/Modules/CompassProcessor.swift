@@ -7,8 +7,8 @@ class CompassProcessor {
     
     // Initialize the CompassProcessor with an optimized Kalman filter
     init() {
-        // Increase process noise for faster response and slightly decrease measurement noise
-        normalizedHeadingFilter = KalmanFilter(initialValue: 0.0, processNoise: 1e-4, measurementNoise: 5e-2)
+        //NOTE: - Kalman coeff. set to mimic as close as possible to the input values. Adjustment to be made in a later stage
+        normalizedHeadingFilter = KalmanFilter(initialValue: 0.0, processNoise: 1.0, measurementNoise: 1e-9)
     }
     
     // Processes the magnetic heading from an NMEA sentence

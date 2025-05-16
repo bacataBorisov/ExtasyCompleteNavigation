@@ -10,10 +10,10 @@ class HydroProcessor {
     
     // Initialize the HydroProcessor with optional initial values for Kalman filters
     init() {
-        // Fine tune if needed during the real tests
-        depthFilter = KalmanFilter(initialValue: 0.0, processNoise: 1e-5, measurementNoise: 1e-1)
-        temperatureFilter = KalmanFilter(initialValue: 0.0, processNoise: 1e-5, measurementNoise: 1e-1)
-        speedLogFilter = KalmanFilter(initialValue: 0.0, processNoise: 1e-5, measurementNoise: 1e-1)
+        //NOTE: - Kalman coeff. set to mimic as close as possible to the input values. Adjustment to be made in a later stage
+        depthFilter = KalmanFilter(initialValue: 0.0, processNoise: 1.0, measurementNoise: 1e-9)
+        temperatureFilter = KalmanFilter(initialValue: 0.0, processNoise: 1.0, measurementNoise: 1e-9)
+        speedLogFilter = KalmanFilter(initialValue: 0.0, processNoise: 1.0, measurementNoise: 1e-9)
     }
     
     // Process depth-related data and return updated HydroData

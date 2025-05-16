@@ -4,11 +4,11 @@ import CoreLocation
 class GPSProcessor {
     private let serialQueue = DispatchQueue(label: "com.extasy.gpsProcessor")
     var gpsData = GPSData()
-
-    private var kalmanFilterLatitude = KalmanFilter(initialValue: 0.0, processNoise: 1e-4, measurementNoise: 1e-2)
-    private var kalmanFilterLongitude = KalmanFilter(initialValue: 0.0, processNoise: 1e-4, measurementNoise: 1e-2)
-    private var kalmanFilterSOG = KalmanFilter(initialValue: 0.0)
-    private var kalmanFilterCOG = KalmanFilter(initialValue: 0.0)
+    //NOTE: - Kalman coeff. set to mimic as close as possible to the input values. Adjustment to be made in a later stage
+    private var kalmanFilterLatitude = KalmanFilter(initialValue: 0.0, processNoise: 1.0, measurementNoise: 1e-9)
+    private var kalmanFilterLongitude = KalmanFilter(initialValue: 0.0, processNoise: 1.0, measurementNoise: 1e-9)
+    private var kalmanFilterSOG = KalmanFilter(initialValue: 0.0, processNoise: 1.0, measurementNoise: 1e-9)
+    private var kalmanFilterCOG = KalmanFilter(initialValue: 0.0, processNoise: 1.0, measurementNoise: 1e-9)
     
     // MARK: - Public Methods
     func updateMarker(to coordinate: CLLocationCoordinate2D, _ name: String) {

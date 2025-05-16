@@ -9,9 +9,9 @@ struct ReadRawNMEA: View {
     @State private var scrollProxy: ScrollViewProxy?
 
     private let categories = ["GPS", "Hydro", "Wind", "Compass"]
-
+    
     var filteredData: [String] {
-        Array(Set(navigationReadings.latestRawData)).filter { nmea in
+        navigationReadings.latestRawData.filter { nmea in
             switch selectedCategory {
             case "GPS":
                 return nmea.contains("GPRMC") || nmea.contains("GPGGA")
@@ -24,7 +24,7 @@ struct ReadRawNMEA: View {
             default:
                 return true
             }
-        }.sorted()
+        }
     }
 
     var body: some View {
