@@ -17,7 +17,7 @@ CONFIG = {
     "log_speed_knots": 8.0,     # Speed through water (log)
     "sog_speed_knots": 7.0,     # Speed over ground (SOG)
     "wind_speed_knots": 10.0,   # Wind speed
-    "ips": ["10.23.100.76", "10.23.100.61", "10.23.100.135", "10.23.100.47", "192.168.100.27"],
+    "ips": ["127.0.0.1"],
     "udp_port": 4950,
     "update_interval": 1.0,     # Time in seconds
 }
@@ -91,7 +91,7 @@ class NMEASentenceGenerator:
 
     @staticmethod
     def generate_depth_sentence():
-        depth = random.uniform(5.0, 50.0)
+        depth = random.uniform(35.0, 50.0)
         nmea_base = f"IIDPT,{depth:.1f},,"
         checksum = calculate_checksum(nmea_base)
         return f"${nmea_base}*{checksum}"

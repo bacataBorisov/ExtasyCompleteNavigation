@@ -152,7 +152,7 @@ class UDPHandler: NSObject, GCDAsyncUdpSocketDelegate {
     func udpSocket(_ sock: GCDAsyncUdpSocket, didReceive data: Data, fromAddress address: Data, withFilterContext filterContext: Any?) {
         if let receivedString = String(data: data, encoding: .utf8) {
             onDataReceived?(receivedString)
-            debugLog("Received UDP data: \(receivedString)")
+            //debugLog("Received UDP data: \(receivedString)")
         } else {
             debugLog("Received UDP data but failed to decode.")
         }

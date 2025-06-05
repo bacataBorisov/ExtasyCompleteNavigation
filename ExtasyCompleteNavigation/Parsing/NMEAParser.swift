@@ -22,13 +22,16 @@ import SwiftUI
 import MapKit
 import Observation
 import CocoaAsyncSocket
+import WatchConnectivity
 
 
 @Observable
 class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     
+    
     // MARK: - Raw String (Used in Advanced Settings)
     var latestRawData: [String] = []
+    
     
     //MARK: - Variables that come from II - Integrated Instruments
     
@@ -56,7 +59,7 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     
     @ObservationIgnored var waypointProcessor = WaypointProcessor()
     var waypointData: WaypointData?
-        
+    
     //Watchdog variables
     private var lastWindUpdateTime: Date?
     private var dataTimeout: TimeInterval = 30 // Timeout in seconds
@@ -64,6 +67,38 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     // Data Logger
     let dataLogger = DataLogger()
     private var logTimer: Timer?
+    
+    private var periodicUpdateTimer: Timer?
+
+    // Temporary caches
+    private var cachedHydroData: HydroData?
+    private var cachedWindData: WindData?
+    private var cachedGPSData: GPSData?
+    private var cachedCompassData: CompassData?
+    private var cachedVMGData: VMGData?
+    private var cachedWaypointData: WaypointData?
+
+    //MARK: - Timer function for UI Updates and Watch Session which is delibaretly offset from the 1 sec NMEA received singal
+    private func startPeriodicDataUpdate() {
+        periodicUpdateTimer = Timer.scheduledTimer(withTimeInterval: 1.037, repeats: true) { [weak self] _ in
+            guard let self else { return }
+
+            DispatchQueue.main.async {
+                if let hydro = self.cachedHydroData { self.hydroData = hydro }
+                if let wind = self.cachedWindData {
+                    self.windData = wind
+                    self.lastWindUpdateTime = wind.lastUpdated
+                }
+                if let gps = self.cachedGPSData { self.gpsData = gps }
+                if let compass = self.cachedCompassData { self.compassData = compass }
+                if let vmg = self.cachedVMGData { self.vmgData = vmg }
+                if let waypoint = self.cachedWaypointData { self.waypointData = waypoint }
+                
+                DataCoordinator.shared.update(depth: self.hydroData?.depth, speed: self.hydroData?.boatSpeedLag, wind: self.windData?.trueWindForce, sog: self.gpsData?.speedOverGround)
+                DataCoordinator.shared.sendIfChanged()
+            }
+        }
+    }
     
     //MARK: - Watchod Logic and Mechanism
     /**
@@ -76,6 +111,9 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
         // Assign the initialized local variable to self.vmgData
         startDataWatchdog()
         startPeriodicLogging()
+        // start watch timer 
+        startPeriodicDataUpdate()
+        //DataCoordinator.shared.start()
     }
     
     // Start logging every 5 seconds
@@ -106,7 +144,7 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
             windData: windData ?? WindData(),
             vmgData: vmgData ?? VMGData()
         )
-
+        
         // If a waypoint is selected, additionally log waypoint-specific data
         if gps.isTargetSelected, let waypoint = waypointData {
             dataLogger.logWaypointData(
@@ -143,10 +181,10 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     //MARK: - NMEA String Processing
     
     func processRawString(rawData: String){
-            
+        
         DispatchQueue.main.async {
             self.latestRawData.append(rawData)
-
+            
         }
         
         //Check first sign of the string
@@ -201,7 +239,7 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
         parseSentence(sentenceFormat, splitStr)
 
     }//END OF PROCESS RAW STRING
-    
+
     //MARK: - Functions
     
     private func parseSentence(_ format: String, _ splitStr: [String]) {
@@ -309,16 +347,15 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
         // Updates MUST happen on the Main Thread
         DispatchQueue.main.async { [self] in
             
-            // Ensure the variable is used only if updated
-            if let hydro = updatedHydroData { hydroData = hydro }
-            if let wind = updatedWindData { windData = wind;lastWindUpdateTime = updatedWindData?.lastUpdated }
-            if let gps = updatedGPSData { gpsData = gps }
-            if let compass = updatedCompassData { compassData = compass }
-            if let vmg = updatedVMGData { vmgData = vmg }
-            if let waypoint = updatedWaypointData { waypointData = waypoint }
-            
-        }
+            // Buffer only, no UI updates here
+            cachedHydroData = updatedHydroData ?? cachedHydroData
+            cachedWindData = updatedWindData ?? cachedWindData
+            cachedGPSData = updatedGPSData ?? cachedGPSData
+            cachedCompassData = updatedCompassData ?? cachedCompassData
+            cachedVMGData = updatedVMGData ?? cachedVMGData
+            cachedWaypointData = updatedWaypointData ?? cachedWaypointData
 
+        }
     }//END OF PARSE SENTENCE
     
     // MARK: - Display Value Normalization (TODO: Refactor Later)

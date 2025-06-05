@@ -17,6 +17,7 @@ import Foundation
 class NavigationManager {
     let udpHandler = UDPHandler()
     let nmeaParser = NMEAParser()
+    //used for watch data send
     
     init() {
         // Connect UDPHandler to NMEAParser
@@ -24,7 +25,6 @@ class NavigationManager {
             
             // MARK: - Commented variables are for measuring processing time - avg for now is ~0.2 ms
             //let startTime = CFAbsoluteTimeGetCurrent()
-            
             self.nmeaParser.processRawString(rawData: rawData)
             
             //let elapsedTime = (CFAbsoluteTimeGetCurrent() - startTime) * 1000 // Convert to milliseconds

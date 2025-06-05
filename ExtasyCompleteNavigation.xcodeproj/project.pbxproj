@@ -7,7 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0602079E2DD812300020FD92 /* ExtasyCompleteNavigationWatchApp Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 0602077B2DD8122F0020FD92 /* ExtasyCompleteNavigationWatchApp Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		060207AF2DD818AD0020FD92 /* WatchConnectivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 060207AE2DD818AD0020FD92 /* WatchConnectivityManager.swift */; };
 		0608FE3A2D29C8DA0079A03D /* iPhoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0608FE392D29C8D70079A03D /* iPhoneView.swift */; };
+		0630BB572DEE87F400B3C52D /* DataCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0630BB562DEE87F400B3C52D /* DataCoordinator.swift */; };
+		0630BB592DEE880C00B3C52D /* WatchDataSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0630BB582DEE880C00B3C52D /* WatchDataSender.swift */; };
 		063650382B671592002AF39C /* SmallCornerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 063650372B671592002AF39C /* SmallCornerView.swift */; };
 		0641C3F32A9AF061008799BC /* DisplayCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0641C3F22A9AF061008799BC /* DisplayCell.swift */; };
 		0647304F2D275C7E009BCF9A /* CalibrateSpeedLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0647304E2D275C78009BCF9A /* CalibrateSpeedLog.swift */; };
@@ -83,6 +87,27 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		0602078B2DD812300020FD92 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 066311A32A38DB6B00AAE263 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0602077A2DD8122F0020FD92;
+			remoteInfo = "ExtasyCompleteNavigationWatchApp Watch App";
+		};
+		060207952DD812300020FD92 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 066311A32A38DB6B00AAE263 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0602077A2DD8122F0020FD92;
+			remoteInfo = "ExtasyCompleteNavigationWatchApp Watch App";
+		};
+		0602079C2DD812300020FD92 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 066311A32A38DB6B00AAE263 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0602077A2DD8122F0020FD92;
+			remoteInfo = "ExtasyCompleteNavigationWatchApp Watch App";
+		};
 		069EEA7A2CECCA6B00357A05 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 066311A32A38DB6B00AAE263 /* Project object */;
@@ -92,8 +117,28 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		0602079F2DD812300020FD92 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				0602079E2DD812300020FD92 /* ExtasyCompleteNavigationWatchApp Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		0602077B2DD8122F0020FD92 /* ExtasyCompleteNavigationWatchApp Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ExtasyCompleteNavigationWatchApp Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0602078A2DD812300020FD92 /* ExtasyCompleteNavigationWatchApp Watch AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ExtasyCompleteNavigationWatchApp Watch AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		060207942DD812300020FD92 /* ExtasyCompleteNavigationWatchApp Watch AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ExtasyCompleteNavigationWatchApp Watch AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		060207AE2DD818AD0020FD92 /* WatchConnectivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchConnectivityManager.swift; sourceTree = "<group>"; };
 		0608FE392D29C8D70079A03D /* iPhoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPhoneView.swift; sourceTree = "<group>"; };
+		0630BB562DEE87F400B3C52D /* DataCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCoordinator.swift; sourceTree = "<group>"; };
+		0630BB582DEE880C00B3C52D /* WatchDataSender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchDataSender.swift; sourceTree = "<group>"; };
 		063650372B671592002AF39C /* SmallCornerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmallCornerView.swift; sourceTree = "<group>"; };
 		0641C3F22A9AF061008799BC /* DisplayCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayCell.swift; sourceTree = "<group>"; };
 		0647304E2D275C78009BCF9A /* CalibrateSpeedLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrateSpeedLog.swift; sourceTree = "<group>"; };
@@ -170,12 +215,36 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		0602077C2DD8122F0020FD92 /* ExtasyCompleteNavigationWatchApp Watch App */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "ExtasyCompleteNavigationWatchApp Watch App"; sourceTree = "<group>"; };
+		0602078D2DD812300020FD92 /* ExtasyCompleteNavigationWatchApp Watch AppTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "ExtasyCompleteNavigationWatchApp Watch AppTests"; sourceTree = "<group>"; };
+		060207972DD812300020FD92 /* ExtasyCompleteNavigationWatchApp Watch AppUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "ExtasyCompleteNavigationWatchApp Watch AppUITests"; sourceTree = "<group>"; };
 		066FD0F22D42F40000FE7AF1 /* NMEATestScripts */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = NMEATestScripts; sourceTree = "<group>"; };
 		069EEA772CECCA6B00357A05 /* ExtasyCompleteNavigationTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ExtasyCompleteNavigationTests; sourceTree = "<group>"; };
 		06C0D8CA2CE6ABE6001B258A /* Utilities */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Utilities; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		060207782DD8122F0020FD92 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		060207872DD812300020FD92 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		060207912DD812300020FD92 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		066311A82A38DB6B00AAE263 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -201,6 +270,16 @@
 				066FD0F02D42EE8E00FE7AF1 /* ExtasyNavigation-SoftwareArchitectureMap.pdf */,
 			);
 			path = Docs;
+			sourceTree = "<group>";
+		};
+		0630BB552DEE86B100B3C52D /* WatchConnectivity */ = {
+			isa = PBXGroup;
+			children = (
+				060207AE2DD818AD0020FD92 /* WatchConnectivityManager.swift */,
+				0630BB562DEE87F400B3C52D /* DataCoordinator.swift */,
+				0630BB582DEE880C00B3C52D /* WatchDataSender.swift */,
+			);
+			path = WatchConnectivity;
 			sourceTree = "<group>";
 		};
 		064517D22D3F21C700F4D8F8 /* MapView */ = {
@@ -235,6 +314,9 @@
 			children = (
 				066311AD2A38DB6B00AAE263 /* ExtasyCompleteNavigation */,
 				069EEA772CECCA6B00357A05 /* ExtasyCompleteNavigationTests */,
+				0602077C2DD8122F0020FD92 /* ExtasyCompleteNavigationWatchApp Watch App */,
+				0602078D2DD812300020FD92 /* ExtasyCompleteNavigationWatchApp Watch AppTests */,
+				060207972DD812300020FD92 /* ExtasyCompleteNavigationWatchApp Watch AppUITests */,
 				066311AC2A38DB6B00AAE263 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -244,6 +326,9 @@
 			children = (
 				066311AB2A38DB6B00AAE263 /* ExtasyCompleteNavigation.app */,
 				069EEA762CECCA6B00357A05 /* ExtasyCompleteNavigationTests.xctest */,
+				0602077B2DD8122F0020FD92 /* ExtasyCompleteNavigationWatchApp Watch App.app */,
+				0602078A2DD812300020FD92 /* ExtasyCompleteNavigationWatchApp Watch AppTests.xctest */,
+				060207942DD812300020FD92 /* ExtasyCompleteNavigationWatchApp Watch AppUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -259,6 +344,7 @@
 				069EEA5B2CEB623700357A05 /* Networking */,
 				069EEA572CEB500200357A05 /* Managers */,
 				069EEA5C2CEB759E00357A05 /* Parsing */,
+				0630BB552DEE86B100B3C52D /* WatchConnectivity */,
 				069EEA682CEB890600357A05 /* Modules */,
 				06C0D8C72CCD9CF0001B258A /* Model */,
 				06C0D8C82CCD9CFD001B258A /* View */,
@@ -473,6 +559,74 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		0602077A2DD8122F0020FD92 /* ExtasyCompleteNavigationWatchApp Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 060207A62DD812300020FD92 /* Build configuration list for PBXNativeTarget "ExtasyCompleteNavigationWatchApp Watch App" */;
+			buildPhases = (
+				060207772DD8122F0020FD92 /* Sources */,
+				060207782DD8122F0020FD92 /* Frameworks */,
+				060207792DD8122F0020FD92 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				0602077C2DD8122F0020FD92 /* ExtasyCompleteNavigationWatchApp Watch App */,
+			);
+			name = "ExtasyCompleteNavigationWatchApp Watch App";
+			packageProductDependencies = (
+			);
+			productName = "ExtasyCompleteNavigationWatchApp Watch App";
+			productReference = 0602077B2DD8122F0020FD92 /* ExtasyCompleteNavigationWatchApp Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
+		060207892DD812300020FD92 /* ExtasyCompleteNavigationWatchApp Watch AppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 060207A72DD812300020FD92 /* Build configuration list for PBXNativeTarget "ExtasyCompleteNavigationWatchApp Watch AppTests" */;
+			buildPhases = (
+				060207862DD812300020FD92 /* Sources */,
+				060207872DD812300020FD92 /* Frameworks */,
+				060207882DD812300020FD92 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0602078C2DD812300020FD92 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				0602078D2DD812300020FD92 /* ExtasyCompleteNavigationWatchApp Watch AppTests */,
+			);
+			name = "ExtasyCompleteNavigationWatchApp Watch AppTests";
+			packageProductDependencies = (
+			);
+			productName = "ExtasyCompleteNavigationWatchApp Watch AppTests";
+			productReference = 0602078A2DD812300020FD92 /* ExtasyCompleteNavigationWatchApp Watch AppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		060207932DD812300020FD92 /* ExtasyCompleteNavigationWatchApp Watch AppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 060207A82DD812300020FD92 /* Build configuration list for PBXNativeTarget "ExtasyCompleteNavigationWatchApp Watch AppUITests" */;
+			buildPhases = (
+				060207902DD812300020FD92 /* Sources */,
+				060207912DD812300020FD92 /* Frameworks */,
+				060207922DD812300020FD92 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				060207962DD812300020FD92 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				060207972DD812300020FD92 /* ExtasyCompleteNavigationWatchApp Watch AppUITests */,
+			);
+			name = "ExtasyCompleteNavigationWatchApp Watch AppUITests";
+			packageProductDependencies = (
+			);
+			productName = "ExtasyCompleteNavigationWatchApp Watch AppUITests";
+			productReference = 060207942DD812300020FD92 /* ExtasyCompleteNavigationWatchApp Watch AppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		066311AA2A38DB6B00AAE263 /* ExtasyCompleteNavigation */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 066311B92A38DB6C00AAE263 /* Build configuration list for PBXNativeTarget "ExtasyCompleteNavigation" */;
@@ -480,10 +634,12 @@
 				066311A72A38DB6B00AAE263 /* Sources */,
 				066311A82A38DB6B00AAE263 /* Frameworks */,
 				066311A92A38DB6B00AAE263 /* Resources */,
+				0602079F2DD812300020FD92 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				0602079D2DD812300020FD92 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				06C0D8CA2CE6ABE6001B258A /* Utilities */,
@@ -531,6 +687,17 @@
 				LastSwiftUpdateCheck = 1600;
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
+					0602077A2DD8122F0020FD92 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					060207892DD812300020FD92 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = 0602077A2DD8122F0020FD92;
+					};
+					060207932DD812300020FD92 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = 0602077A2DD8122F0020FD92;
+					};
 					066311AA2A38DB6B00AAE263 = {
 						CreatedOnToolsVersion = 14.3.1;
 					};
@@ -558,11 +725,35 @@
 			targets = (
 				066311AA2A38DB6B00AAE263 /* ExtasyCompleteNavigation */,
 				069EEA752CECCA6B00357A05 /* ExtasyCompleteNavigationTests */,
+				0602077A2DD8122F0020FD92 /* ExtasyCompleteNavigationWatchApp Watch App */,
+				060207892DD812300020FD92 /* ExtasyCompleteNavigationWatchApp Watch AppTests */,
+				060207932DD812300020FD92 /* ExtasyCompleteNavigationWatchApp Watch AppUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		060207792DD8122F0020FD92 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		060207882DD812300020FD92 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		060207922DD812300020FD92 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		066311A92A38DB6B00AAE263 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -588,6 +779,27 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		060207772DD8122F0020FD92 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		060207862DD812300020FD92 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		060207902DD812300020FD92 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		066311A72A38DB6B00AAE263 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -609,9 +821,11 @@
 				383EEC252AB359BE00C2F22B /* RawNavigationDataView.swift in Sources */,
 				06A5257D2CF28BE300532A51 /* DisplayMenu.swift in Sources */,
 				069EEA522CEB401700357A05 /* UserSettingsSample.swift in Sources */,
+				060207AF2DD818AD0020FD92 /* WatchConnectivityManager.swift in Sources */,
 				0686F5262CEE0D2B007EE554 /* CompassView.swift in Sources */,
 				06A840F02D18DCCE002FA7E4 /* SplashScreenView.swift in Sources */,
 				181601E12AD0F20700D6D31B /* DisplayCells.swift in Sources */,
+				0630BB592DEE880C00B3C52D /* WatchDataSender.swift in Sources */,
 				06A525522CEF886600532A51 /* DisplayGrid3x3Sectors.swift in Sources */,
 				06A525542CEF886600532A51 /* MultiDisplayGrid.swift in Sources */,
 				06A525552CEF886600532A51 /* PseudoBoatView.swift in Sources */,
@@ -637,6 +851,7 @@
 				064ACD622A9EE3430018E449 /* NMEAParser.swift in Sources */,
 				063650382B671592002AF39C /* SmallCornerView.swift in Sources */,
 				0641C3F32A9AF061008799BC /* DisplayCell.swift in Sources */,
+				0630BB572DEE87F400B3C52D /* DataCoordinator.swift in Sources */,
 				0686F52A2CEF4169007EE554 /* HydroProcessor.swift in Sources */,
 				06823F2D2D1F9DAD00BA5180 /* iPadView.swift in Sources */,
 				06BFC92B2B69A00300E74C47 /* PreviewContainer.swift in Sources */,
@@ -668,6 +883,21 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		0602078C2DD812300020FD92 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0602077A2DD8122F0020FD92 /* ExtasyCompleteNavigationWatchApp Watch App */;
+			targetProxy = 0602078B2DD812300020FD92 /* PBXContainerItemProxy */;
+		};
+		060207962DD812300020FD92 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0602077A2DD8122F0020FD92 /* ExtasyCompleteNavigationWatchApp Watch App */;
+			targetProxy = 060207952DD812300020FD92 /* PBXContainerItemProxy */;
+		};
+		0602079D2DD812300020FD92 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0602077A2DD8122F0020FD92 /* ExtasyCompleteNavigationWatchApp Watch App */;
+			targetProxy = 0602079C2DD812300020FD92 /* PBXContainerItemProxy */;
+		};
 		069EEA7B2CECCA6B00357A05 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 066311AA2A38DB6B00AAE263 /* ExtasyCompleteNavigation */;
@@ -676,6 +906,170 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		060207A02DD812300020FD92 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"ExtasyCompleteNavigationWatchApp Watch App/Preview Content\"";
+				DEVELOPMENT_TEAM = V73TDMAF88;
+				ENABLE_PREVIEWS = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = ExtasyCompleteNavigationWatchApp;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.bacata.ExtasyCompleteNavigation;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bacata.ExtasyCompleteNavigation.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Debug;
+		};
+		060207A12DD812300020FD92 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"ExtasyCompleteNavigationWatchApp Watch App/Preview Content\"";
+				DEVELOPMENT_TEAM = V73TDMAF88;
+				ENABLE_PREVIEWS = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = ExtasyCompleteNavigationWatchApp;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.bacata.ExtasyCompleteNavigation;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bacata.ExtasyCompleteNavigation.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Release;
+		};
+		060207A22DD812300020FD92 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = V73TDMAF88;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.bacata.ExtasyCompleteNavigationWatchApp-Watch-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ExtasyCompleteNavigationWatchApp Watch App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ExtasyCompleteNavigationWatchApp Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Debug;
+		};
+		060207A32DD812300020FD92 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = V73TDMAF88;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.bacata.ExtasyCompleteNavigationWatchApp-Watch-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ExtasyCompleteNavigationWatchApp Watch App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ExtasyCompleteNavigationWatchApp Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Release;
+		};
+		060207A42DD812300020FD92 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = V73TDMAF88;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.bacata.ExtasyCompleteNavigationWatchApp-Watch-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_TARGET_NAME = "ExtasyCompleteNavigationWatchApp Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Debug;
+		};
+		060207A52DD812300020FD92 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = V73TDMAF88;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.bacata.ExtasyCompleteNavigationWatchApp-Watch-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_TARGET_NAME = "ExtasyCompleteNavigationWatchApp Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Release;
+		};
 		066311B72A38DB6C00AAE263 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -922,6 +1316,33 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		060207A62DD812300020FD92 /* Build configuration list for PBXNativeTarget "ExtasyCompleteNavigationWatchApp Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				060207A02DD812300020FD92 /* Debug */,
+				060207A12DD812300020FD92 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		060207A72DD812300020FD92 /* Build configuration list for PBXNativeTarget "ExtasyCompleteNavigationWatchApp Watch AppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				060207A22DD812300020FD92 /* Debug */,
+				060207A32DD812300020FD92 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		060207A82DD812300020FD92 /* Build configuration list for PBXNativeTarget "ExtasyCompleteNavigationWatchApp Watch AppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				060207A42DD812300020FD92 /* Debug */,
+				060207A52DD812300020FD92 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		066311A62A38DB6B00AAE263 /* Build configuration list for PBXProject "ExtasyCompleteNavigation" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

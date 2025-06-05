@@ -8,9 +8,9 @@ struct IdentifiedView: Identifiable {
 
 struct iPhoneView: View {
     @Environment(NMEAParser.self) private var navigationReadings
-
+    
     @State private var selectedTab = 0 // Default to first view
-
+    
     private var allViews: [IdentifiedView] {
         [
             IdentifiedView(view: AnyView(UltimateView()), label: "Ultimate"),
@@ -18,8 +18,8 @@ struct iPhoneView: View {
             IdentifiedView(view: AnyView(PerformanceView()), label: "Performance"),
             IdentifiedView(
                 view: navigationReadings.gpsData?.isTargetSelected == true
-                    ? AnyView(iPhoneVMGView(waypointName: navigationReadings.gpsData?.waypointName ?? ""))
-                    : AnyView(WaypointListView()),
+                ? AnyView(iPhoneVMGView(waypointName: navigationReadings.gpsData?.waypointName ?? ""))
+                : AnyView(WaypointListView()),
                 label: navigationReadings.gpsData?.isTargetSelected == true ? "VMGView" : "WaypointList"
             )
         ]
@@ -31,9 +31,9 @@ struct iPhoneView: View {
                 MapView()
                     .frame(height: geometry.size.height * 0.5)
                     .background(Color.gray.opacity(0.1))
-
+                
                 Divider()
-
+                
                 NavigationStack {
                     TabView(selection: $selectedTab) {
                         ForEach(allViews.indices, id: \.self) { index in
@@ -61,4 +61,4 @@ struct iPhoneView: View {
     iPhoneView()
         .environment(NMEAParser())
         .environment(SettingsManager())
-}   
+}
