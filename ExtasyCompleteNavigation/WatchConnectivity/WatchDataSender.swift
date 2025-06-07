@@ -8,20 +8,15 @@
 import WatchConnectivity
 
 class WatchDataSender {
-    func send(depth: Double?, speed: Double?, wind: Double?, sog: Double?) {
+    
+    func send(metrics: [String: Double]) {
+        var message = metrics
+        message["sentAt"] = Date().timeIntervalSince1970
+
         guard WCSession.default.isReachable else {
-            print("⌛️ Watch is not reachable")
+            print("⌛️ Watch not reachable")
             return
         }
-
-        let message: [String: Any] = [
-            "depth": depth ?? -1.0,
-            "speed": speed ?? -1.0,
-            "wind": wind ?? -1.0,
-            "sog": sog ?? -1.0
-            //"sentAt": Date().timeIntervalSince1970     //timestamp to measure delay between phone and watch
-
-        ]
 
         WCSession.default.sendMessage(message, replyHandler: nil) { error in
             print("❌ Send failed: \(error.localizedDescription)")

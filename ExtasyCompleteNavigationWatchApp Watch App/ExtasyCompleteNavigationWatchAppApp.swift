@@ -9,11 +9,15 @@ import SwiftUI
 
 @main
 struct ExtasyCompleteNavigationWatchApp_Watch_AppApp: App {
+    
+    @State private var sessionManager = WatchSessionManager()
+    
     var body: some Scene {
         WindowGroup {
-            //ContentView()
-            //SailingDashboardView()
-            WatchMetricsView()
+            
+            WatchMainView()
+                .environment(sessionManager)
+
         }
     }
 }

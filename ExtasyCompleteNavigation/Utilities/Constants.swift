@@ -7,7 +7,7 @@
 
 public enum RoundingPrecision {
     
-    case ones
+    case whole
     case tenths
     case hundredths
 }

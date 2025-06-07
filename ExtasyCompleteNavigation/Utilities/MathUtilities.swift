@@ -12,9 +12,9 @@ import CoreLocation
 
 
 // Round to the specific decimal place
-public func preciseRound(_ value: Double, precision: RoundingPrecision = .ones) -> Double {
+public func preciseRound(_ value: Double, precision: RoundingPrecision = .whole) -> Double {
     switch precision {
-    case .ones:
+    case .whole:
         return round(value)
     case .tenths:
         return round(value * 10) / 10.0

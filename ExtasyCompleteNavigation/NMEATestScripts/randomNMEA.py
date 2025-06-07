@@ -9,8 +9,8 @@ import time
 CONFIG = {
     "start_latitude": 43.18447,
     "start_longitude": 27.99403,
-    "true_wind_direction": 42,  # Static or adjustable True Wind Direction (TWD)
-    "initial_heading": 0,     # Heading of the boat (used for TWA)
+    "true_wind_direction": 360,  # Static or adjustable True Wind Direction (TWD)
+    "initial_heading": 90,     # Heading of the boat (used for TWA)
     "cog_heading": 73,         # Separate COG (Course Over Ground)
     "magnetic_heading": 73,    # Separate magnetic heading
     "heading_limits": {"upper": 73, "lower": 73},
@@ -50,7 +50,7 @@ def calculate_twa(true_wind_direction, current_heading):
     current_heading = normalize_angle(current_heading)
 
     # Calculate the difference and normalize to [-180, 180]
-    return normalize_angle_180(true_wind_direction - current_heading)
+    return true_wind_direction - current_heading
 
 # Sentence generators
 class NMEASentenceGenerator:

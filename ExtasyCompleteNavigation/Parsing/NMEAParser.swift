@@ -79,27 +79,71 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     private var cachedWaypointData: WaypointData?
 
     //MARK: - Timer function for UI Updates and Watch Session which is delibaretly offset from the 1 sec NMEA received singal
+    
+    /// MARK: - MainActor & Task
+    ///
+    /// `@MainActor` ensures that any method or property marked with it is always executed on the main thread,
+    /// which is critical when working with UI elements or state that affects the UI.
+    /// It replaces the need to manually wrap code in `DispatchQueue.main.async`.
+    ///
+    /// Example:
+    ///     @MainActor
+    ///     func updateUI() { ... } // Always runs on the main thread
+    ///
+    /// When calling an `@MainActor` method from a background context (like a Timer or async task),
+    /// you should use `Task { await ... }` to safely hop to the main thread:
+    ///
+    ///     Task {
+    ///         await self?.updateUI()
+    ///     }
+    ///
+    /// This pattern provides safe, readable, and efficient thread management for UI-related operations.
+    ///
+    @MainActor
+    private func performPeriodicUpdate() {
+        if let hydro = cachedHydroData { hydroData = hydro }
+        if let wind = cachedWindData {
+            windData = wind
+            lastWindUpdateTime = wind.lastUpdated
+        }
+        if let gps = cachedGPSData { gpsData = gps }
+        if let compass = cachedCompassData { compassData = compass }
+        if let vmg = cachedVMGData { vmgData = vmg }
+        if let waypoint = cachedWaypointData { waypointData = waypoint }
+
+        //arra of tuples to loop through when sending
+        
+        let metricsToUpdate: [(String, Double?, RoundingPrecision)] = [
+            //core data to watch
+            ("depth", hydroData?.depth, .tenths),
+            ("heading", compassData?.normalizedHeading, .whole),
+            ("speed", hydroData?.boatSpeedLag, .hundredths),
+            ("sog", gpsData?.speedOverGround, .hundredths),
+            
+            //wind data to wathc
+            ("tws", windData?.trueWindForce, .tenths),
+            ("twa", windData?.trueWindAngle, .whole),
+            ("twd", windData?.trueWindDirection, .whole),
+            ("tws", windData?.apparentWindForce, .tenths),
+            ("twa", windData?.apparentWindAngle, .whole),
+            ("twd", windData?.apparentWindDirection, .whole),
+            
+        ]
+
+        for (key, value, precision) in metricsToUpdate {
+            DataCoordinator.shared.update(metric: key, value: value, precision: precision)
+        }
+
+        DataCoordinator.shared.sendIfChanged()
+    }
+    
     private func startPeriodicDataUpdate() {
         periodicUpdateTimer = Timer.scheduledTimer(withTimeInterval: 1.037, repeats: true) { [weak self] _ in
-            guard let self else { return }
-
-            DispatchQueue.main.async {
-                if let hydro = self.cachedHydroData { self.hydroData = hydro }
-                if let wind = self.cachedWindData {
-                    self.windData = wind
-                    self.lastWindUpdateTime = wind.lastUpdated
-                }
-                if let gps = self.cachedGPSData { self.gpsData = gps }
-                if let compass = self.cachedCompassData { self.compassData = compass }
-                if let vmg = self.cachedVMGData { self.vmgData = vmg }
-                if let waypoint = self.cachedWaypointData { self.waypointData = waypoint }
-                
-                DataCoordinator.shared.update(depth: self.hydroData?.depth, speed: self.hydroData?.boatSpeedLag, wind: self.windData?.trueWindForce, sog: self.gpsData?.speedOverGround)
-                DataCoordinator.shared.sendIfChanged()
+            Task {
+                await self?.performPeriodicUpdate()
             }
         }
     }
-    
     //MARK: - Watchod Logic and Mechanism
     /**
      By calling it inside the init method, you ensure that the monitoring process starts as soon as the NMEAParser instance is created.
@@ -111,9 +155,8 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
         // Assign the initialized local variable to self.vmgData
         startDataWatchdog()
         startPeriodicLogging()
-        // start watch timer 
+        // start UI update timer
         startPeriodicDataUpdate()
-        //DataCoordinator.shared.start()
     }
     
     // Start logging every 5 seconds
