@@ -30,7 +30,12 @@ struct DisplayCell: View {
     var valueAlignment: Alignment = .center // Default alignment
     
     // MARK: - State
-    @State private var displayedValue: Double = 0 // Tracks the animated value
+    @State private var displayedValue: Double = 0
+    @State private var hasReceivedValue: Bool = false
+    
+    private var isStale: Bool {
+        navigationReadings.dataStatus.sensorStatus(forValueID: valueID) == .stale
+    }
     
     var body: some View {
         GeometryReader { geometry in
@@ -45,22 +50,26 @@ struct DisplayCell: View {
                     unitView(width: width)
                 }
                 .padding([.leading, .trailing, .top], 4)
+                .opacity(isStale ? 0.35 : 1.0)
             }
             .background(alarmBackground())
             .foregroundStyle(Color("display_font"))
         }
         .aspectRatio(aspectRatio, contentMode: .fit)
         .onAppear {
-            // Set the initial value when the view appears
             if let initialValue = navigationReadings.displayValue(a: valueID) {
                 displayedValue = initialValue
+                hasReceivedValue = true
             }
         }
         .onChange(of: navigationReadings.displayValue(a: valueID)) { _, newValue in
-            // Animate to the new value when it changes
-            guard let newValue = newValue else { return }
-            withAnimation(.easeOut(duration: 0.3)) {
-                displayedValue = newValue
+            if let newValue {
+                hasReceivedValue = true
+                withAnimation(.easeOut(duration: 0.3)) {
+                    displayedValue = newValue
+                }
+            } else {
+                hasReceivedValue = false
             }
         }
     }
@@ -73,10 +82,13 @@ struct DisplayCell: View {
     }
     
     private func animatedValueView(width: CGFloat, height: CGFloat) -> some View {
-        Text(String(format: cell.specifier, displayedValue))
+        let text = hasReceivedValue && !isStale
+            ? String(format: cell.specifier, displayedValue)
+            : "--"
+        return Text(text)
             .frame(width: width, height: width, alignment: valueAlignment)
             .font(Font.custom("Futura-CondensedExtraBold", size: width * 0.4 * fontSizeMultiplier))
-            .offset(y: aspectRatio > 1 ? (height - width) / 4 : 0) // Adjust for non-square ratios
+            .offset(y: aspectRatio > 1 ? (height - width) / 4 : 0)
     }
     
     private func unitView(width: CGFloat) -> some View {

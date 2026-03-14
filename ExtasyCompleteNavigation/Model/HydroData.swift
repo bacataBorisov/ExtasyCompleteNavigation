@@ -5,6 +5,8 @@
 //  Created by Vasil Borisov on 21.11.24.
 //
 
+import Foundation
+
 struct HydroData {
     
     // MARK: - Raw Data Fields (Used for Raw Data Logging)
@@ -29,6 +31,9 @@ struct HydroData {
     var depth: Double? = nil
     var depthTriggerAlarm: Bool = false
     
+    // MARK: - Freshness Tracking
+    var lastUpdated: Date? = nil
+    
     // MARK: - Utility Methods
     
     /// Resets all hydro data fields to their default state
@@ -46,6 +51,7 @@ struct HydroData {
         
         depth = nil
         depthTriggerAlarm = false
+        lastUpdated = nil
         
         debugLog("Hydro data has been reset.")
     }

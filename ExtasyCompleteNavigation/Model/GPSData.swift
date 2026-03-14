@@ -6,6 +6,7 @@
 //
 
 import CoreLocation
+import Foundation
 
 struct GPSData {
     
@@ -28,6 +29,9 @@ struct GPSData {
     var utcTime: String? = nil
     var gpsDate: String? = nil
 
+    // MARK: - Freshness Tracking
+    var lastUpdated: Date? = nil
+    
     // MARK: - Waypoint Data
     var waypointName: String? = nil
     var waypointLocation: CLLocationCoordinate2D? = nil
@@ -58,6 +62,7 @@ struct GPSData {
 
         waypointName = nil
         waypointLocation = nil
+        lastUpdated = nil
 
         debugLog("GPS data has been reset.")
     }

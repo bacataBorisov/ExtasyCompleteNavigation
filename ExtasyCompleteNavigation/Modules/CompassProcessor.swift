@@ -39,9 +39,10 @@ class CompassProcessor {
         if let filteredNormalizedHeading = normalizedHeadingFilter?.update(measurement: normalized) {
             compassData.normalizedHeading = filteredNormalizedHeading
         } else {
-            compassData.normalizedHeading = normalized // Fallback to raw value if filtering fails
+            compassData.normalizedHeading = normalized
         }
         
+        compassData.lastUpdated = Date()
         return compassData
     }
     

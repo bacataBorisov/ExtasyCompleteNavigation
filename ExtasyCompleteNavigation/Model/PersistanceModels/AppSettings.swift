@@ -38,7 +38,7 @@ struct DefaultSettings {
             UserDefaults.standard.set(false, forKey: UserDefaultsKeys.isWindModeActive)
         }
         if UserDefaults.standard.value(forKey: UserDefaultsKeys.calibrationCoefficient) == nil {
-            UserDefaults.standard.set(false, forKey: UserDefaultsKeys.calibrationCoefficient)
+            UserDefaults.standard.set(1.0, forKey: UserDefaultsKeys.calibrationCoefficient)
         }
     }
 }

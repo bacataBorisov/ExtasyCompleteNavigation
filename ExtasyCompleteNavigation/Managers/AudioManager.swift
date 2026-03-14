@@ -6,7 +6,7 @@
 //
 
 // MARK: - Audio Manager
-import AVFoundation
+@preconcurrency import AVFoundation
 
 @MainActor
 class AudioManager: ObservableObject {

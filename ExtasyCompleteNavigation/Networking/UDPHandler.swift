@@ -8,14 +8,38 @@ class UDPHandler: NSObject, GCDAsyncUdpSocketDelegate {
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
     private var udpPollingTimer: Timer?
     private var isSocketOpen = false
+    
+    /// Tracks whether UDP data has been received recently (within 10s)
+    var isReceivingData: Bool = false
+    @ObservationIgnored private var lastReceiveTime: Date?
+    @ObservationIgnored private var receiveCheckTimer: Timer?
+    private let receiveTimeout: TimeInterval = 10
 
-    var onDataReceived: ((String) -> Void)? // Callback for incoming data
+    var onDataReceived: ((String) -> Void)?
 
     override init() {
         super.init()
         socket = GCDAsyncUdpSocket(delegate: self, delegateQueue: .global())
         configureNotifications()
+        startReceiveMonitor()
         debugLog("UDPHandler initialized and notifications configured.")
+    }
+    
+    private func startReceiveMonitor() {
+        receiveCheckTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            let receiving: Bool
+            if let last = self.lastReceiveTime {
+                receiving = Date().timeIntervalSince(last) <= self.receiveTimeout
+            } else {
+                receiving = false
+            }
+            DispatchQueue.main.async {
+                if self.isReceivingData != receiving {
+                    self.isReceivingData = receiving
+                }
+            }
+        }
     }
 
     // MARK: - Start Listening (Foreground)
@@ -150,9 +174,10 @@ class UDPHandler: NSObject, GCDAsyncUdpSocketDelegate {
 
     // MARK: - UDP Delegate Methods
     func udpSocket(_ sock: GCDAsyncUdpSocket, didReceive data: Data, fromAddress address: Data, withFilterContext filterContext: Any?) {
+        lastReceiveTime = Date()
         if let receivedString = String(data: data, encoding: .utf8) {
             onDataReceived?(receivedString)
-            //debugLog("Received UDP data: \(receivedString)")
+            debugLog("Received UDP data: \(receivedString)")
         } else {
             debugLog("Received UDP data but failed to decode.")
         }

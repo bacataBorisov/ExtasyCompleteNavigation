@@ -1,3 +1,5 @@
+import Foundation
+
 class HydroProcessor {
     
     // Internal HydroData instance (not exposed)
@@ -29,9 +31,10 @@ class HydroProcessor {
         if let filteredDepth = depthFilter?.update(measurement: depthValue) {
             hydroData.depth = filteredDepth
         } else {
-            hydroData.depth = depthValue // Fallback to raw value if filtering fails
+            hydroData.depth = depthValue
         }
         
+        hydroData.lastUpdated = Date()
         return hydroData
     }
     
@@ -49,9 +52,10 @@ class HydroProcessor {
         if let filteredTemperature = temperatureFilter?.update(measurement: temperature) {
             hydroData.seaWaterTemperature = filteredTemperature
         } else {
-            hydroData.seaWaterTemperature = temperature // Fallback to raw value if filtering fails
+            hydroData.seaWaterTemperature = temperature
         }
         
+        hydroData.lastUpdated = Date()
         return hydroData
     }
     
@@ -72,9 +76,10 @@ class HydroProcessor {
         if let filteredSpeed = speedLogFilter?.update(measurement: calibratedSpeed) {
             hydroData.boatSpeedLag = filteredSpeed
         } else {
-            hydroData.boatSpeedLag = calibratedSpeed // Fallback to raw value if filtering fails
+            hydroData.boatSpeedLag = calibratedSpeed
         }
         
+        hydroData.lastUpdated = Date()
         return hydroData
     }
     
@@ -88,6 +93,7 @@ class HydroProcessor {
         }
         hydroData.totalDistance = totalDistance
         hydroData.distSinceReset = distanceSinceReset
+        hydroData.lastUpdated = Date()
         return hydroData
     }
     

@@ -18,9 +18,8 @@ struct UltimateView: View {
     @AppStorage("angleCorner0") private var angleCorner0: Int = 4
     @AppStorage("angleCorner1") private var angleCorner1: Int = 7
 
-    // Trigger for UI refresh
-    // Animated values for smooth UI refresh
     @State private var animatedValues: [Int] = []
+    @State private var showSensorDetail: Bool = false
     
     var body: some View {
         GeometryProvider { width, geometry, _ in
@@ -87,11 +86,67 @@ struct UltimateView: View {
                 if navigationReadings.gpsData?.isTargetSelected == true {
                     BearingMarkerView(width: width)
                 }
+                // MARK: - Connection Status Indicator
+                VStack {
+                    connectionStatusDot
+                        .padding(.top, width * 0.02)
+                    Spacer()
+                }
+                .frame(width: width, height: width)
+                
             } // END ZSTACK
-            .animation(.easeInOut(duration: 0.3), value: animatedValues) // Smooth animations for updates
+            .animation(.easeInOut(duration: 0.3), value: animatedValues)
         } // END GEOMETRY
         .aspectRatio(1, contentMode: .fit)
         .padding()
+        .popover(isPresented: $showSensorDetail) {
+            sensorDetailView
+        }
+    }
+    
+    // MARK: - Connection Status Dot
+    private var connectionStatusDot: some View {
+        let status = navigationReadings.dataStatus
+        let color: Color = {
+            if status.overallHealthy { return .green }
+            if status.anyActive { return .yellow }
+            return .red
+        }()
+        
+        return Circle()
+            .fill(color)
+            .frame(width: 10, height: 10)
+            .shadow(color: color.opacity(0.6), radius: 4)
+            .onTapGesture { showSensorDetail = true }
+    }
+    
+    // MARK: - Sensor Detail Popover
+    private var sensorDetailView: some View {
+        let status = navigationReadings.dataStatus
+        return VStack(alignment: .leading, spacing: 12) {
+            Text("Sensor Status")
+                .font(.headline)
+            sensorRow("Wind", status: status.wind)
+            sensorRow("GPS", status: status.gps)
+            sensorRow("Depth/Speed", status: status.hydro)
+            sensorRow("Compass", status: status.compass)
+        }
+        .padding()
+        .presentationCompactAdaptation(.popover)
+    }
+    
+    private func sensorRow(_ name: String, status: SensorStatus) -> some View {
+        HStack {
+            Circle()
+                .fill(status == .active ? .green : (status == .stale ? .yellow : .red))
+                .frame(width: 8, height: 8)
+            Text(name)
+                .font(.subheadline)
+            Spacer()
+            Text(status.rawValue.capitalized)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
     }
 
     // MARK: - Menu Corner View

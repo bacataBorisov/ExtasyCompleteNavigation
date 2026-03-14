@@ -25,6 +25,39 @@ import CocoaAsyncSocket
 import WatchConnectivity
 
 
+// MARK: - Sensor Freshness Tracking
+
+enum SensorStatus: String {
+    case active
+    case stale
+    case unavailable
+}
+
+struct DataStatus {
+    var wind: SensorStatus = .unavailable
+    var gps: SensorStatus = .unavailable
+    var hydro: SensorStatus = .unavailable
+    var compass: SensorStatus = .unavailable
+    
+    var overallHealthy: Bool {
+        [wind, gps, hydro, compass].allSatisfy { $0 == .active }
+    }
+    
+    var anyActive: Bool {
+        [wind, gps, hydro, compass].contains { $0 == .active }
+    }
+    
+    func sensorStatus(forValueID id: Int) -> SensorStatus {
+        switch id {
+        case 0, 2, 3: return hydro
+        case 1: return compass
+        case 4, 5, 6, 7, 8, 9: return wind
+        case 10, 11: return gps
+        default: return .unavailable
+        }
+    }
+}
+
 @Observable
 class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     
@@ -32,18 +65,17 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     // MARK: - Raw String (Used in Advanced Settings)
     var latestRawData: [String] = []
     
+    // MARK: - Sensor Data Status
+    var dataStatus = DataStatus()
     
     //MARK: - Variables that come from II - Integrated Instruments
     
-    //HydroData Variables (speed log, depth, sea water temperature, etc.)
     @ObservationIgnored let hydroProcessor = HydroProcessor()
     var hydroData: HydroData?
     
-    //CompassData Variables (magnetic heading)
     @ObservationIgnored let compassProcessor = CompassProcessor()
     var compassData: CompassData?
     
-    // Wind Data Variables (AWF, AWW, TWF, TWA)
     @ObservationIgnored let windProcessor = WindProcessor()
     var windData: WindData?
     
@@ -60,9 +92,8 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     @ObservationIgnored var waypointProcessor = WaypointProcessor()
     var waypointData: WaypointData?
     
-    //Watchdog variables
-    private var lastWindUpdateTime: Date?
-    private var dataTimeout: TimeInterval = 30 // Timeout in seconds
+    // Staleness threshold — data older than this is considered stale
+    private let dataTimeout: TimeInterval = 30
     
     // Data Logger
     let dataLogger = DataLogger()
@@ -102,10 +133,7 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     @MainActor
     private func performPeriodicUpdate() {
         if let hydro = cachedHydroData { hydroData = hydro }
-        if let wind = cachedWindData {
-            windData = wind
-            lastWindUpdateTime = wind.lastUpdated
-        }
+        if let wind = cachedWindData { windData = wind }
         if let gps = cachedGPSData { gpsData = gps }
         if let compass = cachedCompassData { compassData = compass }
         if let vmg = cachedVMGData { vmgData = vmg }
@@ -124,9 +152,9 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
             ("tws", windData?.trueWindForce, .tenths),
             ("twa", windData?.trueWindAngle, .whole),
             ("twd", windData?.trueWindDirection, .whole),
-            ("tws", windData?.apparentWindForce, .tenths),
-            ("twa", windData?.apparentWindAngle, .whole),
-            ("twd", windData?.apparentWindDirection, .whole),
+            ("aws", windData?.apparentWindForce, .tenths),
+            ("awa", windData?.apparentWindAngle, .whole),
+            ("awd", windData?.apparentWindDirection, .whole),
             
         ]
 
@@ -203,22 +231,24 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     
     func startDataWatchdog() {
         Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            self?.checkForStaleData()
+            Task { @MainActor in
+                self?.checkForStaleData()
+            }
         }
     }
     
+    @MainActor
     func checkForStaleData() {
-        guard let lastUpdate = windData?.lastUpdated else { return }
-        let timeSinceLastUpdate = Date().timeIntervalSince(lastUpdate)
-        if timeSinceLastUpdate > dataTimeout {
-            print("Wind data timeout! No update in the last \(dataTimeout) seconds.")
-            //TODO: - Complete this section
-            // Optionally trigger a UI update or error state
-            //...
-            //...
-            //...
-            //Display something or indicate warning sign in case there is no data
-        }
+        let now = Date()
+        dataStatus.wind = sensorStatus(for: windData?.lastUpdated, now: now)
+        dataStatus.gps = sensorStatus(for: gpsData?.lastUpdated, now: now)
+        dataStatus.hydro = sensorStatus(for: hydroData?.lastUpdated, now: now)
+        dataStatus.compass = sensorStatus(for: compassData?.lastUpdated, now: now)
+    }
+    
+    private func sensorStatus(for lastUpdated: Date?, now: Date) -> SensorStatus {
+        guard let lastUpdated else { return .unavailable }
+        return now.timeIntervalSince(lastUpdated) > dataTimeout ? .stale : .active
     }
     
     //MARK: - NMEA String Processing

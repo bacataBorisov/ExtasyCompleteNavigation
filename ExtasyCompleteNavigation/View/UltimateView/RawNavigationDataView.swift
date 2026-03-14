@@ -55,13 +55,13 @@ struct RawNavigationDataView: View {
     }
     
     private func dataGroup<T>(header: String, value: T?, unit: String) -> some View {
-        Group {
-            if let value = value {
-                Text("\(header): \(value)\(unit)")
-            } else {
-                Text("\(header): ---")
-            }
+        let text: String
+        if let value = value {
+            text = "\(header): \(String(describing: value))\(unit)"
+        } else {
+            text = "\(header): ---"
         }
+        return Text(verbatim: text)
     }
 }
 

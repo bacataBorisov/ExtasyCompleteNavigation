@@ -21,12 +21,13 @@ class VMGCalculator {
     // MARK: - Initialization
     /// Initializes the calculator with a polar diagram.
     /// - Parameter diagram: A 2D array containing wind speeds, angles, and VMG values.
-    init(diagram: [[Double]]) {
-        guard !diagram.isEmpty else {
-            fatalError("Diagram data is empty.")
+    /// Returns nil if the diagram data is empty or malformed.
+    init?(diagram: [[Double]]) {
+        guard !diagram.isEmpty, diagram[0].count > 1, diagram.count > 1 else {
+            debugLog("VMGCalculator: Diagram data is empty or malformed.")
+            return nil
         }
 
-        // Extract wind speeds (first row) and angles (first column)
         self.wind = diagram[0].dropFirst().map { $0 }
         self.gradus = diagram.dropFirst().map { $0[0] }
         self.diagram = diagram.dropFirst().map { Array($0.dropFirst()) }
@@ -35,33 +36,38 @@ class VMGCalculator {
     // MARK: - Tack Table Handling
     /// Reads and loads the optimal tack table from a file.
     /// - Parameter fileName: The name of the tack table file (without extension).
-    func readOptimalTackTable(fileName: String) {
+    /// - Returns: `true` if the table was loaded successfully, `false` otherwise.
+    @discardableResult
+    func readOptimalTackTable(fileName: String) -> Bool {
         guard let path = Bundle.main.path(forResource: fileName, ofType: "txt") else {
-            fatalError("File not found: \(fileName).txt")
+            debugLog("VMGCalculator: File not found: \(fileName).txt")
+            return false
         }
 
-        guard let file = freopen(path, "r", stdin) else {
-            fatalError("Couldn't open file: \(fileName).txt")
+        let contents: String
+        do {
+            contents = try String(contentsOfFile: path, encoding: .utf8)
+        } catch {
+            debugLog("VMGCalculator: Couldn't read file \(fileName).txt — \(error.localizedDescription)")
+            return false
         }
 
-        // Parse the file line by line
-        var rowIndex = 0
-        while let line = readLine() {
+        let lines = contents.components(separatedBy: .newlines)
+        for (rowIndex, line) in lines.enumerated() {
             guard !line.isEmpty else { continue }
 
-            if rowIndex > 0 { // Skip the header row
+            if rowIndex > 0 {
                 let values = line.split(whereSeparator: { $0.isWhitespace }).compactMap { Double($0) }
-                if values.count >= 8 { // Expecting at least 8 columns
+                if values.count >= 8 {
                     optimalTackTable.append(values)
                 } else {
                     debugLog("Malformed row \(rowIndex): \(line)")
                 }
             }
-            rowIndex += 1
         }
 
-        fclose(file)
         debugLog("Optimal tack table loaded with \(optimalTackTable.count) rows.")
+        return !optimalTackTable.isEmpty
     }
 
     /// Interpolates the tack table using cubic splines for a given wind speed and angle.
@@ -124,7 +130,7 @@ class VMGCalculator {
     func evaluateDiagram(windForce: Double, windAngle: Double) -> Double {
         // Ensure wind and gradus arrays are not empty
         guard !wind.isEmpty, !gradus.isEmpty else { return 0.0 }
-        
+        debugLog("FROM evaluateDiagram print wind angle -> \(windAngle)")
         // Normalize wind angle to range [0, 180]
         var finalWindAngle = abs(windAngle)
         if windForce <= wind[0] { return 0.0 }

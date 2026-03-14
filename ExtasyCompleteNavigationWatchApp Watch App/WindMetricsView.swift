@@ -39,7 +39,7 @@ struct WindMetricsView: View {
                 HStack(spacing: 6) {
                     MetricRow(title: "TWD", value: sessionManager.twd, unit: "°", valueColor: .blue)
                     Divider()
-                    MetricRow(title: "AWA", value: sessionManager.awd, unit: "°", valueColor: .yellow)
+                    MetricRow(title: "AWD", value: sessionManager.awd, unit: "°", valueColor: .yellow)
                 }
             }
             .padding([.leading, .trailing], 8)

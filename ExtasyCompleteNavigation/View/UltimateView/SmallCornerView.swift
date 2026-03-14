@@ -20,21 +20,32 @@ struct SmallCornerView: View {
     let nameAlignment, valueAlignment: Alignment
     let stringSpecifier: String
     
+    private var isStale: Bool {
+        navigationReadings.dataStatus.sensorStatus(forValueID: valueID) == .stale
+    }
+    
     var body: some View {
         GeometryReader{ geometry in
             
             let width = geometry.size.width
             
-            //MARK: - The Whole Cell is a Big Button
             ZStack{
                 Text(cell.name)
                     .frame(width: width, height: width, alignment: nameAlignment)
                     .font(Font.custom("AppleSDGothicNeo-Bold", size: width * 0.35))
-                if let unwrappedValue = navigationReadings.displayValue(a: valueID){
-                    Text(String(format: stringSpecifier, unwrappedValue))
-                        .frame(width: width, height: width, alignment: valueAlignment)
-                        .font(Font.custom("Futura-CondensedExtraBold", size: width * 0.45))
-                }
+                
+                let valueText: String = {
+                    if isStale { return "--" }
+                    if let value = navigationReadings.displayValue(a: valueID) {
+                        return String(format: stringSpecifier, value)
+                    }
+                    return "--"
+                }()
+                
+                Text(valueText)
+                    .frame(width: width, height: width, alignment: valueAlignment)
+                    .font(Font.custom("Futura-CondensedExtraBold", size: width * 0.45))
+                    .opacity(isStale ? 0.35 : 1.0)
             }
         }
         .aspectRatio(1, contentMode: .fit)

@@ -5,6 +5,8 @@
 //  Created by Vasil Borisov on 19.11.24.
 //
 
+import Foundation
+
 struct CompassData {
     
     // MARK: - Raw Data Fields (Used for Raw Data Logging)
@@ -15,6 +17,9 @@ struct CompassData {
     var magneticHeading: Double? = nil        // Magnetic Heading (HDG)
     var normalizedHeading: Double? = nil      // Heading normalized to [0, 360) for display purposes
     
+    // MARK: - Freshness Tracking
+    var lastUpdated: Date? = nil
+    
     // MARK: - Utility Methods
     
     /// Resets all compass data fields to their default state
@@ -23,6 +28,7 @@ struct CompassData {
         rawNormalizedHeading = nil
         magneticHeading = nil
         normalizedHeading = nil
+        lastUpdated = nil
         
         debugLog("Compass data has been reset.")
     }

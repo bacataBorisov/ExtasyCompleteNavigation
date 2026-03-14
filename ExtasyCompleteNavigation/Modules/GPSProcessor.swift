@@ -54,6 +54,7 @@ class GPSProcessor {
             gpsData.longitude = kalmanFilterLongitude.update(measurement: rawLon)
         }
 
+        gpsData.lastUpdated = Date()
         return gpsData
     }
 
@@ -95,6 +96,7 @@ class GPSProcessor {
         }
 
         gpsData.gpsDate = splitStr[10]
+        gpsData.lastUpdated = Date()
         return gpsData
     }
 
@@ -123,6 +125,7 @@ class GPSProcessor {
             gpsData.longitude = kalmanFilterLongitude.update(measurement: rawLon)
         }
 
+        gpsData.lastUpdated = Date()
         return gpsData
     }
 

@@ -1,0 +1,61 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+---
+
+## [Unreleased] — 2026-03-14
+
+### Bug Fixes
+
+- **AppSettings.swift**: Fixed `calibrationCoefficient` default value in `DefaultSettings.initializeDefaults()`. Was set to `false` (Bool), now correctly set to `1.0` (Double). This caused the speed log calibration to use a boolean instead of a multiplier.
+
+- **WindMetricsView.swift (Watch)**: Fixed mislabeled metric in the bottom row. The second column showed "AWA" but displayed `awd` (Apparent Wind Direction). Label corrected to "AWD".
+
+- **NMEAParser.swift**: Fixed duplicate dictionary keys in Watch metrics. Apparent wind data (`apparentWindForce`, `apparentWindAngle`, `apparentWindDirection`) was being sent with keys `"tws"`, `"twa"`, `"twd"` — identical to true wind — causing true wind values to be silently overwritten. Keys corrected to `"aws"`, `"awa"`, `"awd"` to match `WatchSessionManager`'s expected field map. **Apparent wind data now reaches the Apple Watch.**
+
+- **VMGSimpleView.swift**: Removed direct struct mutation `gpsData.waypointLocation = nil` in `deselectWaypoint()`. The subsequent `disableMarker()` call already handles this on the correct serial queue, making the direct mutation both redundant and a thread-safety violation.
+
+### Improvements
+
+- **VMGCalculator.swift**: Replaced `fatalError` calls with graceful error handling:
+  - `init(diagram:)` is now a failable initializer (`init?`) that returns `nil` on empty/malformed data instead of crashing.
+  - Added validation for minimum diagram dimensions (needs >1 row and >1 column).
+
+- **VMGCalculator.swift**: Replaced `freopen`/`readLine` file reading in `readOptimalTackTable()` with `String(contentsOfFile:encoding:)`. The old approach redirected `stdin` globally, which is fragile and not thread-safe. The new approach returns a `Bool` success indicator.
+
+---
+
+## [Unreleased] — 2026-03-14 (Session 2)
+
+### Data Freshness & Connection Status (Stable Test Build)
+
+Ensures all displayed navigation data can be trusted during on-boat testing. Previously, if a sensor stopped transmitting, the app showed frozen values with no indication — dangerous for navigation.
+
+#### Per-Sensor Freshness Tracking
+
+- **GPSData.swift, HydroData.swift, CompassData.swift**: Added `lastUpdated: Date?` field and reset it in `reset()`. WindData already had this.
+- **GPSProcessor.swift**: Stamps `lastUpdated = Date()` in `processGLL`, `processRMC`, and `processGGA` on successful parse.
+- **HydroProcessor.swift**: Stamps `lastUpdated = Date()` in `processDepth`, `processSeaTemperature`, `processSpeedLog`, and `processDistanceTravelled`.
+- **CompassProcessor.swift**: Stamps `lastUpdated = Date()` in `processCompassSentence`.
+
+#### Watchdog Expansion
+
+- **NMEAParser.swift**: Added `SensorStatus` enum (`.active` / `.stale` / `.unavailable`) and `DataStatus` struct tracking all four sensor groups. The existing 1-second watchdog timer now checks all sensors against a 30-second staleness threshold and updates `dataStatus` on the main thread. Removed the old wind-only `lastWindUpdateTime` variable. Added `sensorStatus(forValueID:)` helper for mapping display cell IDs to the correct sensor.
+
+#### UDP Connection Monitoring
+
+- **UDPHandler.swift**: Added `isReceivingData: Bool` flag that tracks whether any UDP data has been received within the last 10 seconds. A 2-second polling timer checks `lastReceiveTime` and updates the flag. This is independent of per-sensor staleness (the socket could be receiving GPS but not wind).
+
+#### Stale Data Display
+
+- **DisplayCell.swift**: Now shows "--" when the sensor for the displayed value is stale or when no value has been received. Stale cells are dimmed to 35% opacity. Added `hasReceivedValue` state to distinguish "never received" from "received then lost".
+- **SmallCornerView.swift**: Same pattern — shows "--" for stale/unavailable sensors with dimmed opacity.
+
+#### Connection Status Indicator
+
+- **UltimateView.swift**: Added a status dot at the top center of the compass view:
+  - Green = all sensors active
+  - Yellow = some sensors stale
+  - Red = no data from any sensor
+  - Tap to show a popover with per-sensor status detail (Wind, GPS, Depth/Speed, Compass)
