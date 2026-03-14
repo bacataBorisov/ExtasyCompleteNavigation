@@ -59,3 +59,39 @@ Ensures all displayed navigation data can be trusted during on-boat testing. Pre
   - Yellow = some sensors stale
   - Red = no data from any sensor
   - Tap to show a popover with per-sensor status detail (Wind, GPS, Depth/Speed, Compass)
+
+---
+
+## [Unreleased] — 2026-03-14 (Session 3)
+
+### Thread Safety Audit
+
+Fixed data races between the UDP processing thread and the main (UI) thread.
+
+#### Serial UDP Delegate Queue
+
+- **UDPHandler.swift**: Replaced `.global()` (concurrent) delegate queue with a dedicated serial queue (`com.extasy.udp.delegate`). Ensures only one NMEA sentence is processed at a time, preventing concurrent mutation of processor state.
+
+#### Lock-Protected Cached Data
+
+- **NMEAParser.swift**: Added `NSLock` (`dataLock`) to protect all `cached*Data` properties, which bridge the processing thread and the main thread. `parseSentence` writes under lock; `performPeriodicUpdate` reads under lock.
+
+#### Eliminated Cross-Thread Reads in parseSentence
+
+- **NMEAParser.swift**: `parseSentence` previously read published `gpsData`, `hydroData`, `windData`, `compassData` (main-thread properties) from the background processing thread. Now snapshots cached data under lock at the start, and passes the latest available values (updated or cached) to downstream processors (`vmgProcessor`, `waypointProcessor`, `windProcessor`). Removed `DispatchQueue.main.async` wrapper for cached writes — now writes directly under lock on the processing thread.
+
+#### GPSProcessor Serial Queue Consistency
+
+- **GPSProcessor.swift**: `processGLL`, `processRMC`, `processGGA`, and `resetGPSData` now execute inside `serialQueue.sync`, matching the pattern already used by `updateMarker` and `disableMarker`. Prevents races between UI-triggered waypoint updates and NMEA processing.
+
+### Cleanup
+
+- **Extensions.swift**: Deleted empty file (not part of Xcode build).
+- **VMGCalculator.swift**: Removed 240 lines of commented-out old implementation.
+- **README.md**: Rewritten to reflect actual project structure. Removed references to non-existent `VMGViewModel` and `SettingsMenuViewModel`.
+- **WaypointFillForm.swift**: Renamed from `WaypointFIllForm.swift` (typo). Updated Xcode project references.
+
+### Error Recovery
+
+- **UDPHandler.swift**: Added `ConnectionState` enum (`.disconnected` / `.connecting` / `.connected` / `.reconnecting` / `.error`). Automatic reconnection with exponential backoff (up to 10 attempts, max 30s delay) when socket closes with error. Socket is recreated after error close (GCDAsyncUdpSocket may not be reusable). Background polling also recreates socket. Added `intentionallyClosed` flag to prevent reconnection during deliberate close/background transitions.
+- **UltimateView.swift**: Status dot and popover now show UDP connection state alongside sensor status. Dot turns orange during reconnection, red on error/disconnect.

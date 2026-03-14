@@ -101,13 +101,14 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     
     private var periodicUpdateTimer: Timer?
 
-    // Temporary caches
+    // Temporary caches — protected by dataLock for cross-thread access
     private var cachedHydroData: HydroData?
     private var cachedWindData: WindData?
     private var cachedGPSData: GPSData?
     private var cachedCompassData: CompassData?
     private var cachedVMGData: VMGData?
     private var cachedWaypointData: WaypointData?
+    private let dataLock = NSLock()
 
     //MARK: - Timer function for UI Updates and Watch Session which is delibaretly offset from the 1 sec NMEA received singal
     
@@ -132,12 +133,21 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     ///
     @MainActor
     private func performPeriodicUpdate() {
-        if let hydro = cachedHydroData { hydroData = hydro }
-        if let wind = cachedWindData { windData = wind }
-        if let gps = cachedGPSData { gpsData = gps }
-        if let compass = cachedCompassData { compassData = compass }
-        if let vmg = cachedVMGData { vmgData = vmg }
-        if let waypoint = cachedWaypointData { waypointData = waypoint }
+        dataLock.lock()
+        let hydro = cachedHydroData
+        let wind = cachedWindData
+        let gps = cachedGPSData
+        let compass = cachedCompassData
+        let vmg = cachedVMGData
+        let waypoint = cachedWaypointData
+        dataLock.unlock()
+        
+        if let h = hydro { hydroData = h }
+        if let w = wind { windData = w }
+        if let g = gps { gpsData = g }
+        if let c = compass { compassData = c }
+        if let v = vmg { vmgData = v }
+        if let wp = waypoint { waypointData = wp }
 
         //arra of tuples to loop through when sending
         
@@ -317,7 +327,15 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     
     private func parseSentence(_ format: String, _ splitStr: [String]) {
         
-        // Temporary variable to store updated data
+        // Snapshot current cached data under lock for use as processor input
+        dataLock.lock()
+        let currentHydro = cachedHydroData
+        let currentCompass = cachedCompassData
+        let currentGPS = cachedGPSData
+        let currentWind = cachedWindData
+        let currentVMG = cachedVMGData
+        dataLock.unlock()
+        
         var updatedHydroData: HydroData?
         var updatedWindData: WindData?
         var updatedGPSData: GPSData?
@@ -331,104 +349,78 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
         case "DPT":
             updatedHydroData = hydroProcessor.processDepth(splitStr)
             
-            
         case "HDG":
             //MARK: - Magnetic Heading with Corrected Variation
             updatedCompassData = compassProcessor.processCompassSentence(splitStr)
             
             //MARK: - Water Temperature
         case "MTW":
-            //for the moment we don't have temperature sensor. I am not sure where exactly has been installed - probably in the speed log? Looks like our is not connected because we get an empty string when it has been returned. If we get a new speed log with temperature sensor we can use it. For the moment it will be skipped or just get "--"
             updatedHydroData = hydroProcessor.processSeaTemperature(splitStr)
             
             //MARK: - Wind Sensor Data
         case "MWV":
-            
-            updatedWindData = windProcessor.processWindSentence(splitStr, compassData: compassData, hydroData: hydroData)
+            updatedWindData = windProcessor.processWindSentence(
+                splitStr,
+                compassData: updatedCompassData ?? currentCompass,
+                hydroData: updatedHydroData ?? currentHydro
+            )
             
             //MARK: - Boat Speed & Distance Travelled from Lag
         case "VHW":
-            
             updatedHydroData = hydroProcessor.processSpeedLog(splitStr)
             
-            //Distance travelled through water in nautical miles
         case "VLW":
-            
             updatedHydroData = hydroProcessor.processDistanceTravelled(splitStr)
             
             //MARK: - GPS Sentences
-            
-            /*   For the moment I rely on one source of GPS - it is external one, since the one integrated with B&N 'II'
-             does not work.
-             In case we fix it I need to fix the code and decide how to proceed - choose one at a time or average for both for better accuracy.
-             To be decided later on
-             */
-            
-            //Geohraphic Position - Latitude / Longtitude
         case "GLL":
-            //once we fix our GPS, this can be used for determing out coordinates
             fallthrough
         case "GGA":
             fallthrough
-            //print(splitStr)
-            //GSA - GPS DOP and active satellites - only for information in terminal
         case "GSA":
             fallthrough
-            //print(splitStr)
-            //GSV - Satellite in view - Only for Information in terminal
         case "GSV":
             fallthrough
-            //print(splitStr)
-            //RMC - Recommended Minimum Navigation
         case "RMC":
-            
             updatedGPSData = gpsProcessor.processRMC(splitStr)
             
-            //Recommended Minimum Navigation Information
         case "RMB":
-            //it will probably be active when autopilot is active. It can be used only for information. I can't send any data to the autopilot
-            //that gives you information about positioned waypoints. It can be used instead of calculations
-            //it has to be tested what is better - iOS system calculations or this information - to be compared once the GPS has been repaired.
             fallthrough
-            //VTG - Track Made Good and Ground Speed - it is active when the autopilot is active
-            //this one might not exist at all??? - check when on the boat
         case "VTG":
-            //this can be used only for informatio. I can't send any data to the autopilot
             fallthrough
         default:
             break
         }
         
         //MARK: - Update VMG Data
-        // **Call processVMGData after relevant updates**
-        updatedVMGData =  vmgProcessor.processVMGData(
-            gpsData: gpsData,
-            hydroData: hydroData,
-            windData: windData
+        let latestGPS = updatedGPSData ?? currentGPS
+        let latestHydro = updatedHydroData ?? currentHydro
+        let latestWind = updatedWindData ?? currentWind
+        
+        updatedVMGData = vmgProcessor.processVMGData(
+            gpsData: latestGPS,
+            hydroData: latestHydro,
+            windData: latestWind
         )
         
-        //process only when there is a valid marker coordinate
-        if let _ = updatedGPSData?.waypointLocation {
-            
+        if updatedGPSData?.waypointLocation != nil {
             updatedWaypointData = waypointProcessor.processWaypointData(
-                vmgData: vmgData,
-                gpsData: gpsData,
-                windData: windData
+                vmgData: updatedVMGData ?? currentVMG,
+                gpsData: latestGPS,
+                windData: latestWind
             )
         }
         
-        // Updates MUST happen on the Main Thread
-        DispatchQueue.main.async { [self] in
-            
-            // Buffer only, no UI updates here
-            cachedHydroData = updatedHydroData ?? cachedHydroData
-            cachedWindData = updatedWindData ?? cachedWindData
-            cachedGPSData = updatedGPSData ?? cachedGPSData
-            cachedCompassData = updatedCompassData ?? cachedCompassData
-            cachedVMGData = updatedVMGData ?? cachedVMGData
-            cachedWaypointData = updatedWaypointData ?? cachedWaypointData
+        // Buffer results under lock for the periodic UI update
+        dataLock.lock()
+        if let h = updatedHydroData { cachedHydroData = h }
+        if let w = updatedWindData { cachedWindData = w }
+        if let g = updatedGPSData { cachedGPSData = g }
+        if let c = updatedCompassData { cachedCompassData = c }
+        if let v = updatedVMGData { cachedVMGData = v }
+        if let wp = updatedWaypointData { cachedWaypointData = wp }
+        dataLock.unlock()
 
-        }
     }//END OF PARSE SENTENCE
     
     // MARK: - Display Value Normalization (TODO: Refactor Later)

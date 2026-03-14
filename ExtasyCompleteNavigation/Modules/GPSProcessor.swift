@@ -31,110 +31,112 @@ class GPSProcessor {
     
     // MARK: - Process GLL
     func processGLL(_ splitStr: [String]) -> GPSData {
-        guard splitStr.count >= 6 else {
-            debugLog("Invalid GLL Sentence!")
-            gpsData.isGPSDataValid = false
+        serialQueue.sync { [self] in
+            guard splitStr.count >= 6 else {
+                debugLog("Invalid GLL Sentence!")
+                gpsData.isGPSDataValid = false
+                return gpsData
+            }
+
+            gpsData.isGPSDataValid = true
+
+            let rawLatitude = toCLLDegreesLat(value: splitStr[2], direction: splitStr[3])
+            let rawLongitude = toCLLDegreesLon(value: splitStr[4], direction: splitStr[5])
+
+            gpsData.rawLatitude = rawLatitude
+            gpsData.rawLongitude = rawLongitude
+
+            if let rawLat = rawLatitude {
+                gpsData.latitude = kalmanFilterLatitude.update(measurement: rawLat)
+            }
+            if let rawLon = rawLongitude {
+                gpsData.longitude = kalmanFilterLongitude.update(measurement: rawLon)
+            }
+
+            gpsData.lastUpdated = Date()
             return gpsData
         }
-
-        gpsData.isGPSDataValid = true
-
-        let rawLatitude = toCLLDegreesLat(value: splitStr[2], direction: splitStr[3])
-        let rawLongitude = toCLLDegreesLon(value: splitStr[4], direction: splitStr[5])
-
-        // Store raw data
-        gpsData.rawLatitude = rawLatitude
-        gpsData.rawLongitude = rawLongitude
-
-        // Apply filters to get smooth data
-        if let rawLat = rawLatitude {
-            gpsData.latitude = kalmanFilterLatitude.update(measurement: rawLat)
-        }
-        if let rawLon = rawLongitude {
-            gpsData.longitude = kalmanFilterLongitude.update(measurement: rawLon)
-        }
-
-        gpsData.lastUpdated = Date()
-        return gpsData
     }
 
     // MARK: - Process RMC
     func processRMC(_ splitStr: [String]) -> GPSData {
-        guard splitStr.count >= 11, splitStr[3] == "A" else {
-            debugLog("Invalid RMC Sentence!")
-            gpsData.isGPSDataValid = false
+        serialQueue.sync { [self] in
+            guard splitStr.count >= 11, splitStr[3] == "A" else {
+                debugLog("Invalid RMC Sentence!")
+                gpsData.isGPSDataValid = false
+                return gpsData
+            }
+
+            gpsData.isGPSDataValid = true
+            gpsData.utcTime = splitStr[2]
+
+            let rawLatitude = toCLLDegreesLat(value: splitStr[4], direction: splitStr[5])
+            let rawLongitude = toCLLDegreesLon(value: splitStr[6], direction: splitStr[7])
+            let rawCOG = Double(splitStr[9])
+            let rawSOG = Double(splitStr[8])
+
+            gpsData.rawLatitude = rawLatitude
+            gpsData.rawLongitude = rawLongitude
+            gpsData.rawCourseOverGround = rawCOG
+            gpsData.rawSpeedOverGround = rawSOG
+
+            if let rawLat = rawLatitude {
+                gpsData.latitude = kalmanFilterLatitude.update(measurement: rawLat)
+            }
+            if let rawLon = rawLongitude {
+                gpsData.longitude = kalmanFilterLongitude.update(measurement: rawLon)
+            }
+            if let cog = rawCOG {
+                gpsData.courseOverGround = kalmanFilterCOG.update(measurement: cog)
+            }
+            if let sog = rawSOG {
+                gpsData.speedOverGround = kalmanFilterSOG.update(measurement: sog)
+                gpsData.speedOverGroundKmh = sog * 1.852
+            }
+
+            gpsData.gpsDate = splitStr[10]
+            gpsData.lastUpdated = Date()
             return gpsData
         }
-
-        gpsData.isGPSDataValid = true
-        gpsData.utcTime = splitStr[2]
-
-        let rawLatitude = toCLLDegreesLat(value: splitStr[4], direction: splitStr[5])
-        let rawLongitude = toCLLDegreesLon(value: splitStr[6], direction: splitStr[7])
-        let rawCOG = Double(splitStr[9])
-        let rawSOG = Double(splitStr[8])
-
-        // Store raw values
-        gpsData.rawLatitude = rawLatitude
-        gpsData.rawLongitude = rawLongitude
-        gpsData.rawCourseOverGround = rawCOG
-        gpsData.rawSpeedOverGround = rawSOG
-
-        // Apply filters to smooth values
-        if let rawLat = rawLatitude {
-            gpsData.latitude = kalmanFilterLatitude.update(measurement: rawLat)
-        }
-        if let rawLon = rawLongitude {
-            gpsData.longitude = kalmanFilterLongitude.update(measurement: rawLon)
-        }
-        if let cog = rawCOG {
-            gpsData.courseOverGround = kalmanFilterCOG.update(measurement: cog)
-        }
-        if let sog = rawSOG {
-            gpsData.speedOverGround = kalmanFilterSOG.update(measurement: sog)
-            gpsData.speedOverGroundKmh = sog * 1.852
-        }
-
-        gpsData.gpsDate = splitStr[10]
-        gpsData.lastUpdated = Date()
-        return gpsData
     }
 
     // MARK: - Process GGA
     func processGGA(_ splitStr: [String]) -> GPSData {
-        guard splitStr.count >= 7 else {
-            debugLog("Invalid GGA Sentence!")
-            gpsData.isGPSDataValid = false
+        serialQueue.sync { [self] in
+            guard splitStr.count >= 7 else {
+                debugLog("Invalid GGA Sentence!")
+                gpsData.isGPSDataValid = false
+                return gpsData
+            }
+
+            gpsData.isGPSDataValid = true
+
+            let rawLatitude = toCLLDegreesLat(value: splitStr[2], direction: splitStr[3])
+            let rawLongitude = toCLLDegreesLon(value: splitStr[4], direction: splitStr[5])
+
+            gpsData.rawLatitude = rawLatitude
+            gpsData.rawLongitude = rawLongitude
+
+            if let rawLat = rawLatitude {
+                gpsData.latitude = kalmanFilterLatitude.update(measurement: rawLat)
+            }
+            if let rawLon = rawLongitude {
+                gpsData.longitude = kalmanFilterLongitude.update(measurement: rawLon)
+            }
+
+            gpsData.lastUpdated = Date()
             return gpsData
         }
-
-        gpsData.isGPSDataValid = true
-
-        let rawLatitude = toCLLDegreesLat(value: splitStr[2], direction: splitStr[3])
-        let rawLongitude = toCLLDegreesLon(value: splitStr[4], direction: splitStr[5])
-
-        // Store raw data
-        gpsData.rawLatitude = rawLatitude
-        gpsData.rawLongitude = rawLongitude
-
-        // Apply filters
-        if let rawLat = rawLatitude {
-            gpsData.latitude = kalmanFilterLatitude.update(measurement: rawLat)
-        }
-        if let rawLon = rawLongitude {
-            gpsData.longitude = kalmanFilterLongitude.update(measurement: rawLon)
-        }
-
-        gpsData.lastUpdated = Date()
-        return gpsData
     }
 
     // MARK: - Reset
     @discardableResult
     func resetGPSData() -> GPSData {
-        gpsData.reset()
-        debugLog("GPS data has been reset.")
-        return gpsData
+        serialQueue.sync { [self] in
+            gpsData.reset()
+            debugLog("GPS data has been reset.")
+            return gpsData
+        }
     }
 
     // MARK: - Coordinates Conversion

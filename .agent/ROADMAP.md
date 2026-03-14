@@ -7,7 +7,7 @@ Prioritized list of improvements, organized by impact and effort.
 ## Priority 1 — Robustness & Stability
 
 ### Thread Safety Audit
-- **Status**: Not started
+- **Status**: Done (Session 3, Mar 2026)
 - **Issue**: Processors are called from the UDP delegate queue (`.global()`), but their mutable state (`gpsData`, `hydroData`, etc.) is read on `@MainActor` by SwiftUI views. The periodic cache-and-copy helps, but cached data can be written concurrently.
 - **Approach**: Convert processors to `actor` types, or synchronize all shared state with a lock/queue. Evaluate whether the whole parsing pipeline should run on a dedicated actor.
 - **Files**: `GPSProcessor.swift`, `HydroProcessor.swift`, `WindProcessor.swift`, `CompassProcessor.swift`, `NMEAParser.swift`
@@ -19,9 +19,10 @@ Prioritized list of improvements, organized by impact and effort.
 - **Files**: `NMEAParser.swift`, `UDPHandler.swift`, `UltimateView.swift`
 
 ### Error Recovery
-- **Status**: Not started
+- **Status**: Partial (Session 3, Mar 2026) — auto-reconnect done, structured error types deferred
 - **Issue**: UDP errors, NMEA parse failures, and invalid sentences are only logged via `print`. No retry logic, no user notification.
-- **Approach**: Implement structured error types, add automatic UDP reconnection, show transient alerts for persistent failures.
+- **Done**: Auto-reconnection with exponential backoff, ConnectionState enum, socket recreation on error, UI integration.
+- **Remaining**: Structured NMEA error types, user-facing alerts for persistent failures.
 
 ---
 

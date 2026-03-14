@@ -2,24 +2,40 @@ import Foundation
 import CocoaAsyncSocket
 import UIKit
 
+enum ConnectionState: String {
+    case disconnected
+    case connecting
+    case connected
+    case reconnecting
+    case error
+}
+
 @Observable
 class UDPHandler: NSObject, GCDAsyncUdpSocketDelegate {
     private var socket: GCDAsyncUdpSocket!
+    private let delegateQueue = DispatchQueue(label: "com.extasy.udp.delegate")
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
     private var udpPollingTimer: Timer?
     private var isSocketOpen = false
+    
+    var connectionState: ConnectionState = .disconnected
     
     /// Tracks whether UDP data has been received recently (within 10s)
     var isReceivingData: Bool = false
     @ObservationIgnored private var lastReceiveTime: Date?
     @ObservationIgnored private var receiveCheckTimer: Timer?
     private let receiveTimeout: TimeInterval = 10
+    
+    @ObservationIgnored private var reconnectTimer: Timer?
+    @ObservationIgnored private var reconnectAttempts: Int = 0
+    private let maxReconnectAttempts = 10
+    private var intentionallyClosed = false
 
     var onDataReceived: ((String) -> Void)?
 
     override init() {
         super.init()
-        socket = GCDAsyncUdpSocket(delegate: self, delegateQueue: .global())
+        socket = GCDAsyncUdpSocket(delegate: self, delegateQueue: delegateQueue)
         configureNotifications()
         startReceiveMonitor()
         debugLog("UDPHandler initialized and notifications configured.")
@@ -38,12 +54,16 @@ class UDPHandler: NSObject, GCDAsyncUdpSocketDelegate {
                 if self.isReceivingData != receiving {
                     self.isReceivingData = receiving
                 }
+                if self.isSocketOpen && self.connectionState != .connected {
+                    self.connectionState = .connected
+                }
             }
         }
     }
 
     // MARK: - Start Listening (Foreground)
     func startListening() {
+        intentionallyClosed = false
         if !isSocketOpen {
             openSocket()
             debugLog("UDP continuous listening started.")
@@ -54,10 +74,17 @@ class UDPHandler: NSObject, GCDAsyncUdpSocketDelegate {
 
     // MARK: - Stop Listening
     func stopListening() {
+        intentionallyClosed = true
+        reconnectTimer?.invalidate()
+        reconnectTimer = nil
+        reconnectAttempts = 0
         udpPollingTimer?.invalidate()
         udpPollingTimer = nil
         closeSocket()
         endBackgroundTask()
+        DispatchQueue.main.async {
+            self.connectionState = .disconnected
+        }
         debugLog("UDP listening stopped and background task ended.")
     }
 
@@ -68,13 +95,27 @@ class UDPHandler: NSObject, GCDAsyncUdpSocketDelegate {
             return
         }
         
+        DispatchQueue.main.async {
+            self.connectionState = self.reconnectAttempts > 0 ? .reconnecting : .connecting
+        }
+        
         do {
             try socket.bind(toPort: 4950)
             try socket.beginReceiving()
             isSocketOpen = true
+            reconnectAttempts = 0
+            DispatchQueue.main.async {
+                self.connectionState = .connected
+            }
             debugLog("UDP socket successfully opened on port 4950 and started receiving data.")
         } catch {
             debugLog("Failed to open UDP socket: \(error.localizedDescription)")
+            DispatchQueue.main.async {
+                self.connectionState = .error
+            }
+            if !intentionallyClosed {
+                scheduleReconnect()
+            }
         }
     }
 
@@ -87,10 +128,46 @@ class UDPHandler: NSObject, GCDAsyncUdpSocketDelegate {
         isSocketOpen = false
         debugLog("UDP socket successfully closed.")
     }
+    
+    private func recreateSocket() {
+        if isSocketOpen {
+            socket.close()
+            isSocketOpen = false
+        }
+        socket = GCDAsyncUdpSocket(delegate: self, delegateQueue: delegateQueue)
+        debugLog("Socket instance recreated.")
+    }
+    
+    // MARK: - Auto-Reconnection
+    private func scheduleReconnect() {
+        guard reconnectAttempts < maxReconnectAttempts else {
+            debugLog("Max reconnect attempts (\(maxReconnectAttempts)) reached. Giving up.")
+            DispatchQueue.main.async {
+                self.connectionState = .error
+            }
+            return
+        }
+        
+        let delay = min(pow(2.0, Double(reconnectAttempts)), 30.0)
+        reconnectAttempts += 1
+        debugLog("Scheduling reconnect attempt \(reconnectAttempts) in \(delay)s...")
+        
+        DispatchQueue.main.async {
+            self.connectionState = .reconnecting
+        }
+        
+        reconnectTimer?.invalidate()
+        reconnectTimer = Timer.scheduledTimer(withTimeInterval: delay, repeats: false) { [weak self] _ in
+            guard let self, !self.intentionallyClosed else { return }
+            debugLog("Reconnect attempt \(self.reconnectAttempts)...")
+            self.recreateSocket()
+            self.openSocket()
+        }
+    }
 
     // MARK: - Background Polling Logic
     private func scheduleBackgroundPolling() {
-        udpPollingTimer?.invalidate() // Prevent multiple timers
+        udpPollingTimer?.invalidate()
 
         udpPollingTimer = Timer.scheduledTimer(withTimeInterval: 15, repeats: true) { [weak self] _ in
             guard let self = self else { return }
@@ -107,6 +184,7 @@ class UDPHandler: NSObject, GCDAsyncUdpSocketDelegate {
                 }
 
                 debugLog("Polling for UDP data...")
+                self.recreateSocket()
                 self.openSocket()
 
                 DispatchQueue.global().asyncAfter(deadline: .now() + 5) {
@@ -128,7 +206,11 @@ class UDPHandler: NSObject, GCDAsyncUdpSocketDelegate {
     // MARK: - App State Handlers
     @objc private func handleAppDidEnterBackground() {
         debugLog("App entered background. Switching to polling mode...")
+        intentionallyClosed = true
+        reconnectTimer?.invalidate()
+        reconnectTimer = nil
         closeSocket()
+        intentionallyClosed = false
         scheduleBackgroundPolling()
         startBackgroundTask()
     }
@@ -138,9 +220,12 @@ class UDPHandler: NSObject, GCDAsyncUdpSocketDelegate {
 
         udpPollingTimer?.invalidate()
         udpPollingTimer = nil
+        intentionallyClosed = false
+        reconnectAttempts = 0
 
         if !isSocketOpen {
             debugLog("Socket is closed. Opening socket for continuous listening.")
+            recreateSocket()
             openSocket()
         } else {
             debugLog("Socket is already open. No action needed.")
@@ -184,10 +269,22 @@ class UDPHandler: NSObject, GCDAsyncUdpSocketDelegate {
     }
 
     func udpSocketDidClose(_ sock: GCDAsyncUdpSocket, withError error: Error?) {
+        isSocketOpen = false
         if let error = error {
             debugLog("UDP socket closed unexpectedly with error: \(error.localizedDescription)")
+            DispatchQueue.main.async {
+                self.connectionState = .error
+            }
+            if !intentionallyClosed {
+                scheduleReconnect()
+            }
         } else {
             debugLog("UDP socket closed normally.")
+            if !intentionallyClosed {
+                DispatchQueue.main.async {
+                    self.connectionState = .disconnected
+                }
+            }
         }
     }
 

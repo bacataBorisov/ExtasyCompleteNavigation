@@ -31,7 +31,7 @@
 		066FD0F12D42EE8E00FE7AF1 /* ExtasyNavigation-SoftwareArchitectureMap.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 066FD0F02D42EE8E00FE7AF1 /* ExtasyNavigation-SoftwareArchitectureMap.pdf */; };
 		067388CB2D3C5F01002C9C54 /* iPhoneVMGView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067388CA2D3C5F01002C9C54 /* iPhoneVMGView.swift */; };
 		067388D12D3DAC32002C9C54 /* ReadRawNMEA.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067388D02D3DAC2B002C9C54 /* ReadRawNMEA.swift */; };
-		0674D44B2B5B340F0000E20F /* WaypointFIllForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0674D44A2B5B340F0000E20F /* WaypointFIllForm.swift */; };
+		0674D44B2B5B340F0000E20F /* WaypointFillForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0674D44A2B5B340F0000E20F /* WaypointFillForm.swift */; };
 		06823F272D1CC70600BA5180 /* TackAlignmentBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06823F262D1CC70600BA5180 /* TackAlignmentBar.swift */; };
 		06823F2D2D1F9DAD00BA5180 /* iPadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06823F2C2D1F9DA300BA5180 /* iPadView.swift */; };
 		06823F362D23562300BA5180 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06823F352D23562300BA5180 /* UserDefaultsKeys.swift */; };
@@ -159,7 +159,7 @@
 		066FD0F02D42EE8E00FE7AF1 /* ExtasyNavigation-SoftwareArchitectureMap.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "ExtasyNavigation-SoftwareArchitectureMap.pdf"; sourceTree = "<group>"; };
 		067388CA2D3C5F01002C9C54 /* iPhoneVMGView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPhoneVMGView.swift; sourceTree = "<group>"; };
 		067388D02D3DAC2B002C9C54 /* ReadRawNMEA.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadRawNMEA.swift; sourceTree = "<group>"; };
-		0674D44A2B5B340F0000E20F /* WaypointFIllForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointFIllForm.swift; sourceTree = "<group>"; };
+		0674D44A2B5B340F0000E20F /* WaypointFillForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointFillForm.swift; sourceTree = "<group>"; };
 		06823F262D1CC70600BA5180 /* TackAlignmentBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TackAlignmentBar.swift; sourceTree = "<group>"; };
 		06823F2C2D1F9DA300BA5180 /* iPadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPadView.swift; sourceTree = "<group>"; };
 		06823F352D23562300BA5180 /* UserDefaultsKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKeys.swift; sourceTree = "<group>"; };
@@ -423,7 +423,7 @@
 			isa = PBXGroup;
 			children = (
 				06FC6E4C2B55D9BB006AF16A /* WaypointListView.swift */,
-				0674D44A2B5B340F0000E20F /* WaypointFIllForm.swift */,
+				0674D44A2B5B340F0000E20F /* WaypointFillForm.swift */,
 				066CCD882B59D4DB00381E2E /* WaypointDetailedView.swift */,
 			);
 			path = Waypoints;
@@ -809,7 +809,7 @@
 				067388D12D3DAC32002C9C54 /* ReadRawNMEA.swift in Sources */,
 				069EEA592CEB503400357A05 /* NavigationManager.swift in Sources */,
 				06823F362D23562300BA5180 /* UserDefaultsKeys.swift in Sources */,
-				0674D44B2B5B340F0000E20F /* WaypointFIllForm.swift in Sources */,
+				0674D44B2B5B340F0000E20F /* WaypointFillForm.swift in Sources */,
 				069EEA562CEB4A1500357A05 /* UDPHandler.swift in Sources */,
 				18A8FA742ACB974200EE2128 /* UltimateView.swift in Sources */,
 				0647305D2D29A535009BCF9A /* WaypointCard.swift in Sources */,

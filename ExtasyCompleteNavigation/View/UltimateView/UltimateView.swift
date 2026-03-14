@@ -11,6 +11,7 @@ struct UltimateView: View {
     
     @Environment(NMEAParser.self) private var navigationReadings
     @Environment(SettingsManager.self) private var settingsManager
+    @Environment(UDPHandler.self) private var udpHandler
 
     // Individual AppStorage for each corner's display value
     @AppStorage("speedCorner0") private var speedCorner0: Int = 3
@@ -106,10 +107,13 @@ struct UltimateView: View {
     
     // MARK: - Connection Status Dot
     private var connectionStatusDot: some View {
-        let status = navigationReadings.dataStatus
+        let sensorStatus = navigationReadings.dataStatus
+        let connState = udpHandler.connectionState
         let color: Color = {
-            if status.overallHealthy { return .green }
-            if status.anyActive { return .yellow }
+            if connState == .error || connState == .disconnected { return .red }
+            if connState == .reconnecting || connState == .connecting { return .orange }
+            if sensorStatus.overallHealthy { return .green }
+            if sensorStatus.anyActive { return .yellow }
             return .red
         }()
         
@@ -123,8 +127,15 @@ struct UltimateView: View {
     // MARK: - Sensor Detail Popover
     private var sensorDetailView: some View {
         let status = navigationReadings.dataStatus
+        let connState = udpHandler.connectionState
         return VStack(alignment: .leading, spacing: 12) {
-            Text("Sensor Status")
+            Text("Connection")
+                .font(.headline)
+            connectionRow(state: connState)
+            
+            Divider()
+            
+            Text("Sensors")
                 .font(.headline)
             sensorRow("Wind", status: status.wind)
             sensorRow("GPS", status: status.gps)
@@ -133,6 +144,38 @@ struct UltimateView: View {
         }
         .padding()
         .presentationCompactAdaptation(.popover)
+    }
+    
+    private func connectionRow(state: ConnectionState) -> some View {
+        HStack {
+            Circle()
+                .fill(connectionColor(for: state))
+                .frame(width: 8, height: 8)
+            Text("UDP")
+                .font(.subheadline)
+            Spacer()
+            Text(connectionLabel(for: state))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+    
+    private func connectionColor(for state: ConnectionState) -> Color {
+        switch state {
+        case .connected: return .green
+        case .connecting, .reconnecting: return .orange
+        case .disconnected, .error: return .red
+        }
+    }
+    
+    private func connectionLabel(for state: ConnectionState) -> String {
+        switch state {
+        case .connected: return "Connected"
+        case .connecting: return "Connecting…"
+        case .reconnecting: return "Reconnecting…"
+        case .disconnected: return "Disconnected"
+        case .error: return "Error"
+        }
     }
     
     private func sensorRow(_ name: String, status: SensorStatus) -> some View {
