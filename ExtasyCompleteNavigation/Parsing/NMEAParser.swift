@@ -430,11 +430,13 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
         gpsProcessor.updateMarker(to: location, name)
         
         dataLock.lock()
+        if cachedGPSData == nil { cachedGPSData = GPSData() }
         cachedGPSData?.waypointLocation = location
         cachedGPSData?.waypointName = name
         cachedGPSData?.isTargetSelected = true
         dataLock.unlock()
         
+        if gpsData == nil { gpsData = GPSData() }
         gpsData?.waypointLocation = location
         gpsData?.waypointName = name
         gpsData?.isTargetSelected = true
