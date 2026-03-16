@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import Network
 
 @main
 struct ExtasyCompleteNavigationApp: App {
@@ -16,7 +17,9 @@ struct ExtasyCompleteNavigationApp: App {
     //@StateObject private var audioManager = AudioManager() // Persisted audio manager instance
     
     init() {
-                
+        // Workaround for iOS 26 simulator TLS initialization crash
+        nw_tls_create_options()
+        
         // Initialize default settings
         DefaultSettings.initializeDefaults()
         

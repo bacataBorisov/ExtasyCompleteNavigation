@@ -423,6 +423,40 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
 
     }//END OF PARSE SENTENCE
     
+    // MARK: - Waypoint Selection
+    
+    func selectWaypoint(at location: CLLocationCoordinate2D, name: String) {
+        waypointProcessor.resetWaypointCalculations()
+        gpsProcessor.updateMarker(to: location, name)
+        
+        dataLock.lock()
+        cachedGPSData?.waypointLocation = location
+        cachedGPSData?.waypointName = name
+        cachedGPSData?.isTargetSelected = true
+        dataLock.unlock()
+        
+        gpsData?.waypointLocation = location
+        gpsData?.waypointName = name
+        gpsData?.isTargetSelected = true
+    }
+    
+    func deselectWaypoint() {
+        waypointProcessor.resetWaypointCalculations()
+        gpsProcessor.disableMarker()
+        
+        dataLock.lock()
+        cachedGPSData?.waypointLocation = nil
+        cachedGPSData?.waypointName = nil
+        cachedGPSData?.isTargetSelected = false
+        cachedWaypointData = nil
+        dataLock.unlock()
+        
+        gpsData?.waypointLocation = nil
+        gpsData?.waypointName = nil
+        gpsData?.isTargetSelected = false
+        waypointData = nil
+    }
+    
     // MARK: - Display Value Normalization (TODO: Refactor Later)
     func displayValue(a: Int) -> Double? {
         switch a {

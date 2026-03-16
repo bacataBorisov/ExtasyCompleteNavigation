@@ -286,14 +286,8 @@ struct MapView: View {
     // Add a new waypoint at the tapped location
     private func addWaypoint(at location: CLLocationCoordinate2D) {
         let newWaypoint = Waypoints(title: "Waypoint \(waypoints.count + 1)", lat: location.latitude, lon: location.longitude, isTargetSelected: true)
-        
-        // Save the waypoint in the database or state
         modelContext.insert(newWaypoint)
-        
-        // Immediately select it as the target
-        navigationReadings.waypointProcessor.resetWaypointCalculations()
-        navigationReadings.gpsProcessor.updateMarker(to: location, newWaypoint.title)
-        navigationReadings.gpsData?.isTargetSelected = true
+        navigationReadings.selectWaypoint(at: location, name: newWaypoint.title)
     }
     
     

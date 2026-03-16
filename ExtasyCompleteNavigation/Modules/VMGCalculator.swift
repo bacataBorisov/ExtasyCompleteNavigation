@@ -46,7 +46,8 @@ class VMGCalculator {
 
         let contents: String
         do {
-            contents = try String(contentsOfFile: path, encoding: .utf8)
+            let fileURL = URL(fileURLWithPath: path)
+            contents = try String(contentsOf: fileURL, encoding: .utf8)
         } catch {
             debugLog("VMGCalculator: Couldn't read file \(fileName).txt — \(error.localizedDescription)")
             return false

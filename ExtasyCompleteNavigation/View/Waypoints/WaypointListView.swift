@@ -218,15 +218,11 @@ struct WaypointListView: View {
         }
 
         let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
-        navigationReadings.waypointProcessor.resetWaypointCalculations()
-        navigationReadings.gpsProcessor.updateMarker(to: coordinate, waypoint.title)
-        navigationReadings.gpsData?.isTargetSelected = true
+        navigationReadings.selectWaypoint(at: coordinate, name: waypoint.title)
     }
 
     private func deselectWaypoint() {
-        navigationReadings.waypointProcessor.resetWaypointCalculations()
-        navigationReadings.gpsProcessor.gpsData.waypointLocation = nil
-        navigationReadings.gpsProcessor.disableMarker()
+        navigationReadings.deselectWaypoint()
     }
 }
 

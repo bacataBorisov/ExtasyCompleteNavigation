@@ -205,9 +205,7 @@ struct iPhoneVMGView: View {
     }
     // MARK: - Button Actions
     private func deselectWaypoint() {
-        navigationReadings.waypointProcessor.resetWaypointCalculations()
-        navigationReadings.gpsProcessor.gpsData.waypointLocation = nil
-        navigationReadings.gpsProcessor.disableMarker()
+        navigationReadings.deselectWaypoint()
     }
 }
 

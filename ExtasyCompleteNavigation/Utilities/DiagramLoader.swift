@@ -22,7 +22,8 @@ class DiagramLoader {
         
         // Read the file content
         do {
-            let content = try String(contentsOfFile: filePath, encoding: .utf8)
+            let fileURL = URL(fileURLWithPath: filePath)
+            let content = try String(contentsOf: fileURL, encoding: .utf8)
             return parseDiagram(from: content)
         } catch {
             print("Failed to read file \(fileName): \(error.localizedDescription)")

@@ -196,8 +196,7 @@ struct VMGSimpleView: View {
     
     // MARK: - Button Actions
     private func deselectWaypoint() {
-        navigationReadings.waypointProcessor.resetWaypointCalculations()
-        navigationReadings.gpsProcessor.disableMarker()
+        navigationReadings.deselectWaypoint()
     }
     
     // MARK: - Handle Tack Logic
