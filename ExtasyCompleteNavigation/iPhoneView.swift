@@ -29,11 +29,10 @@ struct iPhoneView: View {
         GeometryReader { geometry in
             VStack(spacing: 0) {
                 MapView()
-                    .frame(height: geometry.size.height * 0.5)
-                    .background(Color.gray.opacity(0.1))
-                
+                    .frame(height: geometry.size.height / 2)
+
                 Divider()
-                
+
                 NavigationStack {
                     TabView(selection: $selectedTab) {
                         ForEach(allViews.indices, id: \.self) { index in
@@ -43,11 +42,11 @@ struct iPhoneView: View {
                         }
                     }
                     .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-                    .frame(height: geometry.size.height * 0.5)
                 }
-                .navigationBarTitleDisplayMode(.inline)
+                .frame(height: geometry.size.height / 2)
             }
         }
+        .ignoresSafeArea()
         .onAppear {
             if let ultimateViewIndex = allViews.firstIndex(where: { $0.label == "Ultimate" }) {
                 selectedTab = ultimateViewIndex

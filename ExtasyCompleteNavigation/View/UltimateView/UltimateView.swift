@@ -11,7 +11,6 @@ struct UltimateView: View {
     
     @Environment(NMEAParser.self) private var navigationReadings
     @Environment(SettingsManager.self) private var settingsManager
-    @Environment(UDPHandler.self) private var udpHandler
 
     // Individual AppStorage for each corner's display value
     @AppStorage("speedCorner0") private var speedCorner0: Int = 3
@@ -20,7 +19,6 @@ struct UltimateView: View {
     @AppStorage("angleCorner1") private var angleCorner1: Int = 7
 
     @State private var animatedValues: [Int] = []
-    @State private var showSensorDetail: Bool = false
     
     var body: some View {
         GeometryProvider { width, geometry, _ in
@@ -87,109 +85,12 @@ struct UltimateView: View {
                 if navigationReadings.gpsData?.isTargetSelected == true {
                     BearingMarkerView(width: width)
                 }
-                // MARK: - Connection Status Indicator
-                VStack {
-                    connectionStatusDot
-                        .padding(.top, width * 0.02)
-                    Spacer()
-                }
-                .frame(width: width, height: width)
                 
             } // END ZSTACK
             .animation(.easeInOut(duration: 0.3), value: animatedValues)
         } // END GEOMETRY
         .aspectRatio(1, contentMode: .fit)
         .padding()
-        .popover(isPresented: $showSensorDetail) {
-            sensorDetailView
-        }
-    }
-    
-    // MARK: - Connection Status Dot
-    private var connectionStatusDot: some View {
-        let sensorStatus = navigationReadings.dataStatus
-        let connState = udpHandler.connectionState
-        let color: Color = {
-            if connState == .error || connState == .disconnected { return .red }
-            if connState == .reconnecting || connState == .connecting { return .orange }
-            if sensorStatus.overallHealthy { return .green }
-            if sensorStatus.anyActive { return .yellow }
-            return .red
-        }()
-        
-        return Circle()
-            .fill(color)
-            .frame(width: 10, height: 10)
-            .shadow(color: color.opacity(0.6), radius: 4)
-            .onTapGesture { showSensorDetail = true }
-    }
-    
-    // MARK: - Sensor Detail Popover
-    private var sensorDetailView: some View {
-        let status = navigationReadings.dataStatus
-        let connState = udpHandler.connectionState
-        return VStack(alignment: .leading, spacing: 12) {
-            Text("Connection")
-                .font(.headline)
-            connectionRow(state: connState)
-            
-            Divider()
-            
-            Text("Sensors")
-                .font(.headline)
-            sensorRow("Wind", status: status.wind)
-            sensorRow("GPS", status: status.gps)
-            sensorRow("Depth/Speed", status: status.hydro)
-            sensorRow("Compass", status: status.compass)
-        }
-        .padding()
-        .presentationCompactAdaptation(.popover)
-    }
-    
-    private func connectionRow(state: ConnectionState) -> some View {
-        HStack {
-            Circle()
-                .fill(connectionColor(for: state))
-                .frame(width: 8, height: 8)
-            Text("UDP")
-                .font(.subheadline)
-            Spacer()
-            Text(connectionLabel(for: state))
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-    }
-    
-    private func connectionColor(for state: ConnectionState) -> Color {
-        switch state {
-        case .connected: return .green
-        case .connecting, .reconnecting: return .orange
-        case .disconnected, .error: return .red
-        }
-    }
-    
-    private func connectionLabel(for state: ConnectionState) -> String {
-        switch state {
-        case .connected: return "Connected"
-        case .connecting: return "Connecting…"
-        case .reconnecting: return "Reconnecting…"
-        case .disconnected: return "Disconnected"
-        case .error: return "Error"
-        }
-    }
-    
-    private func sensorRow(_ name: String, status: SensorStatus) -> some View {
-        HStack {
-            Circle()
-                .fill(status == .active ? .green : (status == .stale ? .yellow : .red))
-                .frame(width: 8, height: 8)
-            Text(name)
-                .font(.subheadline)
-            Spacer()
-            Text(status.rawValue.capitalized)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
     }
 
     // MARK: - Menu Corner View

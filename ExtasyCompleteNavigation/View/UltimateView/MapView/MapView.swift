@@ -31,7 +31,7 @@ struct MapView: View {
     @State private var isMapCentered = true // Track if the map is centered
     
     var body: some View {
-        ZStack(alignment: .topTrailing) {
+        ZStack(alignment: .bottom) {
             
             MapReader { reader in
                 
@@ -125,12 +125,10 @@ struct MapView: View {
             }
             
             
-            // Back Button in the top left corner
+            // iPad back button — top left
             if DeviceType.isIPad {
                 VStack {
-                    Button(action: {
-                        dismiss()
-                    }) {
+                    Button(action: { dismiss() }) {
                         IconButton(systemName: "arrow.backward", color: Color.blue.opacity(0.8))
                     }
                     .buttonStyle(.plain)
@@ -140,46 +138,55 @@ struct MapView: View {
                 .padding(.leading, 26)
                 .padding(.top, 26)
             }
-            
-            
-            // Controls in the top right corner
-            VStack(spacing: 12) {
+
+            // Floating pill toolbar — bottom center
+            HStack(spacing: 0) {
+                // Center on boat
                 Button(action: centerBoat) {
-                    IconButton(systemName: "location.fill", color: Color.blue.opacity(0.8))
+                    Image(systemName: "location.fill")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(.white)
+                        .frame(width: 52, height: 44)
                 }
                 .buttonStyle(.plain)
-                
+
+                Divider()
+                    .frame(width: 1, height: 24)
+                    .background(Color.white.opacity(0.3))
+
+                // Wind mode toggle
                 Button(action: {
                     settingsManager.isWindModeActive.toggle()
-                    if settingsManager.isWindModeActive {
-                        updateLaylines()
-                    }
+                    if settingsManager.isWindModeActive { updateLaylines() }
                 }) {
-                    IconButton(
-                        systemName: settingsManager.isWindModeActive ? "wind.circle.fill" : "wind",
-                        color: settingsManager.isWindModeActive ? Color.green.opacity(0.8) : Color.gray.opacity(0.8)
-                    )
+                    Image(systemName: settingsManager.isWindModeActive ? "wind.circle.fill" : "wind")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(settingsManager.isWindModeActive ? Color.green : .white)
+                        .frame(width: 52, height: 44)
                 }
                 .buttonStyle(.plain)
-                
+
                 if navigationReadings.gpsData?.isTargetSelected == true {
-                    Button(action: {
-                        adjustZoomLevel()
-                    }) {
-                        IconButton(
-                            systemName: "rectangle.grid.2x2",
-                            color: Color.gray.opacity(0.8)
-                        )
+                    Divider()
+                        .frame(width: 1, height: 24)
+                        .background(Color.white.opacity(0.3))
+
+                    // Zoom to fit boat + waypoint
+                    Button(action: adjustZoomLevel) {
+                        Image(systemName: "arrow.up.left.and.arrow.down.right")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(.white)
+                            .frame(width: 52, height: 44)
                     }
                     .buttonStyle(.plain)
                 }
-                
             }
-            .frame(maxWidth: .infinity, alignment: .trailing)
-            .padding(.trailing, 26)
-            .padding(.top, 26)
+            .background(.ultraThinMaterial)
+            .clipShape(Capsule())
+            .shadow(color: .black.opacity(0.25), radius: 8, x: 0, y: 4)
+            .padding(.bottom, 16)
         }
-        .navigationBarHidden(true) // Hide the navigation bar
+        .navigationBarHidden(true)
     }
     // Timer for periodic location updates
     private func setupAnimationTimer() {

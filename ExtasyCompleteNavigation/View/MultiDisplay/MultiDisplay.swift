@@ -23,26 +23,19 @@ struct MultiDisplay: View {
     @State private var animatedValues: [Int] = [] // For subtle UI refresh animations
 
     var body: some View {
-        GeometryProvider { width, _, _ in
-            ZStack {
-                VStack {
-                    // Top large display cell
-                    menuDisplayCell(aspectRatio: 3 / 2, currentValue: $cell0)
+        GeometryProvider { _, _, _ in
+            VStack(spacing: 6) {
+                // Top large display cell
+                menuDisplayCell(aspectRatio: 3 / 2, currentValue: $cell0)
 
-                    // Bottom smaller display cells
-                    HStack {
-                        menuDisplayCell(aspectRatio: 1, currentValue: $cell1)
-                        menuDisplayCell(aspectRatio: 1, currentValue: $cell2)
-                        menuDisplayCell(aspectRatio: 1, currentValue: $cell3)
-                    }
+                // Bottom smaller display cells
+                HStack(spacing: 6) {
+                    menuDisplayCell(aspectRatio: 1, currentValue: $cell1)
+                    menuDisplayCell(aspectRatio: 1, currentValue: $cell2)
+                    menuDisplayCell(aspectRatio: 1, currentValue: $cell3)
                 }
-
-                // Grid overlay
-                MultiDisplayGrid(width: width)
-                    .allowsHitTesting(false) // Prevent interaction with the grid
-                    .zIndex(1) // Ensure grid is rendered above other views
-                    .animation(.easeInOut(duration: 0.3), value: animatedValues) // Smooth animations
             }
+            .padding(6)
             .aspectRatio(1, contentMode: .fit)
         }
     }
@@ -75,6 +68,8 @@ struct MultiDisplay: View {
                 fontSizeMultiplier: 1,
                 valueAlignment: .center
             )
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .shadow(color: Color.primary.opacity(0.06), radius: 4, x: 0, y: 2)
         }
         .buttonStyle(.plain)
     }

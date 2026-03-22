@@ -40,18 +40,30 @@ struct DisplayCell: View {
     var body: some View {
         GeometryReader { geometry in
             let width = geometry.size.width
-            let height = geometry.size.height
             
-            ZStack {
-                Group {
-                    labelView(width: width)
-                    animatedValueView(width: width, height: height)
-                        .minimumScaleFactor(0.4)
-                    unitView(width: width)
+            VStack(spacing: 0) {
+                // Top row: label left, unit right — small, in corners
+                HStack(alignment: .firstTextBaseline) {
+                    Text(cell.name)
+                        .font(Font.custom("AppleSDGothicNeo-Bold", size: width * 0.11 * fontSizeMultiplier))
+                    Spacer()
+                    Text(settingsManager.metricWind && cell.valueHasMetric ? cell.metric : cell.units)
+                        .font(Font.custom("AppleSDGothicNeo-Bold", size: width * 0.10 * fontSizeMultiplier))
+                        .foregroundStyle(Color("display_font").opacity(0.5))
                 }
-                .padding([.leading, .trailing, .top], 4)
-                .opacity(isStale ? 0.35 : 1.0)
+                .padding(.horizontal, width * 0.08)
+                .padding(.top, width * 0.06)
+
+                // Value — dominant, centered
+                Spacer()
+                Text(hasReceivedValue && !isStale ? String(format: cell.specifier, displayedValue) : "--")
+                    .font(Font.custom("Futura-CondensedExtraBold", size: width * 0.54 * fontSizeMultiplier))
+                    .minimumScaleFactor(0.3)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                Spacer()
             }
+            .opacity(isStale ? 0.35 : 1.0)
             .background(alarmBackground())
             .foregroundStyle(Color("display_font"))
         }
@@ -74,31 +86,7 @@ struct DisplayCell: View {
         }
     }
     
-    // MARK: - Subviews
-    private func labelView(width: CGFloat) -> some View {
-        Text(cell.name)
-            .frame(width: width, height: width, alignment: .topLeading)
-            .font(Font.custom("AppleSDGothicNeo-Bold", size: width * 0.2 * fontSizeMultiplier))
-    }
-    
-    private func animatedValueView(width: CGFloat, height: CGFloat) -> some View {
-        let text = hasReceivedValue && !isStale
-            ? String(format: cell.specifier, displayedValue)
-            : "--"
-        return Text(text)
-            .frame(width: width, height: width, alignment: valueAlignment)
-            .font(Font.custom("Futura-CondensedExtraBold", size: width * 0.4 * fontSizeMultiplier))
-            .offset(y: aspectRatio > 1 ? (height - width) / 4 : 0)
-    }
-    
-    private func unitView(width: CGFloat) -> some View {
-        let unit: String = settingsManager.metricWind && cell.valueHasMetric ? cell.metric : cell.units
-        return Text(unit)
-            .frame(width: width, height: width, alignment: .topTrailing)
-            .font(Font.custom("AppleSDGothicNeo-Bold", size: width * 0.18 * fontSizeMultiplier))
-    }
-    
-    // MARK: - Helper Methods
+    // MARK: - Alarm
     private func alarmBackground() -> some View {
         (cell.id == 0 && triggerAlarm()) ? alarmGradient : nonAlarmGradient
     }
