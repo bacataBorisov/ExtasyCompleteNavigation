@@ -104,8 +104,9 @@ struct DisplayCell: View {
     }
     
     private func triggerAlarm() -> Bool {
-        guard let value = navigationReadings.hydroData?.depth else { return false }
-        return value < 3 // Alarm threshold for depth
+        guard settingsManager.depthAlarmEnabled,
+              let value = navigationReadings.hydroData?.depth else { return false }
+        return value < settingsManager.depthAlarmThreshold
     }
 }
 

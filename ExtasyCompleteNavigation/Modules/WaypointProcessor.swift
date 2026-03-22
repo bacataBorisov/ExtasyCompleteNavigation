@@ -347,7 +347,7 @@ class WaypointProcessor {
         
         if abs(determinant) < .ulpOfOne {
             // Lines are parallel or coincident
-            print("Lines are parallel or coincident.")
+            Log.navigation.debug("Lines are parallel or coincident.")
             return nil
         }
         
@@ -368,7 +368,7 @@ class WaypointProcessor {
         
         // Validate intersection is within segment bounds
         if distanceLine1ToIntersection > totalLine1Length || distanceLine2ToIntersection > totalLine2Length {
-            print("Intersection is outside the line segments.")
+            Log.navigation.debug("Intersection is outside the line segments.")
             return nil
         }
         
@@ -376,7 +376,7 @@ class WaypointProcessor {
         let distanceFromStart1 = p1.distance(to: MKMapPoint(intersection))
         let distanceFromStart2 = p3.distance(to: MKMapPoint(intersection))
         if distanceFromStart1 > maxDistance || distanceFromStart2 > maxDistance {
-            print("Intersection is too far: \(distanceFromStart1), \(distanceFromStart2), max: \(maxDistance)")
+            Log.navigation.debug("Intersection is too far: \(distanceFromStart1), \(distanceFromStart2), max: \(maxDistance)")
             return nil
         }
         

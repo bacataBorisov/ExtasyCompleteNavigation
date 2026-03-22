@@ -12,7 +12,7 @@ class WindProcessor {
 
     func processWindSentence(_ splitStr: [String], compassData: CompassData?, hydroData: HydroData?) -> WindData? {
         guard splitStr.count >= 7, splitStr[6] == "A" else {
-            print("Invalid MWV Sentence!")
+            Log.parsing.warning("Invalid MWV Sentence!")
             return lastKnownWindData
         }
 

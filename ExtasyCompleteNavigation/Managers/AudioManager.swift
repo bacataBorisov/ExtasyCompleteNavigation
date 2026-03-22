@@ -7,10 +7,13 @@
 
 // MARK: - Audio Manager
 @preconcurrency import AVFoundation
+import UIKit
 
 @MainActor
 class AudioManager: ObservableObject {
     private var audioPlayer: AVAudioPlayer?
+    private var alarmPlayer: AVAudioPlayer?
+    private var isAlarmPlaying = false
 
     init() {
         setupAudioSession()
@@ -21,13 +24,13 @@ class AudioManager: ObservableObject {
             try AVAudioSession.sharedInstance().setCategory(.playback, options: [.mixWithOthers])
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
-            print("Error setting up audio session: \(error.localizedDescription)")
+            Log.audio.error("Error setting up audio session: \(error.localizedDescription)")
         }
     }
 
     func playMusic() {
         guard let audioPath = Bundle.main.path(forResource: "share_your_passion", ofType: "m4a") else {
-            print("Audio file not found.")
+            Log.audio.error("Audio file not found.")
             return
         }
 
@@ -44,9 +47,9 @@ class AudioManager: ObservableObject {
                     self.audioPlayer?.volume = 1.0  // Start at full volume
                     self.audioPlayer?.play()
 
-                    print("Music started playing successfully.")
+                    Log.audio.info("Music started playing successfully.")
                 } catch {
-                    print("Error playing music: \(error.localizedDescription)")
+                    Log.audio.error("Error playing music: \(error.localizedDescription)")
                 }
             }
         }
@@ -74,6 +77,26 @@ class AudioManager: ObservableObject {
     }
 
     func stopMusic() {
-        fadeOutMusic()  // Call fade out when stopping music
+        fadeOutMusic()
+    }
+    
+    // MARK: - Depth Alarm
+    
+    func playDepthAlarm() {
+        guard !isAlarmPlaying else { return }
+        isAlarmPlaying = true
+        
+        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+        
+        let systemSoundID: SystemSoundID = 1005
+        AudioServicesPlayAlertSound(systemSoundID)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+            self?.isAlarmPlaying = false
+        }
+    }
+    
+    func stopDepthAlarm() {
+        isAlarmPlaying = false
     }
 }

@@ -166,7 +166,7 @@ class VMGCalculator {
     
     func eval_cubic_spline(u: Double, xa: Double, xb: Double, xc: Double, xd: Double) -> Double {
         guard u >= 0 && u <= 1 else {
-            print("Cubic spline interpolation parameter \(u) is outside the valid range [0, 1]")
+            Log.navigation.warning("Cubic spline interpolation parameter \(u) is outside the valid range [0, 1]")
             return 0.0
         }
         

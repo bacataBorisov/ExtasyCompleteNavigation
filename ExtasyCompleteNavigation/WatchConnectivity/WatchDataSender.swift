@@ -14,14 +14,14 @@ class WatchDataSender {
         message["sentAt"] = Date().timeIntervalSince1970
 
         guard WCSession.default.isReachable else {
-            print("⌛️ Watch not reachable")
+            Log.watch.debug("Watch not reachable")
             return
         }
 
         WCSession.default.sendMessage(message, replyHandler: nil) { error in
-            print("❌ Send failed: \(error.localizedDescription)")
+            Log.watch.error("Send failed: \(error.localizedDescription)")
         }
 
-        print("📤 Sent to watch: \(message)")
+        Log.watch.debug("Sent to watch: \(message)")
     }
 }

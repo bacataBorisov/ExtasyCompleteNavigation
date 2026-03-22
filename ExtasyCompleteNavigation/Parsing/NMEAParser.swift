@@ -272,7 +272,7 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
         
         //Check first sign of the string
         guard rawData.first == "$" else {
-            print("Invalid NMEA String Format")
+            Log.parsing.warning("Invalid NMEA String Format")
             return
         }
         
@@ -282,19 +282,19 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
         //debugLog(rawData)
         //MARK: - 1) Step of NMEA protocol - Calculate and Validate the Checksum
         guard UtilsNMEA.validateChecksum(strippedData) else {
-            print("Invalid Checksum!")
+            Log.parsing.warning("Invalid Checksum!")
             return
         }
         //MARK: - 2) Step of NMEA protocol - Check that All Received Chars are Valid
         guard UtilsNMEA.validateChar(strippedData) else {
-            print("Invalid Characters in NMEA String!")
+            Log.parsing.warning("Invalid Characters in NMEA String!")
             return
         }
         //MARK: - 3) Split the string
         //split the String and return it in an array of elements that will be our values
         let splitStr = UtilsNMEA.splitNMEAString(strippedData)
         guard splitStr.count > 2 else {
-            print("Insufficient Components in the SplitStr!")
+            Log.parsing.warning("Insufficient Components in the SplitStr!")
             return
         }
         //print(splitStr)
@@ -304,7 +304,7 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
         let talkerID = String(splitStr[0].prefix(2))
         
         guard UtilsNMEA.validateTalkerID(talkerID) else {
-            print("Unknown talker ID: \(talkerID)")
+            Log.parsing.debug("Unknown talker ID: \(talkerID)")
             return
         }
         
@@ -313,7 +313,7 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
         let sentenceFormat = splitStr[1]
         
         guard UtilsNMEA.validateSentenceFormat(sentenceFormat) else {
-            print("Unknown sentence format: \(sentenceFormat)")
+            Log.parsing.debug("Unknown sentence format: \(sentenceFormat)")
             return
         }
         

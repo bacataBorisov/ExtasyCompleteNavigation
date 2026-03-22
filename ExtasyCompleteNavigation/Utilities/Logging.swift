@@ -1,20 +1,27 @@
-//
-//  Logging.swift
-//  ExtasyCompleteNavigation
-//
-//  Created by Vasil Borisov on 25.12.24.
-//
 import Foundation
+import os
 
-// DEBUG log wrapper helper function
-// TODO: - think about extending the functionality of the function with timestamp and logs to file here
+// MARK: - Structured Logging
+
+enum Log {
+    static let navigation = Logger(subsystem: "com.extasy.navigation", category: "navigation")
+    static let network    = Logger(subsystem: "com.extasy.navigation", category: "network")
+    static let parsing    = Logger(subsystem: "com.extasy.navigation", category: "parsing")
+    static let ui         = Logger(subsystem: "com.extasy.navigation", category: "ui")
+    static let settings   = Logger(subsystem: "com.extasy.navigation", category: "settings")
+    static let watch      = Logger(subsystem: "com.extasy.navigation", category: "watch")
+    static let audio      = Logger(subsystem: "com.extasy.navigation", category: "audio")
+    static let general    = Logger(subsystem: "com.extasy.navigation", category: "general")
+}
+
+// MARK: - Legacy Bridge (calls forward to os.Logger)
+
 public func debugLog(_ message: String) {
     #if DEBUG
-    print(message)
+    Log.general.debug("\(message, privacy: .public)")
     #endif
 }
 
-// MARK: - Helper Function to Log Only Once
 private var loggedMessages = Set<String>()
 private let logQueue = DispatchQueue(label: "com.extasy.navigation.debugLogQueue", attributes: .concurrent)
 
@@ -28,16 +35,3 @@ public func debugLogOnce(_ message: String) {
         }
     }
 }
-
-//public func debugLog(
-//    _ message: String,
-//    file: String = #file,
-//    function: String = #function,
-//    line: Int = #line
-//) {
-//    #if DEBUG
-//    let fileName = (file as NSString).lastPathComponent
-//    let timestamp = DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .medium)
-//    print("[DEBUG] [\(timestamp)] [\(fileName):\(line)] \(function) -> \(message)")
-//    #endif
-//}

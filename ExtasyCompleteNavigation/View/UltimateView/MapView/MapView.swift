@@ -51,16 +51,16 @@ struct MapView: View {
                     allowSave = false
 
                     if !savedCenterLat.isNaN, !savedCenterLon.isNaN {
-                        // Use saved position
                         let lastPosition = CLLocationCoordinate2D(latitude: savedCenterLat, longitude: savedCenterLon)
                         mapCameraPosition = .camera(MapCamera(centerCoordinate: lastPosition, distance: savedZoomLevel))
-                        debugLog("Using saved map position: Lat \(savedCenterLat), Lon \(savedCenterLon), Zoom \(savedZoomLevel)")
                         allowSave = true
-                    } else {
-                        // Wait for `boatLocation` to become available
-                        debugLog("Waiting for boat location...")
-                        waitForBoatLocationAndInitialize()
+                    } else if let boatLocation = navigationReadings.gpsData?.boatLocation {
+                        mapCameraPosition = .camera(MapCamera(centerCoordinate: boatLocation, distance: savedZoomLevel))
+                        savedCenterLat = boatLocation.latitude
+                        savedCenterLon = boatLocation.longitude
+                        allowSave = true
                     }
+                    // If no saved position and no GPS yet, map defaults to .automatic
 
                     setupAnimationTimer()
                 }
@@ -88,12 +88,25 @@ struct MapView: View {
                     debugLog("Updated map position: Lat \(savedCenterLat), Lon \(savedCenterLon), Zoom \(savedZoomLevel)")
                 }
 
-                // User taps and waypoint is being created
-                .onTapGesture() { screenCoord in
-                    if let pinLocation = reader.convert(screenCoord, from: .local) {
-                        addWaypoint(at: pinLocation)
+                .onChange(of: navigationReadings.gpsData?.boatLocation?.latitude) {
+                    if !allowSave, let boatLocation = navigationReadings.gpsData?.boatLocation {
+                        withAnimation(.easeInOut(duration: 1)) {
+                            mapCameraPosition = .camera(MapCamera(centerCoordinate: boatLocation, distance: savedZoomLevel))
+                        }
+                        savedCenterLat = boatLocation.latitude
+                        savedCenterLon = boatLocation.longitude
+                        allowSave = true
                     }
                 }
+                // User taps and waypoint is being created
+                .gesture(
+                    SpatialTapGesture()
+                        .onEnded { value in
+                            if let pinLocation = reader.convert(value.location, from: .local) {
+                                addWaypoint(at: pinLocation)
+                            }
+                        }
+                )
             }
             
             .mapStyle(.standard(elevation: .flat))
@@ -166,25 +179,6 @@ struct MapView: View {
             .padding(.top, 26)
         }
         .navigationBarHidden(true) // Hide the navigation bar
-    }
-    private func waitForBoatLocationAndInitialize() {
-        DispatchQueue.global(qos: .userInitiated).async {
-            while navigationReadings.gpsData?.boatLocation == nil {
-                // Polling loop to wait until `boatLocation` becomes available
-                usleep(100_000) // Sleep for 100ms to avoid excessive CPU usage
-            }
-
-            DispatchQueue.main.async {
-                if let boatLocation = navigationReadings.gpsData?.boatLocation {
-                    savedCenterLat = boatLocation.latitude
-                    savedCenterLon = boatLocation.longitude
-                    savedZoomLevel = 200000
-                    mapCameraPosition = .camera(MapCamera(centerCoordinate: boatLocation, distance: savedZoomLevel))
-                    debugLog("Boat location found. Centering map: Lat \(boatLocation.latitude), Lon \(boatLocation.longitude), Zoom \(savedZoomLevel)")
-                    allowSave = true
-                }
-            }
-        }
     }
     // Timer for periodic location updates
     private func setupAnimationTimer() {
@@ -357,12 +351,12 @@ struct MapView: View {
                     
                     
                     // Static "Boat" Label
-                    Text("Extasy")
+                    Text(settingsManager.boatName)
                         .font(.caption)
                         .foregroundColor(.white)
                         .background(Color.black.opacity(0.5))
                         .clipShape(RoundedRectangle(cornerRadius: 4))
-                        .offset(y: 30) // Position below the boat
+                        .offset(y: 30)
                 }
             }
         }
@@ -469,27 +463,6 @@ struct MapView: View {
                     .stroke(Color.yellow.opacity(0.7), lineWidth: 2)
             }
         }
-    }
-}
-
-struct Layline: Hashable {
-    let start: CLLocationCoordinate2D
-    let end: CLLocationCoordinate2D
-    
-    // Custom Equatable conformance
-    static func == (lhs: Layline, rhs: Layline) -> Bool {
-        return lhs.start.latitude == rhs.start.latitude &&
-        lhs.start.longitude == rhs.start.longitude &&
-        lhs.end.latitude == rhs.end.latitude &&
-        lhs.end.longitude == rhs.end.longitude
-    }
-    
-    // Custom Hashable conformance
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(start.latitude)
-        hasher.combine(start.longitude)
-        hasher.combine(end.latitude)
-        hasher.combine(end.longitude)
     }
 }
 

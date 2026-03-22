@@ -16,7 +16,7 @@ class CompassProcessor {
         guard splitStr.count >= 7,
               let rawHeading = Double(splitStr[2]),
               let variation = Double(splitStr[5]) else {
-            print("Invalid HDG Sentence!")
+            Log.parsing.warning("Invalid HDG Sentence!")
             return nil
         }
         

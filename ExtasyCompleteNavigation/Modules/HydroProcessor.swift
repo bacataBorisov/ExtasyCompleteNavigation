@@ -21,7 +21,7 @@ class HydroProcessor {
     // Process depth-related data and return updated HydroData
     func processDepth(_ splitStr: [String]) -> HydroData? {
         guard splitStr.count >= 3, let depthValue = Double(splitStr[2]) else {
-            print("Invalid Depth Data!")
+            Log.parsing.warning("Invalid Depth Data!")
             return nil
         }
         // Store raw depth
@@ -41,7 +41,7 @@ class HydroProcessor {
     // Process sea water temperature and return updated HydroData
     func processSeaTemperature(_ splitStr: [String]) -> HydroData? {
         guard splitStr.count >= 3, let temperature = Double(splitStr[2]) else {
-            print("Invalid Sea Water Temperature Data!")
+            Log.parsing.warning("Invalid Sea Water Temperature Data!")
             return nil
         }
         
@@ -62,7 +62,7 @@ class HydroProcessor {
     // Process speed through water and return updated HydroData
     func processSpeedLog(_ splitStr: [String]) -> HydroData? {
         guard splitStr.count >= 7, let speedLog = Double(splitStr[6]) else {
-            print("Invalid Speed Log Data!")
+            Log.parsing.warning("Invalid Speed Log Data!")
             return nil
         }
         
@@ -88,7 +88,7 @@ class HydroProcessor {
         guard splitStr.count >= 5,
               let totalDistance = Double(splitStr[2]),
               let distanceSinceReset = Double(splitStr[4]) else {
-            print("Invalid Distance Data!")
+            Log.parsing.warning("Invalid Distance Data!")
             return nil
         }
         hydroData.totalDistance = totalDistance

@@ -10,4 +10,8 @@ struct UserDefaultsKeys {
     static let tackTolerance = "tackTolerance"
     static let isWindModeActive = "isWindModeActive"
     static let calibrationCoefficient = "calibrationCoefficient"
+    static let depthAlarmEnabled = "depthAlarmEnabled"
+    static let depthAlarmThreshold = "depthAlarmThreshold"
+    static let boatName = "boatName"
+    static let distanceUnit = "distanceUnit"
 }

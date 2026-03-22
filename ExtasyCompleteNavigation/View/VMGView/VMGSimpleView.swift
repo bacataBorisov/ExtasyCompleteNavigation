@@ -3,6 +3,7 @@ import CoreLocation
 
 struct VMGSimpleView: View {
     @Environment(NMEAParser.self) private var navigationReadings
+    @Environment(SettingsManager.self) private var settingsManager
     var waypointName: String
     @State private var cardGradient: [Color] = [Color.teal.opacity(0.7), Color.blue.opacity(0.7)]
     let sectionPadding: CGFloat = 8
@@ -49,7 +50,7 @@ struct VMGSimpleView: View {
                     HStack(spacing: sectionPadding) {
                         infoColumn(
                             icon: "flag.checkered",
-                            value: "\(String(format: "%.1f", (navigationReadings.waypointData?.distanceToMark ?? 0) / 1852)) NM",
+                            value: "\(settingsManager.formatDistance(meters: navigationReadings.waypointData?.distanceToMark ?? 0)) \(settingsManager.distanceAbbreviation)",
                             iconSize: iconSize,
                             valueFont: valueFont
                         )
@@ -164,7 +165,7 @@ struct VMGSimpleView: View {
             HStack {
                 infoColumn(
                     icon: icon,
-                    value: "\(String(format: "%.1f", distance)) NM",
+                    value: "\(settingsManager.formatDistanceFromNM(distance)) \(settingsManager.distanceAbbreviation)",
                     iconSize: iconSize,
                     valueFont: valueFont
                 )

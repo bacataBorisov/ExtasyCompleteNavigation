@@ -16,7 +16,7 @@ class DiagramLoader {
     static func loadDiagram(from fileName: String) -> [[Double]]? {
         // Locate the file in the main bundle
         guard let filePath = Bundle.main.path(forResource: fileName, ofType: "txt") else {
-            print("File \(fileName) not found in bundle.")
+            Log.general.error("File \(fileName) not found in bundle.")
             return nil
         }
         
@@ -26,7 +26,7 @@ class DiagramLoader {
             let content = try String(contentsOf: fileURL, encoding: .utf8)
             return parseDiagram(from: content)
         } catch {
-            print("Failed to read file \(fileName): \(error.localizedDescription)")
+            Log.general.error("Failed to read file \(fileName): \(error.localizedDescription)")
             return nil
         }
     }

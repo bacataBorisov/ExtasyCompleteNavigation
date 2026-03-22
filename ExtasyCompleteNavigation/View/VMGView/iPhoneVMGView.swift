@@ -3,6 +3,7 @@ import CoreLocation
 
 struct iPhoneVMGView: View {
     @Environment(NMEAParser.self) private var navigationReadings
+    @Environment(SettingsManager.self) private var settingsManager
     var waypointName: String
     @State private var cardGradient: [Color] = [Color.teal.opacity(0.7), Color.blue.opacity(0.7)]
     @State private var showWarningView = false
@@ -57,7 +58,7 @@ struct iPhoneVMGView: View {
                         HStack(spacing: 8) {
                             infoColumn(
                                 icon: "flag.checkered",
-                                value: "\(String(format: "%.1f", (navigationReadings.waypointData?.distanceToMark ?? 0) / 1852)) NM",
+                                value: "\(settingsManager.formatDistance(meters: navigationReadings.waypointData?.distanceToMark ?? 0)) \(settingsManager.distanceAbbreviation)",
                                 iconSize: iconSize,
                                 valueFont: valueFont
                             )
@@ -101,7 +102,7 @@ struct iPhoneVMGView: View {
                             
                             HStack(spacing: 12) {
                                 infoColumn(icon: "arrow.uturn.up",
-                                           value: "\(String(format: "%.1f", (navigationReadings.waypointData?.tackDistance ?? 0))) NM",
+                                           value: "\(settingsManager.formatDistanceFromNM(navigationReadings.waypointData?.tackDistance ?? 0)) \(settingsManager.distanceAbbreviation)",
                                            iconSize: iconSize,
                                            valueFont: valueFont
                                 )
@@ -123,7 +124,7 @@ struct iPhoneVMGView: View {
                             
                             HStack(spacing: 12) {
                                 infoColumn(icon: "arrow.2.squarepath",
-                                           value: "\(String(format: "%.1f", (navigationReadings.waypointData?.distanceOnOppositeTack ?? 0))) NM",
+                                           value: "\(settingsManager.formatDistanceFromNM(navigationReadings.waypointData?.distanceOnOppositeTack ?? 0)) \(settingsManager.distanceAbbreviation)",
                                            iconSize: iconSize,
                                            valueFont: valueFont
                                 )

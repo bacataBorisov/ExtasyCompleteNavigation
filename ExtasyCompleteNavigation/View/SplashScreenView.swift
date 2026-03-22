@@ -116,7 +116,7 @@ class SpeechManager: ObservableObject {
             try AVAudioSession.sharedInstance().setCategory(.ambient, options: [.mixWithOthers])
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
-            print("Failed to set audio session: \(error.localizedDescription)")
+            Log.audio.error("Failed to set audio session: \(error.localizedDescription)")
         }
 
         speechSynthesizer.speak(speechUtterance)
