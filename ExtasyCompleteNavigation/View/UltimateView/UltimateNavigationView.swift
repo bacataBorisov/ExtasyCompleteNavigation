@@ -61,7 +61,6 @@ struct NavigationButton<Destination: View>: View {
     var body: some View {
         NavigationLink(destination: destination) {
             ZStack {
-                // Background with gradient and shadow
                 RoundedRectangle(cornerRadius: buttonSize / 4)
                     .fill(
                         LinearGradient(
@@ -73,13 +72,12 @@ struct NavigationButton<Destination: View>: View {
                     .frame(width: buttonSize, height: buttonSize)
                     .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 3)
                 
-                // Button icon
                 Image(systemName: systemName)
                     .foregroundColor(.white)
                     .font(.system(size: buttonSize * 0.5, weight: .bold))
             }
-            .buttonStyle(.plain)
         }
+        .buttonStyle(.plain)
     }
 }
 

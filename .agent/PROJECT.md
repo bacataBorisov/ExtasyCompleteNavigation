@@ -1,5 +1,11 @@
 # Extasy Complete Navigation
 
+## Developer Testing Devices
+
+- **Primary device**: iPhone 13 Pro, iOS 26.3.1
+- **Simulator**: iOS 26 simulator has known issues (MapKit gestures, slow launch, map rendering). Use iOS 17/18 simulators for reliable testing.
+- **iPad**: Primary deployment target (cockpit use), not currently available for testing
+
 ## What Is This
 
 A real-time sailing navigation system for iOS and Apple Watch. Built for the sailing yacht **Extasy**, it receives NMEA 0183 instrument data over UDP from the boat's onboard WiFi network and provides:

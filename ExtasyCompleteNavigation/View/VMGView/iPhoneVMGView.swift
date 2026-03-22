@@ -32,16 +32,19 @@ struct iPhoneVMGView: View {
                                     .foregroundColor(.white)
                                     .frame(width: size * 0.15, height: size * 0.15)
                             }
+                            .buttonStyle(.plain)
                             .sheet(isPresented: $isWaypointListPresented) {
                                 WaypointListView()
-                                    .presentationDetents([.medium, .large]) // Allows lower half presentation
-                                    .presentationDragIndicator(.visible) // Optional drag-to-dismiss indicator
+                                    .presentationDetents([.medium, .large])
+                                    .presentationDragIndicator(.visible)
                             }
                             Spacer()
                             Button(action: deselectWaypoint) {
                                 Image(systemName: "xmark.circle")
                                     .foregroundColor(.white)
-                                .frame(width: size * 0.15, height: size * 0.15)                        }
+                                    .frame(width: size * 0.15, height: size * 0.15)
+                            }
+                            .buttonStyle(.plain)
                         }
                         .overlay(
                             Text(waypointName)

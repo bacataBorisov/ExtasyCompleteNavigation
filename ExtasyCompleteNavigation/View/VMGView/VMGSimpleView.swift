@@ -43,6 +43,7 @@ struct VMGSimpleView: View {
                                 .foregroundColor(.white)
                                 .font(iconFont)
                         }
+                        .buttonStyle(.plain)
                     }
                     .padding()
                     

@@ -28,6 +28,7 @@ struct WaypointListView: View {
                                 .font(.title2)
                                 .padding()
                         }
+                        .buttonStyle(.plain)
                         .accessibilityLabel("Add Waypoint")
                     }
                     .frame(maxWidth: .infinity, alignment: .trailing)
@@ -89,6 +90,7 @@ struct WaypointListView: View {
                     .foregroundColor(.white)
                     .cornerRadius(8)
             }
+            .buttonStyle(.plain)
             .padding(.top)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -102,7 +104,10 @@ struct WaypointListView: View {
                 ForEach(sortedWaypoints, id: \.self) { waypoint in
                     waypointRow(waypoint)
                         .padding(.horizontal)
-                        .contentShape(Rectangle()) // Ensure tappable area
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            selectTarget(for: waypoint)
+                        }
                         .contextMenu {
                             waypointContextMenu(waypoint)
                         }

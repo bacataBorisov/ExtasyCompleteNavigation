@@ -41,6 +41,7 @@
 		0686F5282CEF40CE007EE554 /* HydroData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0686F5272CEF40CB007EE554 /* HydroData.swift */; };
 		0686F52A2CEF4169007EE554 /* HydroProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0686F5292CEF4165007EE554 /* HydroProcessor.swift */; };
 		0686F52C2CEF4A9C007EE554 /* GPSData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0686F52B2CEF4A99007EE554 /* GPSData.swift */; };
+		AA000001AAAA000100000001 /* Layline.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000001AAAA000100000002 /* Layline.swift */; };
 		0686F52E2CEF4B31007EE554 /* GPSProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0686F52D2CEF4B2C007EE554 /* GPSProcessor.swift */; };
 		0686F5332CEF5893007EE554 /* VMGData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0686F5322CEF5893007EE554 /* VMGData.swift */; };
 		0686F5352CEF5D51007EE554 /* VMGProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0686F5342CEF5D51007EE554 /* VMGProcessor.swift */; };
@@ -169,6 +170,7 @@
 		0686F5272CEF40CB007EE554 /* HydroData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HydroData.swift; sourceTree = "<group>"; };
 		0686F5292CEF4165007EE554 /* HydroProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HydroProcessor.swift; sourceTree = "<group>"; };
 		0686F52B2CEF4A99007EE554 /* GPSData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPSData.swift; sourceTree = "<group>"; };
+		AA000001AAAA000100000002 /* Layline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Layline.swift; sourceTree = "<group>"; };
 		0686F52D2CEF4B2C007EE554 /* GPSProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPSProcessor.swift; sourceTree = "<group>"; };
 		0686F5322CEF5893007EE554 /* VMGData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VMGData.swift; sourceTree = "<group>"; };
 		0686F5342CEF5D51007EE554 /* VMGProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VMGProcessor.swift; sourceTree = "<group>"; };
@@ -521,6 +523,7 @@
 				069EEA662CEB88A300357A05 /* WindData.swift */,
 				0686F5322CEF5893007EE554 /* VMGData.swift */,
 				06A840F12D1C2880002FA7E4 /* WaypointData.swift */,
+				AA000001AAAA000100000002 /* Layline.swift */,
 				06823F352D23562300BA5180 /* UserDefaultsKeys.swift */,
 				06A525632CF08D8200532A51 /* PersistanceModels */,
 			);
@@ -685,7 +688,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1600;
-				LastUpgradeCheck = 1600;
+				LastUpgradeCheck = 2630;
 				TargetAttributes = {
 					0602077A2DD8122F0020FD92 = {
 						CreatedOnToolsVersion = 16.0;
@@ -837,6 +840,7 @@
 				0686F5332CEF5893007EE554 /* VMGData.swift in Sources */,
 				069EEA672CEB88A800357A05 /* WindData.swift in Sources */,
 				0686F52C2CEF4A9C007EE554 /* GPSData.swift in Sources */,
+				AA000001AAAA000100000001 /* Layline.swift in Sources */,
 				0686F52E2CEF4B31007EE554 /* GPSProcessor.swift in Sources */,
 				069EEA502CEB31FA00357A05 /* SettingsMenuView.swift in Sources */,
 				06A5255D2CF077AB00532A51 /* Waypoints.swift in Sources */,
@@ -916,7 +920,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ExtasyCompleteNavigationWatchApp Watch App/Preview Content\"";
-				DEVELOPMENT_TEAM = V73TDMAF88;
 				ENABLE_PREVIEWS = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -951,7 +954,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ExtasyCompleteNavigationWatchApp Watch App/Preview Content\"";
-				DEVELOPMENT_TEAM = V73TDMAF88;
 				ENABLE_PREVIEWS = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -983,7 +985,6 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = V73TDMAF88;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
@@ -1007,7 +1008,6 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = V73TDMAF88;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
@@ -1030,7 +1030,6 @@
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = V73TDMAF88;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
@@ -1053,7 +1052,6 @@
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = V73TDMAF88;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
@@ -1104,6 +1102,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = V73TDMAF88;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -1126,6 +1125,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -1165,6 +1165,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = V73TDMAF88;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -1180,6 +1181,8 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				VALIDATE_PRODUCT = YES;
 			};
@@ -1195,7 +1198,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ExtasyCompleteNavigation/PreviewContent\"";
-				DEVELOPMENT_TEAM = V73TDMAF88;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ExtasyCompleteNavigation/Info.plist;
@@ -1236,7 +1238,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ExtasyCompleteNavigation/PreviewContent\"";
-				DEVELOPMENT_TEAM = V73TDMAF88;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ExtasyCompleteNavigation/Info.plist;
@@ -1274,7 +1275,6 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = V73TDMAF88;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
@@ -1297,7 +1297,6 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = V73TDMAF88;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;

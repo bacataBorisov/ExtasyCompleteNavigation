@@ -76,6 +76,7 @@ struct MultiDisplay: View {
                 valueAlignment: .center
             )
         }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Handle Selection

@@ -1,7 +1,7 @@
 import SwiftUI
 import Observation
 
-enum DistanceUnit: Int, CaseIterable {
+enum MarineDistanceUnit: Int, CaseIterable {
     case nauticalMiles = 0
     case cables = 1
     case meters = 2
@@ -90,8 +90,8 @@ class SettingsManager {
         }
     }
 
-    var selectedDistanceUnit: DistanceUnit {
-        DistanceUnit(rawValue: distanceUnit) ?? .nauticalMiles
+    var selectedDistanceUnit: MarineDistanceUnit {
+        MarineDistanceUnit(rawValue: distanceUnit) ?? .nauticalMiles
     }
     
     func formatDistance(meters: Double) -> String {

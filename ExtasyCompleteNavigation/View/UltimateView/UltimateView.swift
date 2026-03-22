@@ -223,6 +223,7 @@ struct UltimateView: View {
                 stringSpecifier: stringSpecifier
             )
         }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Handle Selection

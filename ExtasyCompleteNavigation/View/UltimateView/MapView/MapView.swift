@@ -129,10 +129,11 @@ struct MapView: View {
             if DeviceType.isIPad {
                 VStack {
                     Button(action: {
-                        dismiss() // Go back to the previous view
+                        dismiss()
                     }) {
                         IconButton(systemName: "arrow.backward", color: Color.blue.opacity(0.8))
                     }
+                    .buttonStyle(.plain)
                     Spacer()
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -143,16 +144,15 @@ struct MapView: View {
             
             // Controls in the top right corner
             VStack(spacing: 12) {
-                // Center Boat Button
                 Button(action: centerBoat) {
                     IconButton(systemName: "location.fill", color: Color.blue.opacity(0.8))
                 }
+                .buttonStyle(.plain)
                 
-                // Wind Mode Button (enabled even if waypoint is selected)
                 Button(action: {
                     settingsManager.isWindModeActive.toggle()
                     if settingsManager.isWindModeActive {
-                        updateLaylines() // Calculate laylines when toggled on
+                        updateLaylines()
                     }
                 }) {
                     IconButton(
@@ -160,9 +160,9 @@ struct MapView: View {
                         color: settingsManager.isWindModeActive ? Color.green.opacity(0.8) : Color.gray.opacity(0.8)
                     )
                 }
+                .buttonStyle(.plain)
                 
                 if navigationReadings.gpsData?.isTargetSelected == true {
-                    // Center Boat and Waypoint in the Map
                     Button(action: {
                         adjustZoomLevel()
                     }) {
@@ -171,6 +171,7 @@ struct MapView: View {
                             color: Color.gray.opacity(0.8)
                         )
                     }
+                    .buttonStyle(.plain)
                 }
                 
             }
