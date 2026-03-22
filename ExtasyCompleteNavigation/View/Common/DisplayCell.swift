@@ -45,18 +45,18 @@ struct DisplayCell: View {
                 // Top row: label left, unit right — small, in corners
                 HStack(alignment: .firstTextBaseline) {
                     Text(cell.name)
-                        .font(Font.custom("AppleSDGothicNeo-Bold", size: width * 0.11 * fontSizeMultiplier))
+                        .font(Font.custom("AppleSDGothicNeo-Bold", size: width * 0.12 * fontSizeMultiplier))
                     Spacer()
                     Text(settingsManager.metricWind && cell.valueHasMetric ? cell.metric : cell.units)
-                        .font(Font.custom("AppleSDGothicNeo-Bold", size: width * 0.10 * fontSizeMultiplier))
+                        .font(Font.custom("AppleSDGothicNeo-Bold", size: width * 0.12 * fontSizeMultiplier))
                         .foregroundStyle(Color("display_font").opacity(0.5))
                 }
-                .padding(.horizontal, width * 0.08)
-                .padding(.top, width * 0.06)
+                .padding(.horizontal, width * 0.04)
+                .padding(.top, width * 0.04)
 
                 // Value — dominant, centered
                 Spacer()
-                Text(hasReceivedValue && !isStale ? String(format: cell.specifier, displayedValue) : "--")
+                Text(hasReceivedValue && !isStale ? formattedValue() : "--")
                     .font(Font.custom("Futura-CondensedExtraBold", size: width * 0.54 * fontSizeMultiplier))
                     .minimumScaleFactor(0.3)
                     .lineLimit(1)
@@ -77,15 +77,23 @@ struct DisplayCell: View {
         .onChange(of: navigationReadings.displayValue(a: valueID)) { _, newValue in
             if let newValue {
                 hasReceivedValue = true
-                withAnimation(.easeOut(duration: 0.3)) {
-                    displayedValue = newValue
-                }
+                displayedValue = newValue
             } else {
                 hasReceivedValue = false
             }
         }
     }
     
+    // MARK: - Value Formatting
+
+    private func formattedValue() -> String {
+        // Depth: no decimal when >= 20 m, one decimal below that
+        if cell.id == 0 {
+            return String(format: displayedValue >= 20 ? "%.0f" : "%.1f", displayedValue)
+        }
+        return String(format: cell.specifier, displayedValue)
+    }
+
     // MARK: - Alarm
     private func alarmBackground() -> some View {
         (cell.id == 0 && triggerAlarm()) ? alarmGradient : nonAlarmGradient

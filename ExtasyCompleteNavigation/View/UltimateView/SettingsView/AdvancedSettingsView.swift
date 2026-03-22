@@ -9,11 +9,52 @@ import CloudKit
 // MARK: - Advanced Settings View
 struct AdvancedSettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(NMEAParser.self) private var navigationReadings
+    @Environment(SettingsManager.self) private var settingsManager
     @State private var showRawNMEA = false
 
     var body: some View {
         NavigationView {
             List {
+                // Sensor Smoothing
+                Section {
+                    SmoothingRow(
+                        label: "Wind",
+                        detail: "AWA · TWA · AWS · TWS",
+                        level: Binding(
+                            get: { settingsManager.windDamping },
+                            set: { settingsManager.windDamping = $0; navigationReadings.updateWindDamping(level: $0) }
+                        )
+                    )
+                    SmoothingRow(
+                        label: "Speed & Course",
+                        detail: "SOG · COG",
+                        level: Binding(
+                            get: { settingsManager.speedDamping },
+                            set: { settingsManager.speedDamping = $0; navigationReadings.updateSpeedDamping(level: $0) }
+                        )
+                    )
+                    SmoothingRow(
+                        label: "Heading",
+                        detail: "HDG",
+                        level: Binding(
+                            get: { settingsManager.headingDamping },
+                            set: { settingsManager.headingDamping = $0; navigationReadings.updateHeadingDamping(level: $0) }
+                        )
+                    )
+                    SmoothingRow(
+                        label: "Depth & Hydro",
+                        detail: "DPT · SWT · BSPD",
+                        level: Binding(
+                            get: { settingsManager.hydroDamping },
+                            set: { settingsManager.hydroDamping = $0; navigationReadings.updateHydroDamping(level: $0) }
+                        )
+                    )
+                } header: {
+                    Text("Sensor Smoothing")
+                } footer: {
+                    Text("0 = raw signal, no filtering  ·  11 = maximum damping. Higher values reduce noise but slow response to real changes.")
+                }
                 // Read NMEA Button
                 Button(action: {
                     showRawNMEA.toggle()
@@ -125,7 +166,49 @@ struct AdvancedSettingsView: View {
     }
 }
 
+// MARK: - SmoothingRow
+private struct SmoothingRow: View {
+    let label: String
+    let detail: String
+    @Binding var level: Int
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(label)
+                        .font(.subheadline)
+                    Text(detail)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Text("\(level)")
+                    .font(.system(.body, design: .monospaced).bold())
+                    .frame(minWidth: 24, alignment: .trailing)
+                Stepper("", value: $level, in: 0...11)
+                    .labelsHidden()
+            }
+            // Visual bar
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(Color.secondary.opacity(0.2))
+                        .frame(height: 4)
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(Color.accentColor)
+                        .frame(width: geo.size.width * CGFloat(level) / 11.0, height: 4)
+                }
+            }
+            .frame(height: 4)
+        }
+        .padding(.vertical, 4)
+    }
+}
+
 // MARK: - Preview
 #Preview {
     AdvancedSettingsView()
+        .environment(NMEAParser())
+        .environment(SettingsManager())
 }

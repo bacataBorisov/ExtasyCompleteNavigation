@@ -25,8 +25,7 @@ struct SettingsMenuView: View {
             }
             .buttonStyle(.plain)
         }
-        .listStyle(.insetGrouped)
-        .listSectionSpacing(8)
+        .listStyle(.plain)
         .navigationTitle("Settings")
         .fullScreenCover(isPresented: $showAdvancedSettings) {
             AdvancedSettingsView()

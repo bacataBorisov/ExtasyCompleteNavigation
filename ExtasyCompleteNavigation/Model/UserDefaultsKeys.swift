@@ -14,4 +14,8 @@ struct UserDefaultsKeys {
     static let depthAlarmThreshold = "depthAlarmThreshold"
     static let boatName = "boatName"
     static let distanceUnit = "distanceUnit"
+    static let windDamping = "windDamping"
+    static let speedDamping = "speedDamping"
+    static let headingDamping = "headingDamping"
+    static let hydroDamping = "hydroDamping"
 }

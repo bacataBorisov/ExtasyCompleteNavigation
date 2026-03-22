@@ -14,7 +14,7 @@ struct ReadRawNMEA: View {
         navigationReadings.latestRawData.filter { nmea in
             switch selectedCategory {
             case "GPS":
-                return nmea.contains("GPRMC") || nmea.contains("GPGGA")
+                return nmea.contains("RMC") || nmea.contains("GGA") || nmea.contains("GLL") || nmea.contains("GSA") || nmea.contains("GSV")
             case "Hydro":
                 return nmea.contains("DPT") || nmea.contains("VHW")
             case "Wind":

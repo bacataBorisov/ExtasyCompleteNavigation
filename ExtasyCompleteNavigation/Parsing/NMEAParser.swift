@@ -182,6 +182,29 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
             }
         }
     }
+
+    // MARK: - Sensor Smoothing (Kalman damping)
+
+    /// AWA, TWA, AWS, TWS
+    func updateWindDamping(level: Int) {
+        windProcessor.updateDamping(level: level)
+    }
+
+    /// SOG, COG (GPS-derived speed and course)
+    func updateSpeedDamping(level: Int) {
+        gpsProcessor.updateDamping(level: level)
+    }
+
+    /// HDG (compass heading)
+    func updateHeadingDamping(level: Int) {
+        compassProcessor.updateDamping(level: level)
+    }
+
+    /// DPT, SWT, BSPD (depth, sea temp, boat speed log)
+    func updateHydroDamping(level: Int) {
+        hydroProcessor.updateDamping(level: level)
+    }
+
     //MARK: - Watchod Logic and Mechanism
     /**
      By calling it inside the init method, you ensure that the monitoring process starts as soon as the NMEAParser instance is created.

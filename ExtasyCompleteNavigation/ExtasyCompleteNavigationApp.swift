@@ -56,8 +56,12 @@ struct ExtasyCompleteNavigationApp: App {
             .environment(navigationManager)
             .environment(settingsManager)
             //.environmentObject(audioManager)
-            .onAppear{
-                //audioManager.playMusic()
+            .onAppear {
+                let parser = navigationManager.nmeaParser
+                parser.updateWindDamping(level: settingsManager.windDamping)
+                parser.updateSpeedDamping(level: settingsManager.speedDamping)
+                parser.updateHeadingDamping(level: settingsManager.headingDamping)
+                parser.updateHydroDamping(level: settingsManager.hydroDamping)
             }
         }
         .modelContainer(for: Waypoints.self)

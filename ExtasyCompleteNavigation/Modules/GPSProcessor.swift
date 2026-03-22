@@ -10,6 +10,14 @@ class GPSProcessor {
     private var kalmanFilterSOG = KalmanFilter(initialValue: 0.0, processNoise: 1.0, measurementNoise: 1e-9)
     private var kalmanFilterCOG = KalmanFilter(initialValue: 0.0, processNoise: 1.0, measurementNoise: 1e-9)
     
+    // MARK: - Damping
+    func updateDamping(level: Int) {
+        let p = KalmanFilter.params(forDampingLevel: level)
+        kalmanFilterSOG.updateNoise(processNoise: p.processNoise, measurementNoise: p.measurementNoise)
+        kalmanFilterCOG.updateNoise(processNoise: p.processNoise, measurementNoise: p.measurementNoise)
+        // Lat/lon filters are left at raw — GPS position should not be smoothed by user preference
+    }
+
     // MARK: - Public Methods
     func updateMarker(to coordinate: CLLocationCoordinate2D, _ name: String) {
         serialQueue.async { [self] in

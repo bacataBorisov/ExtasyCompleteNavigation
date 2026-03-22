@@ -18,6 +18,14 @@ class HydroProcessor {
         speedLogFilter = KalmanFilter(initialValue: 0.0, processNoise: 1.0, measurementNoise: 1e-9)
     }
     
+    // MARK: - Damping
+    func updateDamping(level: Int) {
+        let p = KalmanFilter.params(forDampingLevel: level)
+        depthFilter?.updateNoise(processNoise: p.processNoise, measurementNoise: p.measurementNoise)
+        temperatureFilter?.updateNoise(processNoise: p.processNoise, measurementNoise: p.measurementNoise)
+        speedLogFilter?.updateNoise(processNoise: p.processNoise, measurementNoise: p.measurementNoise)
+    }
+
     // Process depth-related data and return updated HydroData
     func processDepth(_ splitStr: [String]) -> HydroData? {
         guard splitStr.count >= 3, let depthValue = Double(splitStr[2]) else {

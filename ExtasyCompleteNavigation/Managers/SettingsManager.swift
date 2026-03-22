@@ -90,6 +90,20 @@ class SettingsManager {
         }
     }
 
+    /// Sensor smoothing levels (0 = raw, 11 = maximum damping)
+    var windDamping: Int {
+        didSet { UserDefaults.standard.set(windDamping, forKey: UserDefaultsKeys.windDamping) }
+    }
+    var speedDamping: Int {
+        didSet { UserDefaults.standard.set(speedDamping, forKey: UserDefaultsKeys.speedDamping) }
+    }
+    var headingDamping: Int {
+        didSet { UserDefaults.standard.set(headingDamping, forKey: UserDefaultsKeys.headingDamping) }
+    }
+    var hydroDamping: Int {
+        didSet { UserDefaults.standard.set(hydroDamping, forKey: UserDefaultsKeys.hydroDamping) }
+    }
+
     var selectedDistanceUnit: MarineDistanceUnit {
         MarineDistanceUnit(rawValue: distanceUnit) ?? .nauticalMiles
     }
@@ -115,5 +129,9 @@ class SettingsManager {
         self.depthAlarmThreshold = UserDefaults.standard.object(forKey: UserDefaultsKeys.depthAlarmThreshold) as? Double ?? 3.0
         self.boatName = UserDefaults.standard.string(forKey: UserDefaultsKeys.boatName) ?? "Extasy"
         self.distanceUnit = UserDefaults.standard.object(forKey: UserDefaultsKeys.distanceUnit) as? Int ?? 0
+        self.windDamping = UserDefaults.standard.object(forKey: UserDefaultsKeys.windDamping) as? Int ?? 0
+        self.speedDamping = UserDefaults.standard.object(forKey: UserDefaultsKeys.speedDamping) as? Int ?? 0
+        self.headingDamping = UserDefaults.standard.object(forKey: UserDefaultsKeys.headingDamping) as? Int ?? 0
+        self.hydroDamping = UserDefaults.standard.object(forKey: UserDefaultsKeys.hydroDamping) as? Int ?? 0
     }
 }

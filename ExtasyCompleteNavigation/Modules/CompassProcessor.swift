@@ -11,6 +11,12 @@ class CompassProcessor {
         normalizedHeadingFilter = KalmanFilter(initialValue: 0.0, processNoise: 1.0, measurementNoise: 1e-9)
     }
     
+    // MARK: - Damping
+    func updateDamping(level: Int) {
+        let p = KalmanFilter.params(forDampingLevel: level)
+        normalizedHeadingFilter?.updateNoise(processNoise: p.processNoise, measurementNoise: p.measurementNoise)
+    }
+
     // Processes the magnetic heading from an NMEA sentence
     func processCompassSentence(_ splitStr: [String]) -> CompassData? {
         guard splitStr.count >= 7,

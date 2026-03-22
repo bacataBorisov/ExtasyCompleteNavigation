@@ -10,6 +10,14 @@ class WindProcessor {
     private var kalmanFilterAppWindAngle = KalmanFilter(initialValue: 0.0, processNoise: 1.0, measurementNoise: 1e-9)
     private var kalmanFilterTrueWindAngle = KalmanFilter(initialValue: 0.0, processNoise: 1.0, measurementNoise: 1e-9)
 
+    func updateDamping(level: Int) {
+        let p = KalmanFilter.params(forDampingLevel: level)
+        kalmanFilterAppWindForce.updateNoise(processNoise: p.processNoise, measurementNoise: p.measurementNoise)
+        kalmanFilterTrueWindForce.updateNoise(processNoise: p.processNoise, measurementNoise: p.measurementNoise)
+        kalmanFilterAppWindAngle.updateNoise(processNoise: p.processNoise, measurementNoise: p.measurementNoise)
+        kalmanFilterTrueWindAngle.updateNoise(processNoise: p.processNoise, measurementNoise: p.measurementNoise)
+    }
+
     func processWindSentence(_ splitStr: [String], compassData: CompassData?, hydroData: HydroData?) -> WindData? {
         guard splitStr.count >= 7, splitStr[6] == "A" else {
             Log.parsing.warning("Invalid MWV Sentence!")

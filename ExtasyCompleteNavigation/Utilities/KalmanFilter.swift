@@ -54,29 +54,35 @@ import Foundation
 class KalmanFilter {
     private var x: Double      // Estimated value
     private var p: Double      // Estimate uncertainty
-    private let q: Double      // Process noise covariance
-    private let r: Double      // Measurement noise covariance
+    private var q: Double      // Process noise covariance
+    private var r: Double      // Measurement noise covariance
 
     init(initialValue: Double, processNoise: Double = 1e-5, measurementNoise: Double = 1e-1) {
         self.x = initialValue
-        self.p = 1.0            // Initial uncertainty
+        self.p = 1.0
         self.q = processNoise
         self.r = measurementNoise
     }
 
     func update(measurement: Double) -> Double {
-        // Prediction update
         p += q
-        
-        // Measurement update (Kalman gain)
         let k = p / (p + r)
-        
-        // Update estimate with new measurement
         x += k * (measurement - x)
-        
-        // Update uncertainty
         p *= (1 - k)
-        
         return x
+    }
+
+    /// Update Q and R without resetting the accumulated estimate — no value jump.
+    func updateNoise(processNoise: Double, measurementNoise: Double) {
+        q = processNoise
+        r = measurementNoise
+    }
+
+    /// Maps a user-facing damping level (0 = raw, 11 = maximum smooth) to Q/R parameters.
+    /// R spans 1e-3 … 1e4 logarithmically; Q stays fixed at 1.0.
+    static func params(forDampingLevel level: Int) -> (processNoise: Double, measurementNoise: Double) {
+        let clamped = max(0, min(11, level))
+        let r = pow(10.0, Double(clamped) * 7.0 / 11.0 - 3.0)
+        return (processNoise: 1.0, measurementNoise: r)
     }
 }
