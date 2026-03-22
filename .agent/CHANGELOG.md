@@ -62,6 +62,43 @@ Ensures all displayed navigation data can be trusted during on-boat testing. Pre
 
 ---
 
+## [Unreleased] — 2026-03-22 (Session 4)
+
+### iOS 26 Compatibility Fixes
+- **ExtasyCompleteNavigationApp.swift**: Added `nw_tls_create_options()` workaround for iOS 26 simulator TLS crash
+- **VMGCalculator.swift, DiagramLoader.swift**: Replaced deprecated `String(contentsOfFile:)` with URL-based API
+- **ExtasyCompleteNavigation.xcscheme**: Disabled debug executable to fix iOS 26 simulator "attaching" hang
+- **MapView.swift**: Replaced `.onTapGesture` with `SpatialTapGesture` for more reliable map tap on iOS 26
+- **All views**: Added `.buttonStyle(.plain)` to all custom buttons/menus to remove iOS 26 Liquid Glass chrome
+
+### New Features
+- **SettingsManager.swift**: Added `boatName`, `depthAlarmThreshold`, `depthAlarmEnabled`, `distanceUnit` settings
+- **SettingsMenuView.swift**: Implemented full `AlarmsView` with configurable depth threshold slider (1–20m)
+- **SettingsMenuView.swift**: Implemented full `GlossaryView` with 20 sailing/navigation term definitions
+- **SettingsMenuView.swift**: Added boat name, distance unit, and metric wind settings to `GeneralSettingsView`
+- **AudioManager.swift**: Added `playDepthAlarm()` with haptic feedback + system alert sound
+- **MapView.swift**: Bottom floating pill toolbar replaces top-right buttons (center boat, wind mode, zoom-to-fit)
+- **MapView.swift**: Replaced thread-blocking GPS poll loop with reactive `onChange` for first-run centering
+
+### Refactoring / Code Quality
+- **Logging.swift**: Replaced `print()` / `debugLog()` with categorized `os.Logger` (`Log.parsing`, `.network`, `.watch`, `.audio`, etc.)
+- **Model/Layline.swift**: Moved `Layline` struct out of `MapView.swift` into its own model file
+- **NMEAParser.swift**: Added `selectWaypoint(at:name:)` and `deselectWaypoint()` to fix race condition where periodic update overwrote waypoint state set by UI
+- **UltimateNavigationView.swift**: Moved connection status dot + all sensor popover logic here; dot positioned at boat bow
+
+### UI Polish
+- **MultiDisplay.swift**: Removed `MultiDisplayGrid` separator lines; added card-style cells with 6pt gaps and rounded corners
+- **DisplayCell.swift**: Redesigned with proper `VStack` layout — value dominant (54% width), label/unit small in corners
+- **iPhoneView.swift**: Full-screen split layout using `.ignoresSafeArea()` for edge-to-edge map + instruments
+- **WaypointListView.swift**: Added `.onTapGesture` to waypoint rows for direct selection
+
+### Bug Fixes
+- **NMEAParser.swift**: `selectWaypoint` now initialises `GPSData` if nil, fixing silent no-op when no NMEA data flowing
+- **WaypointProcessor.swift**: Added explicit `() -> Void` return type to `serialQueue.sync` closure to fix `DispatchWorkItem` ambiguity with Whole Module Optimization
+- **SettingsManager.swift**: Renamed `DistanceUnit` → `MarineDistanceUnit` to avoid MapKit framework collision
+
+---
+
 ## [Unreleased] — 2026-03-14 (Session 3)
 
 ### Thread Safety Audit

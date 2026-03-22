@@ -40,12 +40,12 @@ Prioritized list of improvements, organized by impact and effort.
 - **Benefit**: Uniform interface, easier testing, potential for dynamic processor registration (e.g., custom NMEA sentences).
 
 ### Structured Logging
-- **Status**: Not started
+- **Status**: Done (Session 4, Mar 2026)
 - **What**: Replace `print` / `debugLog` with `os.Logger` using appropriate subsystems and categories.
 - **Benefit**: Filterable in Console.app, zero-cost in release builds, proper log levels.
 
 ### Move Shared Models
-- **Status**: Not started
+- **Status**: Done (Session 4, Mar 2026)
 - **What**: `Layline` struct is defined in `MapView.swift` but used by `WaypointProcessor` and `WaypointData`. Move to its own file in `Model/`.
 - **Files**: `MapView.swift` → `Model/Layline.swift`
 
@@ -103,7 +103,7 @@ Prioritized list of improvements, organized by impact and effort.
 - **Origin**: From v2.0 notes — "Implement watchdog or heartbeat for every single value"
 
 ### Depth Alarm Enhancement
-- **Status**: Basic version exists (color change under 5m)
+- **Status**: Done (Session 4, Mar 2026) — configurable threshold, haptic + sound, settings toggle
 - **What**: Add configurable depth threshold, sound/vibration alert, toggle in settings.
 - **Origin**: From v1.0 notes
 
@@ -149,9 +149,9 @@ Prioritized list of improvements, organized by impact and effort.
 - **Origin**: From v2.0 notes
 
 ### Personalization
-- **Status**: Not started
+- **Status**: Partial (Session 4, Mar 2026) — boat name done; logo and login not started
 - **What**:
-  - Custom boat name (entered on first launch, shown on map)
+  - Custom boat name (entered on first launch, shown on map) ✅
   - Custom boat logo upload
   - Google/Apple login for personalization
 - **Origin**: From v2.0 notes
@@ -172,7 +172,7 @@ Prioritized list of improvements, organized by impact and effort.
 - **Origin**: From v1.0 notes
 
 ### Distance Unit Selection
-- **Status**: Not started
+- **Status**: Done (Session 4, Mar 2026) — NM, cables, meters via `MarineDistanceUnit` enum in `SettingsManager`
 - **What**: Distance cells selectable between NM, cables, boat lengths (requires boat length in settings), meters.
 - **Origin**: From v1.0 notes
 
@@ -189,7 +189,7 @@ Prioritized list of improvements, organized by impact and effort.
 - **What**: Show current boat coordinates in multi-display cells as a selectable option.
 
 ### Glossary / Abbreviation Reference
-- **Status**: Not started
+- **Status**: Done (Session 4, Mar 2026) — 20 terms in `GlossaryView` accessible from Settings
 - **What**: In-app glossary defining all abbreviations (AWA, TWS, VMG, VMC, COG, SOG, etc.) for less experienced crew.
 
 ### Connection Instructions
@@ -220,7 +220,7 @@ Prioritized list of improvements, organized by impact and effort.
 - Clean up commented-out old VMGCalculator implementation at bottom of file
 - Remove `global` variable `displayCell` in `DisplayCells.swift` — consider a proper registry pattern
 - Rename `WaypointFIllForm.swift` → `WaypointFillForm.swift` (typo in filename)
-- Refactor MapView for better scalability and first-run experience
+- Refactor MapView for better scalability and first-run experience ✅ (reactive `onChange` for GPS centering, Session 4)
 - Redesign MultiDisplay to be more adaptive across screen sizes
 - Ensure all available values from data structures are displayable in cells
 - Update Software Architecture diagram in Lucidchart with latest module structure
