@@ -3,14 +3,20 @@ import SwiftUI
 struct AnemometerView: View {
     let trueWindAngle: Double
     let apparentWindAngle: Double
+    /// The active optimal TWA for the current sailing state:
+    /// pass optimalUpTWA when Upwind, optimalDnTWA when Downwind.
+    let optimalTWA: Double
     let width: CGFloat
 
-    @AppStorage("storedTrueWindAngle") private var storedTrueWindAngle: Double = 0.0
-    @AppStorage("storedApparentWindAngle") private var storedApparentWindAngle: Double = 0.0
-    @AppStorage("anemometerShouldAnimate") private var shouldAnimate: Bool = false
+    // Persisted as AppStorage so the arrow starts at the correct position immediately
+    // on every view creation — no initial 0° flash, no animated jump on tab switch.
+    @AppStorage("storedTrueWindAngle") private var displayedTrueWindAngle: Double = 0.0
+    @AppStorage("storedApparentWindAngle") private var displayedApparentWindAngle: Double = 0.0
 
-    @State private var displayedTrueWindAngle: Double = 0.0
-    @State private var displayedApparentWindAngle: Double = 0.0
+    // @State (not AppStorage) so it resets to false when the view is recreated.
+    // This prevents the 0→stored animation that occurred when AppStorage held `true`
+    // from the previous session and state updates batched in different cycles.
+    @State private var shouldAnimate: Bool = false
 
     var body: some View {
         ZStack {
@@ -45,6 +51,13 @@ struct AnemometerView: View {
             // Dial Gauge Indicators
             DialGaugeIndicators(width: width)
 
+            // Target TWA markers — starboard (positive) and port (negative)
+            // These show where the T arrow should be to sail at optimal angle.
+            if optimalTWA > 0 {
+                TargetTWAMarker(angle: optimalTWA, width: width)
+                TargetTWAMarker(angle: -optimalTWA, width: width)
+            }
+
             // True Wind Arrow
             WindArrow(
                 label: "T",
@@ -66,11 +79,11 @@ struct AnemometerView: View {
             )
         }
         .onAppear {
-            // Restore last known values when view appears
-            displayedTrueWindAngle = storedTrueWindAngle
-            displayedApparentWindAngle = storedApparentWindAngle
+            // displayedTrueWindAngle / displayedApparentWindAngle are already loaded
+            // from AppStorage — no restoration needed here.
+            // Sync to the live NMEA value in case it changed while the view was off-screen
+            // (onChange won't fire for a steady value).
             shouldAnimate = false
-
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 updateArrowRotation(&displayedTrueWindAngle, to: trueWindAngle)
                 updateArrowRotation(&displayedApparentWindAngle, to: apparentWindAngle)
@@ -79,11 +92,9 @@ struct AnemometerView: View {
         }
         .onChange(of: trueWindAngle) { _, newAngle in
             updateArrowRotation(&displayedTrueWindAngle, to: newAngle)
-            storedTrueWindAngle = newAngle
         }
         .onChange(of: apparentWindAngle) { _, newAngle in
             updateArrowRotation(&displayedApparentWindAngle, to: newAngle)
-            storedApparentWindAngle = newAngle
         }
     }
 
@@ -127,6 +138,30 @@ struct SectorView: View {
             )
             .padding(padding)
             .rotationEffect(.degrees(startAngle))
+    }
+}
+
+/// A yellow chevron sitting in the gap between the wind ring and the compass ring,
+/// indicating the target (optimal) TWA for the current sailing state.
+/// Draw two instances — one at +optimalTWA (starboard) and one at -optimalTWA (port).
+///
+/// Geometry reference (all relative to `width`):
+///   Wind ring inner edge  ≈ 0.439 × width
+///   Compass ring outer edge ≈ 0.403 × width  (after 0.82 scaleEffect)
+///   Gap centre             ≈ 0.421 × width  → offset -(width / 2.37)
+struct TargetTWAMarker: View {
+    let angle: Double
+    let width: CGFloat
+
+    var body: some View {
+        Image(systemName: "chevron.compact.down")
+            .resizable()
+            .scaledToFit()
+            .frame(width: width / 20, height: width / 20)
+            .foregroundColor(.yellow)
+            .offset(y: -(width / 2.37))
+            .rotationEffect(.degrees(angle))
+            .animation(.easeInOut(duration: 0.4), value: angle)
     }
 }
 
@@ -178,8 +213,9 @@ struct WindArrow: View {
 #Preview {
     GeometryProvider { width, _, _ in
         AnemometerView(
-            trueWindAngle: 350,
-            apparentWindAngle: 10,
+            trueWindAngle: 50,
+            apparentWindAngle: 35,
+            optimalTWA: 42,
             width: width
         )
     }

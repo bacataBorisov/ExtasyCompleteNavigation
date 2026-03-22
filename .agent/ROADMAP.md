@@ -54,13 +54,16 @@ Prioritized list of improvements, organized by impact and effort.
 ## Priority 3 — Testing
 
 ### Unit Tests for Core Logic
-- **Status**: Not started (only `KalmanFilterTest` exists)
+- **Status**: In progress (Session 5, Mar 2026)
 - **What**: Add tests for:
-  - `NMEAParser` sentence routing and validation
-  - Each processor (known NMEA input → expected output)
-  - `VMGCalculator` polar interpolation
-  - `MathUtilities` (angle normalization, distance, bearing)
-  - `WaypointProcessor` layline intersection
+  - `MathUtilities` — angle normalization, distance, bearing ✅ (planned)
+  - `VMGCalculator` — polar diagram B-spline, tack table interpolation, sailing state ✅ (planned)
+  - `VMGProcessor` — performance ratio, tack deviation ✅ (planned)
+  - `KalmanFilter` — damping level mapping ✅ (planned)
+  - `NMEAParser` sentence routing and validation — not started
+  - Each processor (known NMEA input → expected output) — not started
+  - `WaypointProcessor` layline intersection — not started
+- **Note**: B-spline interpolation does NOT return exact VPP table values at grid points — use ±5% tolerances or pre-computed expected values in tests. See `SKILL.md` for details.
 - **Benefit**: Confidence in refactoring, regression prevention
 
 ### NMEA Test Data & Simulator
@@ -92,10 +95,20 @@ Prioritized list of improvements, organized by impact and effort.
 - **What**: Record boat tracks using SwiftData (like waypoints). Enable post-race review with track overlay on the map. Use Kalman-filtered positions.
 - **Origin**: From v1.0 notes
 
-### Polar Diagram Import & Editing
+### Polar Diagram Visualization
 - **Status**: Not started
-- **What**: Allow importing custom polar diagrams (e.g., ORC or from other boat models). Allow adding custom correction points. Visualize curves (tested in GeoGebra — "looks quite all right"). Dynamically gather data to update polar diagram and tack tables for improved accuracy.
+- **What**: Draw polar curves in SwiftUI `Canvas` (radial: speed, angle: TWA, symmetric port/starboard). Overlay current boat state (current TWA/speed dot), optimal targets (upwind/downwind rectangles), and wind-speed curve highlight. Access from performance section.
+- **Origin**: From v2.0 notes
+
+### Polar Diagram Import & Multi-Boat Support
+- **Status**: Not started
+- **What**: Allow importing a polar from ORC `.pol` format or a custom CSV (`TWA, TWS, speed`). Store polars per boat in SwiftData. Select active polar in Settings. Current boat: Beneteau First 40.7 (Farr VPP, `Resources/first407_performance_prediction.pdf`).
 - **Origin**: From v1.0 + v2.0 notes
+
+### Real-Data Polar Calibration
+- **Status**: Not started
+- **What**: Collect actual boat speed / TWA / TWS triplets onboard and persist them. Compute correction offsets vs the theoretical polar. Apply corrections to improve accuracy over time. Requires on-boat data collection and a fitting algorithm.
+- **Origin**: v2.0 notes + user request Mar 2026
 
 ### Stale Data Visual Reset / Per-Value Watchdog
 - **Status**: Done (Session 2, Mar 2026)
@@ -108,9 +121,27 @@ Prioritized list of improvements, organized by impact and effort.
 - **Origin**: From v1.0 notes
 
 ### Kalman Filter UI Controls
-- **Status**: Not started
-- **What**: Expose Kalman filter coefficients in Advanced Settings for each sensor value. Add explanation of how to tune them. "Create the damping low pass effect with Kalman and make them adjustable from 0 to 11" (goes to 11).
+- **Status**: Done (Session 5, Mar 2026)
+- **What**: 0–11 "Sensor Smoothing" sliders per group (Wind, Speed & Course, Heading, Depth & Hydro) in Advanced Settings. Logarithmic Q/R mapping via `KalmanFilter.params(forDampingLevel:)`. Settings persisted in `UserDefaults`, applied on launch.
 - **Origin**: From v2.0 notes
+
+### True Wind Direction — Vector Kalman Filter
+- **Status**: Done (Session 5, Mar 2026)
+- **What**: Replaced scalar TWD Kalman filter with two filters operating on East/North wind vector components. Seeded on first measurement to avoid cold-start convergence delay. Reconstructed via `atan2`. Eliminates 0°/360° wrap-around artefacts and gives ~5s convergence.
+- **Files**: `WindProcessor.swift`, `KalmanFilter.swift` (added `seed(to:)`)
+
+### Layline Stability
+- **Status**: Done (Session 5, Mar 2026)
+- **What**: Laylines were heading-dependent because `sailingState` (from boat TWA) was used. Replaced with `waypointSailingState` derived from bearing-to-mark vs TWD (stable). Extended `laylineDistance` to `max(4× distance, 200 km)` to guarantee intersection. Added `waypointApproachState` to `WaypointData`. Guard restructured to always persist computed laylines even if tack intersection fails. `MapView` condition `isVMCNegative` removed so laylines always show.
+- **Files**: `WaypointProcessor.swift`, `WaypointData.swift`, `MapView.swift`
+
+### Waypoint View — Tack Display Redesign
+- **Status**: Done (Session 5, Mar 2026)
+- **What**: `iPhoneVMGView` redesigned with explicit text labels. Two rows:
+  - **CURRENT**: current tack leg (boat → tack intersection). PORT/STBD from live TWA (> 180° = PORT). Sailing mode (UPWIND/DOWNWIND) from bearing-to-mark vs TWD.
+  - **NEXT**: second leg (tack intersection → mark). PORT/STBD computed from `second-leg TWA = (TWD − bearing_intersection_to_mark) mod 360°` — independent of the current tack. Sailing mode from `intersectionAoM` vs `sailingStateLimit`. Added `nextLegTack` and `nextLegSailingState` to `WaypointData`.
+- **Key insight**: On a downwind approach, the boat can still be on PORT gybe (wind from port stern quarter) even though it just tacked off a PORT upwind leg — because it bears away rather than tacking through the bow. Always compute leg tack from leg geometry, not by inverting the current tack.
+- **Files**: `WaypointProcessor.swift`, `WaypointData.swift`, `iPhoneVMGView.swift`
 
 ### Race Timer
 - **Status**: Not started

@@ -40,7 +40,6 @@ class WaypointProcessor {
                   let trueWindDirection = windData?.trueWindDirection,
                   let optimalUpTWA = vmgData?.optimalUpTWA,
                   let optimalDnTWA = vmgData?.optimalDnTWA,
-                  let sailingState = vmgData?.sailingState,
                   let sailingStateLimit = vmgData?.sailingStateLimit else {
             
                 return
@@ -55,17 +54,22 @@ class WaypointProcessor {
                 trueMarkBearing: trueMarkBearing,
                 courseOverGround: courseOverGround
             )
+
+            // Sailing state for the WAYPOINT approach: derived from bearing to mark vs wind,
+            // not the current boat TWA. This keeps laylines stable when heading changes —
+            // they only move when TWD or boat/mark position actually changes.
+            let angleToMark = abs(normalizeAngleTo180(trueMarkBearing - trueWindDirection))
+            let waypointSailingState = angleToMark <= sailingStateLimit ? "Upwind" : "Downwind"
             
             // MARK: - Opposite Tack Calculations
             
-            // TODO: - Do not forget to get the angle based on upwind/downwind situation
             let (_, oppositeRelativeMarkBearing) = calculateOppositeTack(
-                courseOverGround: speedOverGround,
+                courseOverGround: courseOverGround,
                 trueWindDirection: trueWindDirection,
                 optimalUpwindTackAngle: optimalUpTWA,
                 optimalDownwindTackAngle: optimalDnTWA,
                 trueMarkBearing: trueMarkBearing,
-                sailingState: sailingState)
+                sailingState: waypointSailingState)
             
             // Calculate VMC for current and opposite tacks
             let currentTackVMC = calculateVMC(speed: speedOverGround, relativeBearing: relativeMarkBearing)
@@ -87,10 +91,11 @@ class WaypointProcessor {
             let oppositeTackVMCDisplay = abs(oppositeTackVMC)
             // MARK: - Time Calculations
             
-            // Trip Duration and ETA to Waypoint
-            let effectiveVMC = max(currentTackVMC, 0) // Only consider positive VMG for progress
-            let tripDurationToWaypoint = distanceToMark * toNauticalMiles / effectiveVMC // in hours
-            let etaToWaypoint = Date().addingTimeInterval(tripDurationToWaypoint * 3600) // in seconds
+            // Trip Duration and ETA to Waypoint — only meaningful when making positive progress
+            let tripDurationToWaypoint: Double? = currentTackVMC > 0
+                ? (distanceToMark * toNauticalMiles / currentTackVMC)
+                : nil
+            let etaToWaypoint: Date? = tripDurationToWaypoint.map { Date().addingTimeInterval($0 * 3600) }
             
             let effectiveSOG = max(speedOverGround, 0) // Ensure positive SOG
             
@@ -103,7 +108,7 @@ class WaypointProcessor {
                 windDirection: trueWindDirection,
                 optimalUpTWA: optimalUpTWA,
                 optimalDnTWA: optimalDnTWA,
-                sailingState: sailingState,
+                sailingState: waypointSailingState,
                 boatToWaypointDistance: distanceToMark
             )
             
@@ -113,14 +118,36 @@ class WaypointProcessor {
             let extendedStarboardLayline = laylines[2]
             let extendedPortsideLayline = laylines[3]
             
-            // Validate intersections before calculating tack states
+            // Validate intersections before calculating tack states.
+            // Even when intersections can't be found the laylines themselves are valid and
+            // must always be saved so the map never goes blank.
             guard intersections.count >= 2 else {
-                debugLog("Error: Not enough intersections to calculate tack states. Intersections count: \(intersections.count)")
-                
-                // Provide fallback values
+                debugLog("Not enough intersections (\(intersections.count)) — saving laylines without tack distances.")
                 self.starboardIntersection = nil
                 self.portsideIntersection = nil
-                debugLog("Assigned default values for intersections and tack states.")
+                self.waypointData = WaypointData(
+                    distanceToMark: distanceToMark,
+                    trueMarkBearing: trueMarkBearing,
+                    tripDurationToWaypoint: tripDurationToWaypoint,
+                    etaToWaypoint: etaToWaypoint,
+                    currentTackRelativeBearing: relativeMarkBearing,
+                    waypointApproachState: waypointSailingState,
+                    currentTackVMC: currentTackVMC,
+                    currentTackVMCDisplay: currentTackVMCDisplay,
+                    currentTackVMCPerformance: currentTackVMCPerformance,
+                    oppositeTackVMC: oppositeTackVMC,
+                    oppositeTackVMCDisplay: oppositeTackVMCDisplay,
+                    oppositeTackVMCPerformance: oppositeTackVMCPerformance,
+                    polarVMC: currentTackPolarVMC,
+                    maxTackPolarVMC: maxTackPolarVMC,
+                    isVMCNegative: currentTackVMC < 0,
+                    starboardLayline: starboardLayline,
+                    portsideLayline: portsideLayline,
+                    extendedStarboardLayline: extendedStarboardLayline,
+                    extendedPortsideLayline: extendedPortsideLayline,
+                    starboardIntersection: nil,
+                    portsideIntersection: nil
+                )
                 return
             }
             
@@ -129,22 +156,40 @@ class WaypointProcessor {
                 currentHeading: courseOverGround,
                 intersection1: intersections[0],
                 intersection2: intersections[1],
-                boatLocation: markerCoordinate,
+                boatLocation: boatLocation,
                 trueWindDirection: trueWindDirection,
-                sailingState: sailingState,
+                sailingState: waypointSailingState,
                 optimalUpAngle: optimalUpTWA,
                 optimalDownAngle: optimalDnTWA,
                 twaThreshold: sailingStateLimit
             )
             
-            // Safely calculate distances and durations
+            // Leg 1: boat → tack intersection
             let currentTackState = tackStates.currentTack
             let currentTackDistance = tackStates.currentTackDistance * toNauticalMiles
             let currentTackDuration = (effectiveSOG > 0) ? (currentTackDistance / effectiveSOG) : 0.0
-            
-            let oppositeTackState = tackStates.nextSailingState
-            let oppositeTackDistance = tackStates.oppositeTackDistance * toNauticalMiles
+
+            // Leg 2: tack intersection → mark
+            // Use distanceWaypoint of the closer intersection (not distanceBoat of the far one).
+            let oppositeTackDistance = tackStates.nextLegDistance * toNauticalMiles
             let oppositeTackDuration = (effectiveSOG > 0) ? (oppositeTackDistance / effectiveSOG) : 0.0
+
+            // Sailing state for leg 2 is determined from the INTERSECTION's perspective,
+            // not from the boat's current position. The bearing from the intersection to
+            // the mark vs TWD may differ significantly from the boat's current AoM.
+            let intersectionToMarkBearing = calculateTrueMarkBearing(
+                from: tackStates.nextLegIntersection,
+                to: markerCoordinate
+            )
+            let intersectionAoM = abs(normalizeAngleTo180(intersectionToMarkBearing - trueWindDirection))
+            let nextLegSailingState = intersectionAoM <= sailingStateLimit ? "Upwind" : "Downwind"
+            let oppositeTackState = nextLegSailingState
+
+            // Determine which tack/gybe the boat is on for the second leg.
+            // TWA of the second leg = (TWD − heading_toward_mark) mod 360°.
+            // > 180° means wind arrives from the port side → PORT tack/gybe.
+            let secondLegTWA = normalizeAngle(trueWindDirection - intersectionToMarkBearing)
+            let nextLegTack = secondLegTWA > 180.0 ? "Port" : "Starboard"
             
             // Debug or log results
             //debugLog("Current Tack: \(tackStates.currentTack), Distance: \(currentTackDistance) NM, Duration: \(currentTackDuration) hours")
@@ -171,6 +216,9 @@ class WaypointProcessor {
                 currentTackRelativeBearing: relativeMarkBearing,
                 oppositeTackState: oppositeTackState,
                 oppositeTackRelativeBearing: oppositeRelativeMarkBearing,
+                waypointApproachState: waypointSailingState,
+                nextLegSailingState: nextLegSailingState,
+                nextLegTack: nextLegTack,
                 currentTackVMC: currentTackVMC,
                 currentTackVMCDisplay: currentTackVMCDisplay,
                 currentTackVMCPerformance: currentTackVMCPerformance, oppositeTackVMC: oppositeTackVMC,
@@ -201,7 +249,14 @@ class WaypointProcessor {
         optimalUpAngle: Double,
         optimalDownAngle: Double,
         twaThreshold: Double
-    ) -> (currentTack: String, currentTackDistance: Double, oppositeTack: String, oppositeTackDistance: Double, nextSailingState: String, unclampedAngleToFarIntersection: Double) {
+    ) -> (currentTack: String,
+          currentTackDistance: Double,
+          nextLegDistance: Double,
+          nextLegIntersection: CLLocationCoordinate2D,
+          oppositeTack: String,
+          oppositeTackDistance: Double,
+          nextSailingState: String,
+          unclampedAngleToFarIntersection: Double) {
         // Helper: Convert heading to a unit vector
         func headingToVector(heading: Double) -> (x: Double, y: Double) {
             let radians = toRadians(heading)
@@ -222,8 +277,9 @@ class WaypointProcessor {
             return atan2(cross, dot) // Angle in radians
         }
         
-        // Boat's heading as a vector
-        let boatHeadingVector = vectorFrom(boatLocation, to: CLLocationCoordinate2D(latitude: boatLocation.latitude + 1, longitude: boatLocation.longitude)) // A point directly north of the boat for heading vector
+        // Boat's heading as a unit vector in (deltaLon, deltaLat) space (north-up, east-right)
+        let headingRad = toRadians(currentHeading)
+        let boatHeadingVector = (x: sin(headingRad), y: cos(headingRad))
         
         // Calculate vectors to intersections
         let vectorToIntersection1 = vectorFrom(boatLocation, to: intersection1.intersection)
@@ -240,27 +296,43 @@ class WaypointProcessor {
         //debugLog("Clamped Angle to Intersection 1: \(clampedAngle1)°, Distance: \(intersection1.distanceBoat) NM")
         //debugLog("Clamped Angle to Intersection 2: \(clampedAngle2)°, Distance: \(intersection2.distanceBoat) NM")
         
-        // Determine closer intersection (using clamped angles)
-        let (currentTack, currentTackDistance, oppositeTack, oppositeTackDistance, unclampedAngleToFarIntersection) = {
+        // Determine the closer intersection (= the tack point the boat will reach first).
+        // Also capture its distanceWaypoint (leg-2 length: intersection → mark) and its
+        // coordinate so the caller can compute the second-leg sailing state from there.
+        let (currentTack,
+             currentTackDistance,
+             nextLegDistance,
+             nextLegIntersection,
+             oppositeTack,
+             oppositeTackDistance,
+             unclampedAngleToFarIntersection) = {
             if abs(clampedAngle1) < abs(clampedAngle2) {
-                let unclampedAngle = unclampedAngle1
-                return ("Current Tack", intersection1.distanceBoat, "Opposite Tack", intersection2.distanceBoat, unclampedAngle)
+                return ("Current Tack",
+                        intersection1.distanceBoat,
+                        intersection1.distanceWaypoint,  // leg 2: closer intersection → mark
+                        intersection1.intersection,
+                        "Opposite Tack",
+                        intersection2.distanceBoat,
+                        unclampedAngle1)
             } else {
-                let unclampedAngle = unclampedAngle2
-                return ("Current Tack", intersection2.distanceBoat, "Opposite Tack", intersection1.distanceBoat, unclampedAngle)
+                return ("Current Tack",
+                        intersection2.distanceBoat,
+                        intersection2.distanceWaypoint,  // leg 2: closer intersection → mark
+                        intersection2.intersection,
+                        "Opposite Tack",
+                        intersection1.distanceBoat,
+                        unclampedAngle2)
             }
         }()
-        
-        // Determine next sailing state based on the unclamped angle
-        let nextSailingState = abs(unclampedAngleToFarIntersection) > twaThreshold ? "Downwind" : "Upwind"
-        
-        // Debug logs
-        //debugLog("Unclamped Angle to Far Intersection: \(unclampedAngleToFarIntersection)°")
-        //debugLog("Closest Intersection: \(currentTack)")
-        //debugLog("Sailing State: \(sailingState)")
-        //debugLog("Next Sailing State: \(nextSailingState)")
-        
-        return (currentTack, currentTackDistance, oppositeTack, oppositeTackDistance, nextSailingState, unclampedAngleToFarIntersection)
+
+        return (currentTack,
+                currentTackDistance,
+                nextLegDistance,
+                nextLegIntersection,
+                oppositeTack,
+                oppositeTackDistance,
+                sailingState,
+                unclampedAngleToFarIntersection)
     }
     
     func calculateTrueMarkBearing(from currentLocation: CLLocationCoordinate2D, to waypoint: CLLocationCoordinate2D) -> Double {
@@ -407,8 +479,10 @@ class WaypointProcessor {
             tackAngle = optimalUpTWA
         }
         
-        // Dynamic layline distance based on boat-to-waypoint distance
-        let laylineDistance = boatToWaypointDistance * 1.5
+        // Laylines must extend far enough that their intersections always fall within the segments,
+        // even when the boat is well past or alongside the laylines. 4× the current distance with
+        // a 200 km floor (~108 NM) covers all practical sailing scenarios.
+        let laylineDistance = max(boatToWaypointDistance * 4.0, 200_000.0)
         
         // Generate laylines for the boat
         let starboardBoatLayline = calculateLaylineCoordinates(

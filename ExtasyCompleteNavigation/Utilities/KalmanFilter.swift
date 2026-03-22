@@ -78,6 +78,14 @@ class KalmanFilter {
         r = measurementNoise
     }
 
+    /// Seed the filter to a specific value, resetting the accumulated estimate.
+    /// Use for cold-start: call with the first real measurement so the filter
+    /// does not drift from its initialValue (0) to the real value.
+    func seed(to value: Double) {
+        x = value
+        p = 1.0
+    }
+
     /// Maps a user-facing damping level (0 = raw, 11 = maximum smooth) to Q/R parameters.
     /// R spans 1e-3 … 1e4 logarithmically; Q stays fixed at 1.0.
     static func params(forDampingLevel level: Int) -> (processNoise: Double, measurementNoise: Double) {

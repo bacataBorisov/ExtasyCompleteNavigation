@@ -32,6 +32,9 @@ struct VMGData {
     // MARK: - Tack Properties
     var sailingState: String?                  // Current sailing state: "Upwind" or "Downwind"
     var sailingStateLimit: Double?             // TWA limit for the current sailing state
+    /// Signed deviation from optimal tack angle in degrees.
+    /// Positive = sailing too broad, negative = too pinched (pointing).
+    var tackDeviation: Double?
     
     // MARK: - Laylines (Waypoint Targets)
     var starboardLayline: CLLocationCoordinate2D?  // Starboard tack layline coordinate
@@ -55,6 +58,7 @@ struct VMGData {
         maxDnVMG = nil
         sailingState = nil
         sailingStateLimit = nil
+        tackDeviation = nil
         starboardLayline = nil
         portsideLayline = nil
         

@@ -82,8 +82,9 @@ struct PerformanceView: View {
                         optimalDnTWA: navigationReadings.vmgData?.optimalDnTWA ?? 0,
                         sailingState: navigationReadings.vmgData?.sailingState ?? "Unknown",
                         tolerance: settingsManager.tackTolerance,
-                        rangeMultiplier: 1, //optional if you want to extend dynamically
-                        trueWindDirection: navigationReadings.windData?.trueWindDirection ?? 0
+                        rangeMultiplier: 1,
+                        trueWindDirection: navigationReadings.windData?.trueWindDirection ?? 0,
+                        tackDeviation: navigationReadings.vmgData?.tackDeviation
                         )
                     .frame(height: 40)
                     .frame(maxWidth: .infinity)

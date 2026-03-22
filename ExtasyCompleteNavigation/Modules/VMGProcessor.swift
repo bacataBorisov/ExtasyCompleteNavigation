@@ -106,36 +106,48 @@ class VMGProcessor {
         //MARK: -  Perform VMG Calculations Once Data is Valid
         
         let polarSpeed = calculateVMG.evaluateDiagram(windForce: trueWindForce, windAngle: trueWindAngle)
-        //take absolute value for display purposes in the progress bars and drop the negative nature of the cosine
-        let polarVMG = abs((polarSpeed) * cos(toRadians(trueWindAngle)))
 
-        // Calculate VMG using SOG (VMG over ground)
-        let angleToWind = abs(normalizeAngle(trueWindAngle)) // Angle between wind and course
-        
-        // Speed Performance Calculations
-        let speedPerformanceThroughWater = processPerformanceRatio(maxValue: polarSpeed, currentValue: speedThroughWater)
-        let speedPerformanceOverGround = processPerformanceRatio(maxValue: polarSpeed, currentValue: speedOverGround)
-        
-        // VMG Performance Calculations
-        let vmgOverGround = abs(speedOverGround * cos(toRadians(angleToWind)))
-        let vmgOverGroundPerformance = processPerformanceRatio(maxValue: polarVMG, currentValue: vmgOverGround)
-        
-        let vmgThroughWater = abs(speedThroughWater * cos(toRadians(angleToWind)))
-        let vmgThroughWaterPerformance = processPerformanceRatio(maxValue: polarVMG, currentValue: vmgThroughWater)
-        
-        // Fetch tack data
+        // Fetch tack data first — needed for polarVMG reference and tack deviation
         let tackData = processTackData(windSpeed: trueWindForce, trueWindAngle: trueWindAngle)
         let optimalUpTWA = tackData?.optUpTWA ?? 0.0
         let optimalDnTWA = tackData?.optDnTWA ?? 0.0
         let maxUpVMG = tackData?.maxUpVMG ?? 0.0
         let maxDnVMG = tackData?.maxDnVMG ?? 0.0
-    
+
         // Sailing State Determination
         let sailingState = tackData?.sailingState ?? "Unknown"
-        //debugLog("Current sailing state is: [\(sailingState)]")
-        
+
         // Sailing State Limit (threshold)
         let sailingStateLimit = tackData?.sailingStateLimit
+
+        // polarVMG: use the tack table maximum so bars always have a meaningful reference
+        // regardless of current TWA (avoids cos(90°)=0 dead zone when reaching).
+        let polarVMG: Double
+        if let td = tackData {
+            polarVMG = sailingState == "Upwind" ? td.maxUpVMG : td.maxDnVMG
+        } else {
+            // Fallback when tack table is unavailable
+            polarVMG = abs(polarSpeed * cos(toRadians(trueWindAngle)))
+        }
+
+        // Absolute TWA (0–180°) for VMG projection
+        let angleToWind = abs(normalizeAngleTo180(trueWindAngle))
+
+        // Speed Performance Calculations
+        let speedPerformanceThroughWater = processPerformanceRatio(maxValue: polarSpeed, currentValue: speedThroughWater)
+        let speedPerformanceOverGround = processPerformanceRatio(maxValue: polarSpeed, currentValue: speedOverGround)
+
+        // VMG Performance: actual VMG vs best possible VMG for this wind speed
+        let vmgOverGround = abs(speedOverGround * cos(toRadians(angleToWind)))
+        let vmgOverGroundPerformance = processPerformanceRatio(maxValue: polarVMG, currentValue: vmgOverGround)
+
+        let vmgThroughWater = abs(speedThroughWater * cos(toRadians(angleToWind)))
+        let vmgThroughWaterPerformance = processPerformanceRatio(maxValue: polarVMG, currentValue: vmgThroughWater)
+
+        // Tack deviation: signed degrees off optimal TWA for the current state
+        // Positive = too broad, negative = too pinched
+        let optimalTWA = sailingState == "Upwind" ? optimalUpTWA : optimalDnTWA
+        let tackDeviation: Double? = optimalTWA > 0 ? (angleToWind - optimalTWA) : nil
         
         
         // Laylines calculation
@@ -164,6 +176,7 @@ class VMGProcessor {
             maxDnVMG: maxDnVMG,
             sailingState: sailingState,
             sailingStateLimit: sailingStateLimit,
+            tackDeviation: tackDeviation,
             starboardLayline: laylines.starboardLayline,
             portsideLayline: laylines.portsideLayline
         )

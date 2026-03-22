@@ -8,6 +8,7 @@ struct TackAlignmentBar: View {
     var tolerance: Double // Tolerance range in degrees (e.g., ±15°)
     var rangeMultiplier: Double = 1.0 // Setting to extend or shrink the range
     let trueWindDirection: Double // True Wind Direction (TWD)
+    var tackDeviation: Double? = nil // Signed degrees off optimal tack (debug)
 
     // Use Double instead of CGFloat to work with @AppStorage
     @AppStorage("tackAlignmentOffset") private var storedOffset: Double = 0.0
@@ -28,6 +29,10 @@ struct TackAlignmentBar: View {
         let portOffset = abs(normalizeAngleTo180(currentHeading - portTackTarget))
         let starboardOffset = abs(normalizeAngleTo180(currentHeading - starboardTackTarget))
         return portOffset < starboardOffset
+    }
+
+    private var activeOptimalTWA: Double {
+        sailingState == "Upwind" ? optimalUpTWA : optimalDnTWA
     }
 
     var body: some View {
@@ -61,17 +66,29 @@ struct TackAlignmentBar: View {
                     .offset(x: animatedOffset, y: 0)
                     .animation(shouldAnimate ? .interpolatingSpring(stiffness: 80, damping: 15) : .none, value: animatedOffset)
 
-                // Debug Info Overlay
-//                VStack {
-//                    Text("Current Heading: \(String(format: "%.1f", currentHeading))°")
-//                    Text("Optimal Port Tack: \(String(format: "%.1f", portTackTarget))°")
-//                    Text("Optimal Starboard Tack: \(String(format: "%.1f", starboardTackTarget))°")
-//                }
-//                .foregroundColor(.white)
-//                .font(.caption)
-//                .padding()
-//                .background(Color.black.opacity(0.6).cornerRadius(8))
-//                .padding(.top, 50)
+                // Overlay: target angle (left) + deviation (right)
+                HStack {
+                    // Optimal angle label — what we are targeting
+                    let stateArrow = sailingState == "Upwind" ? "↑" : "↓"
+                    Text("\(stateArrow) \(String(format: "%.0f", activeOptimalTWA))°")
+                        .font(.system(.caption2, design: .monospaced).bold())
+                        .foregroundStyle(.yellow)
+                        .padding(.horizontal, 4)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 4))
+
+                    Spacer()
+
+                    // Signed deviation from optimal
+                    if let dev = tackDeviation {
+                        let sign = dev >= 0 ? "+" : ""
+                        Text("\(sign)\(String(format: "%.1f", dev))°")
+                            .font(.system(.caption2, design: .monospaced).bold())
+                            .foregroundStyle(abs(dev) <= tolerance ? Color.primary : Color.orange)
+                            .padding(.horizontal, 4)
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 4))
+                    }
+                }
+                .padding(.horizontal, 6)
             }
             .onAppear {
                 let newOffset = xOffset(for: currentHeading, barWidth: barWidth)

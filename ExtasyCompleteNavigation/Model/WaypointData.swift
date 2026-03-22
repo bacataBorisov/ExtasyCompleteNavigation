@@ -35,6 +35,20 @@ struct WaypointData {
     
     var oppositeTackState: String?                   // Opposite tack direction
     var oppositeTackRelativeBearing: Double?         // Relative bearing on the opposite tack
+
+    /// "Upwind" or "Downwind" — whether the mark is upwind or downwind of the boat,
+    /// computed from bearing-to-mark vs TWD. Stable against heading changes.
+    var waypointApproachState: String? = nil
+
+    /// Sailing state for the second leg (tack intersection → mark).
+    /// Computed from the intersection's bearing to the mark vs TWD — may differ from
+    /// waypointApproachState when the boat is sailing past the mark's wind angle.
+    var nextLegSailingState: String? = nil
+
+    /// Which tack/gybe the boat will be on during the second leg (intersection → mark).
+    /// Derived from the second-leg heading vs TWD, not from the current tack.
+    /// "Port" = wind on port side, "Starboard" = wind on starboard side.
+    var nextLegTack: String? = nil
     
     // MARK: - Velocity Made on Course (VMC) Calculations
     var currentTackVMC: Double?                      // VMC to waypoint on the current tack
@@ -80,6 +94,9 @@ struct WaypointData {
         
         oppositeTackState = nil
         oppositeTackRelativeBearing = nil
+        waypointApproachState = nil
+        nextLegSailingState = nil
+        nextLegTack = nil
         
         currentTackVMC = nil
         currentTackVMCDisplay = nil

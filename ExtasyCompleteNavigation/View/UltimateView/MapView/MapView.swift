@@ -39,7 +39,7 @@ struct MapView: View {
                 Map(position: $mapCameraPosition, interactionModes: [.pan, .zoom], scope: mapScope, content: {
                     boatAnnotation() // Boat a=][nnotation with animation
                     waypointAnnotations()
-                    if navigationReadings.gpsData?.isTargetSelected == true && navigationReadings.waypointData?.isVMCNegative == false {
+                    if navigationReadings.gpsData?.isTargetSelected == true {
                         laylinePolylinesToWaypoint() // Show laylines to waypoint
                         intersectionAnnotations()
                     }

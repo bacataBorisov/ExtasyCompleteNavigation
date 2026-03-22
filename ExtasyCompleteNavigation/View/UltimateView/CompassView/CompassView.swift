@@ -56,10 +56,16 @@ struct CompassView: View {
                 displayedHeading = lastKnownHeading
                 animationDelta = lastKnownHeading
                 hasValidHeading = true
-                shouldAnimate = false // Disable animation for initial load
-                
+                shouldAnimate = false
+
+                // onChange only fires when the value *changes*. If the heading is steady
+                // (common when returning from another tab), we must sync here directly.
+                if let current = navigationReadings.compassData?.normalizedHeading {
+                    updateCompassRotation(to: current)
+                }
+
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                    shouldAnimate = true // Enable animation after initial positioning
+                    shouldAnimate = true
                 }
             }
         }

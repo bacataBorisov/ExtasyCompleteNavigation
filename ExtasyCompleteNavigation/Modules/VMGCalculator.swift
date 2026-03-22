@@ -34,6 +34,12 @@ class VMGCalculator {
     }
 
     // MARK: - Tack Table Handling
+    /// Loads the tack table directly from a 2D array.
+    /// Intended for unit testing — production code should use `readOptimalTackTable(fileName:)`.
+    func loadTackTable(from rows: [[Double]]) {
+        optimalTackTable = rows
+    }
+
     /// Reads and loads the optimal tack table from a file.
     /// - Parameter fileName: The name of the tack table file (without extension).
     /// - Returns: `true` if the table was loaded successfully, `false` otherwise.
@@ -93,14 +99,14 @@ class VMGCalculator {
             return (nil, nil, nil)
         }
         
-        let sailingStateLimit = optimalTackTable.first?[7] ?? 0
-        
-        // Handle edge cases
+        // Handle edge cases — use the actual threshold from the boundary row, not always row 0
         if windSpeed <= windSpeeds.first! {
-            return (optimalTackTable.first, determineSailingState(trueWindAngle: trueWindAngle, threshold: sailingStateLimit), sailingStateLimit)
+            let threshold = optimalTackTable.first?[7] ?? 0
+            return (optimalTackTable.first, determineSailingState(trueWindAngle: normalizedTWA, threshold: threshold), threshold)
         }
         if windSpeed >= windSpeeds.last! {
-            return (optimalTackTable.last, determineSailingState(trueWindAngle: trueWindAngle, threshold: sailingStateLimit), sailingStateLimit)
+            let threshold = optimalTackTable.last?[7] ?? 0
+            return (optimalTackTable.last, determineSailingState(trueWindAngle: normalizedTWA, threshold: threshold), threshold)
         }
 
         // Interpolate using cubic splines
@@ -119,7 +125,7 @@ class VMGCalculator {
         let interpolatedThreshold = interpolatedRow.last ?? 0
         let sailingState = determineSailingState(trueWindAngle: normalizedTWA, threshold: interpolatedThreshold)
 
-        return (interpolatedRow, sailingState, sailingStateLimit)
+        return (interpolatedRow, sailingState, interpolatedThreshold)
     }
 
     // MARK: - VMG Diagram Evaluation
@@ -179,6 +185,6 @@ class VMGCalculator {
     }
     
     func determineSailingState(trueWindAngle: Double, threshold: Double) -> String {
-        return trueWindAngle <= threshold ? "Upwind" : "Downwind"
+        return abs(trueWindAngle) <= threshold ? "Upwind" : "Downwind"
     }
 }

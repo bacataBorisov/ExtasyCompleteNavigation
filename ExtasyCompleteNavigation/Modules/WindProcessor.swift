@@ -9,6 +9,20 @@ class WindProcessor {
     private var kalmanFilterTrueWindForce = KalmanFilter(initialValue: 0.0, processNoise: 1.0, measurementNoise: 1e-9)
     private var kalmanFilterAppWindAngle = KalmanFilter(initialValue: 0.0, processNoise: 1.0, measurementNoise: 1e-9)
     private var kalmanFilterTrueWindAngle = KalmanFilter(initialValue: 0.0, processNoise: 1.0, measurementNoise: 1e-9)
+    // Vector Kalman filter for TWD.
+    // Instead of filtering the angle scalar, we filter the two Cartesian components of
+    // the wind velocity vector in the earth frame:
+    //   East  = TWS × sin(TWD)
+    //   North = TWS × cos(TWD)
+    // Filtering these independent linear signals then reconstructing the angle with
+    // atan2(East, North) gives three key benefits over a scalar angle filter:
+    //   1. No 0°/360° wrap-around problem — the components are continuous.
+    //   2. Correct vector averaging — mean of 355° and 5° becomes 0°, not 180°.
+    //   3. Seeding from the first measurement gives instant cold-start (no drift from 0°).
+    // Q=0.5, R=1.0 (knots²) → K_ss≈0.5 → genuine 10° wind shift converges in ~5 updates.
+    private var kalmanWindEast  = KalmanFilter(initialValue: 0.0, processNoise: 0.5, measurementNoise: 1.0)
+    private var kalmanWindNorth = KalmanFilter(initialValue: 0.0, processNoise: 0.5, measurementNoise: 1.0)
+    private var twdVectorSeeded = false
 
     func updateDamping(level: Int) {
         let p = KalmanFilter.params(forDampingLevel: level)
@@ -88,8 +102,28 @@ class WindProcessor {
 
             updatedWindData.trueWindAngle = kalmanFilterTrueWindAngle.update(measurement: normalizedRawTWA)
 
-            if let twa = updatedWindData.trueWindAngle, let twf = updatedWindData.trueWindForce {
-                updatedWindData.trueWindDirection = calculateWindDirection(twf, twa, heading)
+            // Vector Kalman filter for TWD.
+            // Decompose raw TWD into (East, North) components, filter each independently,
+            // then reconstruct direction with atan2 — no wrap-around possible.
+            // TWS is used for the vector magnitude so the filter is weighted by wind strength;
+            // falls back to unit-vector (TWS=1) if force is not yet available.
+            if let rawTWD = updatedWindData.rawTrueWindDirection {
+                let tws = updatedWindData.rawTrueWindForce ?? 1.0
+                let rawTWD_rad = toRadians(rawTWD)
+                let rawEast  = tws * sin(rawTWD_rad)
+                let rawNorth = tws * cos(rawTWD_rad)
+
+                if !twdVectorSeeded {
+                    kalmanWindEast.seed(to: rawEast)
+                    kalmanWindNorth.seed(to: rawNorth)
+                    twdVectorSeeded = true
+                }
+
+                let fEast  = kalmanWindEast.update(measurement: rawEast)
+                let fNorth = kalmanWindNorth.update(measurement: rawNorth)
+
+                // atan2(East, North) = geographic bearing measured clockwise from North
+                updatedWindData.trueWindDirection = normalizeAngle(toDegrees(atan2(fEast, fNorth)))
             }
         }
 

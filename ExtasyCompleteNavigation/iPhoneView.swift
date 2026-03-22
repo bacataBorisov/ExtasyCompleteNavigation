@@ -9,7 +9,7 @@ struct IdentifiedView: Identifiable {
 struct iPhoneView: View {
     @Environment(NMEAParser.self) private var navigationReadings
     
-    @State private var selectedTab = 0 // Default to first view
+    @AppStorage("lastSelectedTab") private var selectedTab: Int = 0
     
     private var allViews: [IdentifiedView] {
         [
@@ -47,11 +47,6 @@ struct iPhoneView: View {
             }
         }
         .ignoresSafeArea()
-        .onAppear {
-            if let ultimateViewIndex = allViews.firstIndex(where: { $0.label == "Ultimate" }) {
-                selectedTab = ultimateViewIndex
-            }
-        }
     }
 }
 
