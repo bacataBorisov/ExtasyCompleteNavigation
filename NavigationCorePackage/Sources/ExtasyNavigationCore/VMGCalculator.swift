@@ -118,6 +118,14 @@ public final class VMGCalculator {
         return interpolate(windIndex: j, angleIndex: i, windRatio: windRatio, angleRatio: angleRatio)
     }
 
+    /// Boat speed (knots) at each diagram TWA for the given true wind speed.
+    public func polarBoatSpeedCurve(forTrueWindSpeedKnots tws: Double) -> [(twa: Double, speed: Double)] {
+        guard !wind.isEmpty, !gradus.isEmpty else { return [] }
+        return gradus.map { twa in
+            (twa: twa, speed: evaluateDiagram(windForce: tws, windAngle: twa))
+        }
+    }
+
     private func interpolate(windIndex j: Int, angleIndex i: Int, windRatio: Double, angleRatio: Double) -> Double {
         let i0 = max(i - 1, 0)
         let i1 = i

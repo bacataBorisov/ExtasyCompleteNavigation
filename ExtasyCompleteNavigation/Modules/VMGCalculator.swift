@@ -136,7 +136,6 @@ class VMGCalculator {
     /// - Returns: The interpolated VMG value.
     func evaluateDiagram(windForce: Double, windAngle: Double) -> Double {
         guard !wind.isEmpty, !gradus.isEmpty else { return 0.0 }
-        debugLog("FROM evaluateDiagram print wind angle -> \(windAngle)")
         var finalWindAngle = abs(windAngle)
         if windForce <= wind[0] { return 0.0 }
         if finalWindAngle > 360 { finalWindAngle -= 360 }
@@ -150,7 +149,15 @@ class VMGCalculator {
         
         return interpolate(windIndex: j, angleIndex: i, windRatio: windRatio, angleRatio: angleRatio)
     }
-    
+
+    /// Boat speed (knots) at each diagram TWA for the given true wind speed, using the same interpolation as ``evaluateDiagram``.
+    func polarBoatSpeedCurve(forTrueWindSpeedKnots tws: Double) -> [(twa: Double, speed: Double)] {
+        guard !wind.isEmpty, !gradus.isEmpty else { return [] }
+        return gradus.map { twa in
+            (twa: twa, speed: evaluateDiagram(windForce: tws, windAngle: twa))
+        }
+    }
+
     private func interpolate(windIndex j: Int, angleIndex i: Int, windRatio: Double, angleRatio: Double) -> Double {
         let i0 = max(i - 1, 0)
         let i1 = i

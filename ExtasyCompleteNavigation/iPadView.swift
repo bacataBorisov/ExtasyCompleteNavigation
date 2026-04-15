@@ -2,7 +2,9 @@ import SwiftUI
 
 struct iPadView: View {
     @Environment(NMEAParser.self) private var navigationReadings
-    
+
+    @State private var lowerInstrumentPanel: Int = 0
+
     private var isTargetSelected: Bool {
         navigationReadings.gpsData?.isTargetSelected ?? false
     }
@@ -18,9 +20,24 @@ struct iPadView: View {
                         //.background(Color.red.opacity(0.2)) // Debugging background
                     }
                     
-                    PerformanceView()
-                        .frame(height: geometry.size.height * 0.35)
-                    //.background(Color.blue.opacity(0.2)) // Debugging background
+                    VStack(spacing: 8) {
+                        Picker("Lower panel", selection: $lowerInstrumentPanel) {
+                            Text("Performance").tag(0)
+                            Text("Polar").tag(1)
+                        }
+                        .pickerStyle(.segmented)
+                        .padding(.horizontal, 12)
+
+                        Group {
+                            if lowerInstrumentPanel == 0 {
+                                PerformanceView()
+                            } else {
+                                PolarInstrumentView()
+                            }
+                        }
+                        .frame(maxHeight: .infinity)
+                    }
+                    .frame(height: geometry.size.height * 0.35)
                 }
                 .frame(maxHeight: geometry.size.height)
                 // Right Section: MultiDisplay and VMGSimpleView

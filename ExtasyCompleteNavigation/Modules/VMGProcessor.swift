@@ -50,6 +50,12 @@ class VMGProcessor {
         debugLog("VMG data has been reset")
         
     }
+
+    /// Polar boat speed vs TWA at the given true wind speed (knots), for diagram UI.
+    func polarBoatSpeedCurve(forTrueWindSpeedKnots tws: Double) -> [(twa: Double, speed: Double)] {
+        guard let calculateVMG else { return [] }
+        return calculateVMG.polarBoatSpeedCurve(forTrueWindSpeedKnots: tws)
+    }
     
     func processPerformanceRatio(maxValue: Double, currentValue: Double) -> Double {
         

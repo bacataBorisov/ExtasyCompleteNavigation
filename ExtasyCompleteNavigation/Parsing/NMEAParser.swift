@@ -101,6 +101,8 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     
     private var periodicUpdateTimer: Timer?
     private var watchdogTimer: Timer?
+    /// Interval for `performPeriodicUpdate` (UI + Watch batch). Kept off the 1 Hz NMEA cadence on purpose.
+    private var periodicUIInterval: TimeInterval = 1.0
 
     // Temporary caches — protected by dataLock for cross-thread access
     private var cachedHydroData: HydroData?
@@ -177,11 +179,36 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     }
     
     private func startPeriodicDataUpdate() {
-        periodicUpdateTimer = Timer.scheduledTimer(withTimeInterval: 1.037, repeats: true) { [weak self] _ in
+        schedulePeriodicUpdateTimer(interval: periodicUIInterval)
+    }
+
+    /// Updates how often cached instrument data is published to SwiftUI and the Watch. Safe from any thread.
+    func setPeriodicUIUpdateInterval(_ seconds: TimeInterval) {
+        let clamped = min(max(seconds, 0.25), 3.0)
+        periodicUIInterval = clamped
+        let apply = { [weak self] in
+            guard let self else { return }
+            self.schedulePeriodicUpdateTimer(interval: clamped)
+        }
+        if Thread.isMainThread {
+            apply()
+        } else {
+            DispatchQueue.main.async(execute: apply)
+        }
+    }
+
+    private func schedulePeriodicUpdateTimer(interval: TimeInterval) {
+        periodicUpdateTimer?.invalidate()
+        periodicUpdateTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
             Task {
                 await self?.performPeriodicUpdate()
             }
         }
+    }
+
+    /// Polar boat speed vs TWA for the given true wind speed (knots), for performance UI.
+    func polarBoatSpeedCurve(forTrueWindSpeedKnots tws: Double) -> [(twa: Double, speed: Double)] {
+        vmgProcessor.polarBoatSpeedCurve(forTrueWindSpeedKnots: tws)
     }
 
     // MARK: - Sensor Smoothing (Kalman damping)

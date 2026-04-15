@@ -42,5 +42,8 @@ struct DefaultSettings {
         if UserDefaults.standard.value(forKey: UserDefaultsKeys.calibrationCoefficient) == nil {
             UserDefaults.standard.set(1.0, forKey: UserDefaultsKeys.calibrationCoefficient)
         }
+        if UserDefaults.standard.value(forKey: UserDefaultsKeys.uiRefreshIntervalPreset) == nil {
+            UserDefaults.standard.set(1, forKey: UserDefaultsKeys.uiRefreshIntervalPreset)
+        }
     }
 }

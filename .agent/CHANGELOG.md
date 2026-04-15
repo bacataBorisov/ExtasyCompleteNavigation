@@ -6,6 +6,23 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased] — 2026-04-14
 
+### Features
+
+- **Configurable UI / Watch refresh**: `SettingsManager.uiRefreshIntervalPreset` (0.5s, 1s, 2s), General Settings segmented control, `NMEAParser.setPeriodicUIUpdateInterval`, wired from `ExtasyCompleteNavigationApp` (`onAppear` + `onChange`). Default preset `1` in `DefaultSettings`.
+- **Polar diagram (Canvas)**: `VMGCalculator.polarBoatSpeedCurve` / `VMGProcessor` / `NMEAParser` expose samples at live TWS; `PolarDiagramCanvasView` with boat dot and optimal TWA markers. **Polar** is its own surface: iPhone lower `TabView` tag 3 (waypoint/VMG → tag 4); iPad lower panel **Performance | Polar** segmented control. `PolarInstrumentView` keeps the **TWS** caption, **no** nav title or legend, and sizes the diagram to **fill remaining space** (nested `GeometryReader`) so `PageTabViewStyle` horizontal paging stays reliable.
+
+### Bug Fixes
+
+- **iPhone lower `TabView` paging**: A root **`NavigationStack` around the entire `PageTabViewStyle` `TabView`** in `iPhoneView` prevented horizontal swipes past the Performance page. The stack now wraps only **`UltimateView`** (tabs that use `NavigationLink`). Polar no longer needs its own stack after the title was removed.
+
+### Refactors
+
+- **`NMEASentenceProcessor`**: Protocol + per-processor `supportedNMEASentenceFormats`; `NMEASentenceProcessorRegistryTests` for duplicate/coverage checks. `NMEAParser` switch unchanged.
+
+### Testing
+
+- **`HydroProcessorTests`**: DPT valid/invalid, VHW speed field (split layout aligned with `UtilsNMEA.splitNMEAString`).
+
 ### Documentation
 
 - **Repo doc layout:** Retired `ai/docs/` — **[`guides/testing-core-math.md`](guides/testing-core-math.md)** is the canonical math-test guide. Added root **[`AGENTS.md`](../AGENTS.md)** for Cursor. Cross-linked root vs **`ExtasyCompleteNavigation/README.md`**. Removed stray **`Untitled.ipynb`**; **`.gitignore`** now ignores Jupyter scratch (`Untitled.ipynb`, `.ipynb_checkpoints/`, `.virtual_documents/`). **`.agent-os/config.json`** also excludes **`DerivedData`**, **`.ipynb_checkpoints`**, **`.virtual_documents`**.
@@ -14,7 +31,9 @@ All notable changes to this project will be documented in this file.
 
 - **Agent OS**: Initialized `.agent-os/` with `agentos init .` (SQLite index, scanned summary, cache, handoff, context pack exports). Documented refresh commands and paths in [.agent/PROJECT.md](PROJECT.md) and [README.md](../README.md). Root [AGENT_OS.md](../AGENT_OS.md) remains the CLI-maintained pointer for Xcode and hidden folders.
 
-- **Roadmap** ([.agent/ROADMAP.md](ROADMAP.md)): Added **Downwind path advisor** (straight vs gybe / VMC + polar ETA idea). Added **Consolidate waypoint & layline core** refactor (single implementation in `NavigationCorePackage`). Updated **Layline stability** bullet with Apr 2026 polar-mode refinement.
+- **Agent OS (refresh)**: Ran `agentos cache update && agentos handoff update && agentos export` (local `.agent-os/state`, `context`, `exports` regenerated per `.gitignore`; **`AGENT_OS.md`** and Xcode **`project.pbxproj`** may be updated by the CLI, e.g. `AGENTS.md` registration).
+
+- **Roadmap** ([.agent/ROADMAP.md](ROADMAP.md)): Added **Downwind path advisor** (straight vs gybe / VMC + polar ETA idea). Added **Consolidate waypoint & layline core** refactor (single implementation in `NavigationCorePackage`). Updated **Layline stability** bullet with Apr 2026 polar-mode refinement. **iPad cockpit dashboard** marked as the next layout slice after iPhone polar/paging stabilization.
 
 ---
 

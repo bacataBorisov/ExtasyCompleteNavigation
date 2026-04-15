@@ -62,6 +62,10 @@ struct ExtasyCompleteNavigationApp: App {
                 parser.updateSpeedDamping(level: settingsManager.speedDamping)
                 parser.updateHeadingDamping(level: settingsManager.headingDamping)
                 parser.updateHydroDamping(level: settingsManager.hydroDamping)
+                parser.setPeriodicUIUpdateInterval(settingsManager.uiRefreshIntervalSeconds)
+            }
+            .onChange(of: settingsManager.uiRefreshIntervalPreset) { _, _ in
+                navigationManager.nmeaParser.setPeriodicUIUpdateInterval(settingsManager.uiRefreshIntervalSeconds)
             }
         }
         .modelContainer(modelContainer)

@@ -83,7 +83,17 @@ struct GeneralSettingsView: View {
                             set: { settingsManager.tackTolerance = $0 }
                         ),
                         in: 5...30, step: 5)
-                
+
+                Picker("UI + Watch refresh", selection: Binding(
+                    get: { settingsManager.uiRefreshIntervalPreset },
+                    set: { settingsManager.uiRefreshIntervalPreset = $0 }
+                )) {
+                    Text("0.5 s").tag(0)
+                    Text("1 s").tag(1)
+                    Text("2 s").tag(2)
+                }
+                .pickerStyle(.segmented)
+
                 Picker("Distance Unit", selection: Binding(
                     get: { settingsManager.distanceUnit },
                     set: { settingsManager.distanceUnit = $0 }

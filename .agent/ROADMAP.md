@@ -35,13 +35,13 @@ Prioritized list of improvements, organized by impact and effort.
 - **Scope**: `UDPHandler`, `NMEAParser`, `NavigationManager`
 
 ### Protocol-Based Processors
-- **Status**: Not started
-- **What**: Define a `NMEAProcessor` protocol with `func process(_ sentence: [String]) -> SomeData`. Each processor conforms.
-- **Benefit**: Uniform interface, easier testing, potential for dynamic processor registration (e.g., custom NMEA sentences).
+- **Status**: Done (Apr 2026) — first slice
+- **What**: `NMEASentenceProcessor` lists `supportedNMEASentenceFormats` per domain processor; registry tests guard duplicates and parser coverage. `NMEAParser` routing unchanged; next step is optional dynamic dispatch table.
+- **Benefit**: Uniform discoverability, compile-time processor list, safer refactors when adding sentences.
 
 ### Consolidate waypoint & layline core (package vs app)
-- **Status**: Not started (noted Apr 2026)
-- **What**: Today `WaypointProcessor` (full pipeline) lives in the app target while `ExtasyNavigationCore` holds overlapping pieces (`generateDiamondLaylines`, tests). Move the **authoritative** waypoint + layline + tack-intersection pipeline into **`NavigationCorePackage`** behind a small service type, with **unit tests co-located**, and call it from `NMEAParser` / parsers only.
+- **Status**: Next session (Apr 2026)
+- **What**: `Package.swift` now declares **iOS 17** alongside macOS so the app can link `ExtasyNavigationCore`. Authoritative `WaypointProcessor` + `WaypointData` still live in the app; the package holds a partial mirror for `swift test`. **Next:** add `XCLocalSwiftPackageReference` to the Xcode project, `import ExtasyNavigationCore` in the app target, then move the full waypoint pipeline and delete the duplicate core types.
 - **Benefit**: One place to add **downwind path advisor**, new marks, and routing features — no duplicate drift between package and app.
 
 ### Structured Logging
@@ -59,15 +59,15 @@ Prioritized list of improvements, organized by impact and effort.
 ## Priority 3 — Testing
 
 ### Unit Tests for Core Logic
-- **Status**: In progress (Session 5, Mar 2026)
+- **Status**: In progress (Session 5, Mar 2026; extended Apr 2026)
 - **What**: Add tests for:
   - `MathUtilities` — angle normalization, distance, bearing ✅ (planned)
   - `VMGCalculator` — polar diagram B-spline, tack table interpolation, sailing state ✅ (planned)
   - `VMGProcessor` — performance ratio, tack deviation ✅ (planned)
   - `KalmanFilter` — damping level mapping ✅ (planned)
   - `NMEAParser` sentence routing and validation — not started
-  - Each processor (known NMEA input → expected output) — not started
-  - `WaypointProcessor` layline intersection — not started
+  - Each processor (known NMEA input → expected output) — **started** (`HydroProcessorTests`, `NMEASentenceProcessorRegistryTests`)
+  - `WaypointProcessor` layline intersection — **in progress** (`WaypointProcessorTests` in app target)
 - **Note**: B-spline interpolation does NOT return exact VPP table values at grid points — use ±5% tolerances or pre-computed expected values in tests. See `SKILL.md` for details.
 - **Benefit**: Confidence in refactoring, regression prevention
 
@@ -92,8 +92,8 @@ Prioritized list of improvements, organized by impact and effort.
 ## Priority 4 — Features
 
 ### Configurable Refresh Rate
-- **Status**: Not started
-- **What**: The 1.037s periodic update interval is hardcoded. Allow user to choose between e.g. 0.5s (racing) and 2s (cruising).
+- **Status**: Done (Apr 2026)
+- **What**: `SettingsManager.uiRefreshIntervalPreset` (0.5s / 1s / 2s) drives `NMEAParser.setPeriodicUIUpdateInterval`; General Settings segmented control + `onChange` in `ExtasyCompleteNavigationApp`.
 
 ### Route / Track Persistence
 - **Status**: Not started
@@ -101,8 +101,8 @@ Prioritized list of improvements, organized by impact and effort.
 - **Origin**: From v1.0 notes
 
 ### Polar Diagram Visualization
-- **Status**: Not started
-- **What**: Draw polar curves in SwiftUI `Canvas` (radial: speed, angle: TWA, symmetric port/starboard). Overlay current boat state (current TWA/speed dot), optimal targets (upwind/downwind rectangles), and wind-speed curve highlight. Access from performance section.
+- **Status**: Done — first slice (Apr 2026); **UI tightened** same pass — caption-only polar (no large title, no legend) for maximum diagram size; paging-friendly layout on iPhone.
+- **What**: `PolarInstrumentView` (own tab on iPhone; **Performance | Polar** segment on iPad) uses `PolarDiagramCanvasView`; `VMGCalculator.polarBoatSpeedCurve(forTrueWindSpeedKnots:)` at live TWS; overlays boat (TWA + STW), optimal up/down TWA ticks. Further polish: optional compact legend as setting, wind-column highlight, theming.
 - **Origin**: From v2.0 notes
 
 ### Polar Diagram Import & Multi-Boat Support
@@ -179,6 +179,12 @@ Prioritized list of improvements, organized by impact and effort.
 - **Status**: Not started
 - **What**: Display remaining distance and time to waypoint on the iOS lock screen.
 - **Origin**: From v2.0 notes
+
+### iPad — primary cockpit layout (design direction)
+- **Status**: **In progress (Apr 2026)** — iPhone polar tab + `TabView` paging stabilized; **first implementation task**: default **landscape “cockpit dashboard”** preset (see targets below). Additional layout presets later.
+- **Context**: iPad is **typically mounted landscape** for readability on the boat.
+- **Target (v1 dashboard)**: Landscape-first **chart + instruments** on one surface (no map only behind a push). Rebalance column widths (~45/55 or similar), optional **Performance + Polar** side-by-side in the lower band when width allows; single root `NavigationStack` or map as **sheet/overlay** TBD. Waypoint-active mode may allocate more vertical space to VMG when navigating.
+- **Files (expected)**: `iPadView.swift`, `ContentView.swift`, possibly `MapView.swift` / `UltimateView.swift` for split sizing.
 
 ### Map Enhancements
 - **Status**: Partially done

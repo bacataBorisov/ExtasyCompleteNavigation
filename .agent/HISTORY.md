@@ -256,6 +256,13 @@ The project began as an iOS counterpart to an existing Android app built by Joro
 - Replaced `freopen` file reading with `String(contentsOfFile:)`
 - Created `.agent/` documentation folder with PROJECT, CHANGELOG, ROADMAP, CONVENTIONS, HISTORY, HARDWARE, LESSONS
 
+### Phase 11: Polar surface, NMEA extensibility, iPad prep (Apr 2026)
+
+- **Polar**: Live-TWS polar curve in-app (`VMGCalculator.polarBoatSpeedCurve`, `PolarDiagramCanvasView`); dedicated **Polar** tab/segment; caption-only layout (no nav title / legend) sized to fill the lower panel for reliable **`PageTabViewStyle`** swipes on iPhone.
+- **iPhone paging fix**: Lower `TabView` no longer wrapped in a single **`NavigationStack`** (that blocked horizontal paging past Performance); **`NavigationStack`** only where **`NavigationLink`** is used (`UltimateView`).
+- **`NMEASentenceProcessor`** protocol + registry tests; **`HydroProcessorTests`**; configurable **UI refresh** interval (Settings + parser).
+- **Docs / Agent OS**: `agentos cache update && agentos handoff update && agentos export`; **ROADMAP** marks **iPad cockpit dashboard** as the next layout slice after iPhone polar stabilization.
+
 ---
 
 ## Cumulative Development Time
@@ -270,7 +277,8 @@ The project began as an iOS counterpart to an existing Android app built by Joro
 | Oct–Dec 2024 (Phase 7: MVVM) | ~80 |
 | Dec 2024–Feb 2025 (Phase 8: Polish) | ~100 |
 | Jun 2025 (Phase 9: Watch) | ~15 |
-| **Total** | **~525+ hours** |
+| Mar–Apr 2026 (Phase 10–11) | ~20 (estimate) |
+| **Total** | **~545+ hours** |
 
 ---
 

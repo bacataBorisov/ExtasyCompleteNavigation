@@ -18,4 +18,6 @@ struct UserDefaultsKeys {
     static let speedDamping = "speedDamping"
     static let headingDamping = "headingDamping"
     static let hydroDamping = "hydroDamping"
+    /// 0 = 0.5s, 1 = 1.0s, 2 = 2.0s — `NMEAParser` periodic UI / Watch update interval.
+    static let uiRefreshIntervalPreset = "uiRefreshIntervalPreset"
 }

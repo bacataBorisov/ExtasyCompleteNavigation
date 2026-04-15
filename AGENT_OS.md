@@ -21,10 +21,6 @@ When you use the **`agentos`** CLI, it tries to **edit `project.pbxproj`** so **
 - **Finder:** press **⌘⇧.** (Command–Shift–Period) to show hidden files, then open **`.agent-os`**.
 - **Xcode:** **File → Open…** and open a file by path, e.g. `.agent-os/exports/context-pack.md`.
 
-## Human-written doc index
-
-Team canon (roadmap, architecture, how to organize docs for humans + Agent OS): **`.agent/DOCUMENTATION.md`** (and **`.agent/PROJECT.md`**). How-tos: **`.agent/guides/`**. Cursor entry: **`AGENTS.md`** at repo root. Those paths are **not** overwritten by `agentos` (except this file when the CLI regenerates it).
-
 ## Important paths (relative to repo root)
 
 | What | Path |

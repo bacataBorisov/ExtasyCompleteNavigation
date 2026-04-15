@@ -104,6 +104,35 @@ class SettingsManager {
         didSet { UserDefaults.standard.set(hydroDamping, forKey: UserDefaultsKeys.hydroDamping) }
     }
 
+    /// Preset index: 0 = 0.5s (racing), 1 = 1.0s (standard), 2 = 2.0s (cruising).
+    var uiRefreshIntervalPreset: Int {
+        didSet {
+            let clamped = Self.clampPreset(uiRefreshIntervalPreset)
+            if clamped != uiRefreshIntervalPreset {
+                uiRefreshIntervalPreset = clamped
+                return
+            }
+            UserDefaults.standard.set(uiRefreshIntervalPreset, forKey: UserDefaultsKeys.uiRefreshIntervalPreset)
+        }
+    }
+
+    /// Effective UI / Watch refresh interval in seconds.
+    var uiRefreshIntervalSeconds: Double {
+        Self.seconds(forPreset: uiRefreshIntervalPreset)
+    }
+
+    private static func clampPreset(_ raw: Int) -> Int {
+        min(max(raw, 0), 2)
+    }
+
+    static func seconds(forPreset preset: Int) -> Double {
+        switch clampPreset(preset) {
+        case 0: return 0.5
+        case 2: return 2.0
+        default: return 1.0
+        }
+    }
+
     var selectedDistanceUnit: MarineDistanceUnit {
         MarineDistanceUnit(rawValue: distanceUnit) ?? .nauticalMiles
     }
@@ -133,5 +162,14 @@ class SettingsManager {
         self.speedDamping = UserDefaults.standard.object(forKey: UserDefaultsKeys.speedDamping) as? Int ?? 0
         self.headingDamping = UserDefaults.standard.object(forKey: UserDefaultsKeys.headingDamping) as? Int ?? 0
         self.hydroDamping = UserDefaults.standard.object(forKey: UserDefaultsKeys.hydroDamping) as? Int ?? 0
+        if let preset = UserDefaults.standard.object(forKey: UserDefaultsKeys.uiRefreshIntervalPreset) as? Int {
+            self.uiRefreshIntervalPreset = Self.clampPreset(preset)
+        } else if let legacy = UserDefaults.standard.object(forKey: "uiRefreshIntervalSeconds") as? Double,
+                  [0.5, 1.0, 2.0].contains(legacy) {
+            self.uiRefreshIntervalPreset = legacy == 0.5 ? 0 : (legacy == 2.0 ? 2 : 1)
+            UserDefaults.standard.set(uiRefreshIntervalPreset, forKey: UserDefaultsKeys.uiRefreshIntervalPreset)
+        } else {
+            self.uiRefreshIntervalPreset = 1
+        }
     }
 }

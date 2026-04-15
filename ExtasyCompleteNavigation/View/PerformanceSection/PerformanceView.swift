@@ -9,16 +9,16 @@ import SwiftUI
 import CoreLocation
 
 struct PerformanceView: View {
-    
+
     @Environment(NMEAParser.self) private var navigationReadings
     @Environment(SettingsManager.self) private var settingsManager
-    
+
     private var isTargetSelected: Bool {
         navigationReadings.gpsData?.isTargetSelected ?? false
     }
-    
+
     var body: some View {
-        
+
         GeometryReader { geometry in
             let sectionPadding: CGFloat = 8
 
@@ -79,8 +79,7 @@ struct PerformanceView: View {
                             ))
                         }
                     }
-                    
-                    
+
                     TackAlignmentBar(
                         currentHeading: navigationReadings.compassData?.normalizedHeading ?? 0,
                         optimalUpTWA: navigationReadings.vmgData?.optimalUpTWA ?? 0,
@@ -90,7 +89,7 @@ struct PerformanceView: View {
                         rangeMultiplier: 1,
                         trueWindDirection: navigationReadings.windData?.trueWindDirection ?? 0,
                         tackDeviation: navigationReadings.vmgData?.tackDeviation
-                        )
+                    )
                     .frame(height: 40)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
@@ -98,6 +97,7 @@ struct PerformanceView: View {
             }
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
+            .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
         }
     }
 }
