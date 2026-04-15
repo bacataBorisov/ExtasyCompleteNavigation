@@ -32,9 +32,9 @@ struct AnemometerView: View {
                 )
                 .padding(width / 20 / 2)
 
-            // STBD Sector
+            // STBD Sector (same palette as performance / map — `TacticalPalette`)
             SectorView(
-                gradientColors: [Color.green.opacity(0.7), Color.teal.opacity(0.7)],
+                gradientColors: TacticalPalette.starboardSectorGradient,
                 startAngle: 270,
                 lineWidth: width / 14,
                 padding: width / 20 / 2
@@ -42,7 +42,7 @@ struct AnemometerView: View {
 
             // PORT Sector
             SectorView(
-                gradientColors: [Color.red.opacity(0.7), Color.purple.opacity(0.7)],
+                gradientColors: TacticalPalette.portSectorGradient,
                 startAngle: 210,
                 lineWidth: width / 14,
                 padding: width / 20 / 2

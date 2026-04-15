@@ -140,6 +140,14 @@ ExtasyCompleteNavigation was created by **[Vasil Borisov](https://github.com/bac
 
 ## **Changelog**
 
+### **Unreleased (development — Apr 2026)**
+
+Summary only; full technical notes live in **[`.agent/CHANGELOG.md`](.agent/CHANGELOG.md)**.
+
+- **iPad**: Map column **bleed/insets** aligned with Multi; **settings** (including Advanced) usable **from the map**; bottom strip **Performance** and **Waypoints/VMG** with a **single full-width tack bar** under both columns; **polar** via **Ultimate ↔ Polar** in the top instrument stack (not a third bottom tab).
+- **Racing UI**: Shared **port/starboard palette** across anemometer, performance bars, tack bar, and iPhone VMG tack labels; iPad performance strip can show **racing fill** bars in compact mode.
+- **VMG waypoint strip**: Flat summary card whose **type scales with available width and height** so DTM/Trip/ETA and tack lines use space instead of leaving large empty bands.
+
 ### **2.0.0 - [25-Jan-2025]**
 #### **New Features**
 - **Enhanced Multi-Display View:**  

@@ -13,18 +13,26 @@ struct PerformanceView: View {
     @Environment(NMEAParser.self) private var navigationReadings
     @Environment(SettingsManager.self) private var settingsManager
 
+    /// `false` on iPad lower strip: flatter bars, no card chrome per bar.
+    var useBarCardChrome: Bool = true
+    /// When `false`, the tack strip is hosted outside (e.g. full-width row under performance + waypoint on iPad).
+    var embeddedTackBar: Bool = true
+
     private var isTargetSelected: Bool {
         navigationReadings.gpsData?.isTargetSelected ?? false
+    }
+
+    /// iPad lower strip + active mark: tighter bars and centered stack for even vertical padding.
+    private var stripCompactBars: Bool {
+        !useBarCardChrome && isTargetSelected
     }
 
     var body: some View {
 
         GeometryReader { geometry in
-            let sectionPadding: CGFloat = 8
+            let stackSpacing: CGFloat = useBarCardChrome ? 8 : (stripCompactBars ? 5 : 8)
 
-            VStack(spacing: sectionPadding) {
-
-                VStack(spacing: sectionPadding) {
+            let barStack = VStack(spacing: stackSpacing) {
                     // Speed Efficiency
                     PerformanceDoubleBarView(
                         topBarValue: navigationReadings.hydroData?.boatSpeedLag ?? 0,
@@ -34,7 +42,9 @@ struct PerformanceView: View {
                         topBarLabel: "Log",
                         bottomBarLabel: "SOG",
                         topBarPerformance: navigationReadings.vmgData?.speedPerformanceThroughWater ?? 0,
-                        bottomBarPerformance: navigationReadings.vmgData?.speedPerformanceOverGround ?? 0
+                        bottomBarPerformance: navigationReadings.vmgData?.speedPerformanceOverGround ?? 0,
+                        cardStyle: useBarCardChrome,
+                        stripCompact: stripCompactBars
                     )
 
                     // VMG Efficiency
@@ -46,7 +56,9 @@ struct PerformanceView: View {
                         topBarLabel: "Log",
                         bottomBarLabel: "SOG",
                         topBarPerformance: navigationReadings.vmgData?.vmgThroughWaterPerformance ?? 0,
-                        bottomBarPerformance: navigationReadings.vmgData?.vmgOverGroundPerformance ?? 0
+                        bottomBarPerformance: navigationReadings.vmgData?.vmgOverGroundPerformance ?? 0,
+                        cardStyle: useBarCardChrome,
+                        stripCompact: stripCompactBars
                     )
 
                     // VMC Progress Bar (slide in/out from left)
@@ -59,8 +71,8 @@ struct PerformanceView: View {
                             // Nautical convention: port = red, starboard = green
                             let currentTackLabel  = isPortTack ? "PORT" : "STBD"
                             let oppositeTackLabel = isPortTack ? "STBD" : "PORT"
-                            let currentTackColor:  Color = isPortTack ? Color(red: 1, green: 0.3, blue: 0.3) : Color(red: 0.2, green: 0.8, blue: 0.4)
-                            let oppositeTackColor: Color = isPortTack ? Color(red: 0.2, green: 0.8, blue: 0.4) : Color(red: 1, green: 0.3, blue: 0.3)
+                            let currentTackColor = TacticalPalette.tackLabelColor(for: currentTackLabel)
+                            let oppositeTackColor = TacticalPalette.tackLabelColor(for: oppositeTackLabel)
 
                             PerformanceDoubleBarView(
                                 topBarValue: navigationReadings.waypointData?.currentTackVMCDisplay ?? 0,
@@ -72,7 +84,10 @@ struct PerformanceView: View {
                                 topBarPerformance: navigationReadings.waypointData?.currentTackVMCPerformance ?? 0,
                                 bottomBarPerformance: navigationReadings.waypointData?.oppositeTackVMCPerformance ?? 0,
                                 topBarLabelColor: currentTackColor,
-                                bottomBarLabelColor: oppositeTackColor)
+                                bottomBarLabelColor: oppositeTackColor,
+                                cardStyle: useBarCardChrome,
+                                stripCompact: stripCompactBars
+                            )
                             .transition(.asymmetric(
                                 insertion: .move(edge: .leading).combined(with: .opacity),
                                 removal: .move(edge: .leading).combined(with: .opacity)
@@ -80,24 +95,37 @@ struct PerformanceView: View {
                         }
                     }
 
-                    TackAlignmentBar(
-                        currentHeading: navigationReadings.compassData?.normalizedHeading ?? 0,
-                        optimalUpTWA: navigationReadings.vmgData?.optimalUpTWA ?? 0,
-                        optimalDnTWA: navigationReadings.vmgData?.optimalDnTWA ?? 0,
-                        sailingState: navigationReadings.vmgData?.sailingState ?? "Unknown",
-                        tolerance: settingsManager.tackTolerance,
-                        rangeMultiplier: 1,
-                        trueWindDirection: navigationReadings.windData?.trueWindDirection ?? 0,
-                        tackDeviation: navigationReadings.vmgData?.tackDeviation
-                    )
-                    .frame(height: 40)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
+                    if embeddedTackBar {
+                        TackAlignmentBar(
+                            currentHeading: navigationReadings.compassData?.normalizedHeading ?? 0,
+                            optimalUpTWA: navigationReadings.vmgData?.optimalUpTWA ?? 0,
+                            optimalDnTWA: navigationReadings.vmgData?.optimalDnTWA ?? 0,
+                            sailingState: navigationReadings.vmgData?.sailingState ?? "Unknown",
+                            tolerance: settingsManager.tackTolerance,
+                            rangeMultiplier: 1,
+                            trueWindDirection: navigationReadings.windData?.trueWindDirection ?? 0,
+                            tackDeviation: navigationReadings.vmgData?.tackDeviation
+                        )
+                        .frame(height: stripCompactBars ? 34 : 40)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, useBarCardChrome ? 8 : (stripCompactBars ? 3 : 4))
+                    }
+            }
+            .padding(.horizontal, useBarCardChrome ? 8 : 4)
+            .padding(.vertical, useBarCardChrome ? 4 : (stripCompactBars ? 3 : 2))
+
+            Group {
+                if stripCompactBars {
+                    VStack(spacing: 0) {
+                        Spacer(minLength: 0)
+                        barStack
+                        Spacer(minLength: 0)
+                    }
+                } else {
+                    barStack
                 }
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
+            .frame(width: geometry.size.width, height: geometry.size.height, alignment: stripCompactBars ? .center : .top)
         }
     }
 }

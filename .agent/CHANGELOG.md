@@ -4,16 +4,39 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [Unreleased] — 2026-04-15
+
+### Features
+
+- **`TacticalPalette`** (`Utilities/TacticalPalette.swift`): Single source for **port** (purple) and **starboard** (teal) tactical colors — `AnemometerView` wind sectors, `PerformanceDoubleBarView` racing fills and VMC segment preview, `TackAlignmentBar` gradient, `iPhoneVMGView` tack labels.
+
+### Improvements
+
+- **iPad cockpit**: Lower strip is **Performance | Waypoints/VMG** (polar is **not** a third strip tab). **Polar** sits in the **top-right stack** with an **Ultimate ↔ Polar** toggle (`PolarInstrumentView` with compact chrome; TWS caption suppressed in stack). **Full-width `TackAlignmentBar`** under both lower columns; compact tack row height. **`PerformanceView`** accepts **`embeddedTackBar: false`** so the strip owns the tack bar.
+- **Performance strip (iPad)**: **`PerformanceDoubleBarView`** compact racing mode uses **continuous fill** bars instead of discrete segments where appropriate.
+- **`TackAlignmentBar`**: Needle drawn reliably (clamped offset, z-order, stroke); palette-aligned colors.
+- **`VMGSimpleView`**: **`GeometryReader`** + **`StripMetrics`** so DTM/Trip/ETA and downwind/upwind lines **scale with strip size**; **`minimumScaleFactor`** on long values; modest **vertical scale** when the strip is tall.
+- **`MapView`**: iPad **bleed / map chrome** edge insets aligned with the Multi column; **in-map settings** flow (**`SettingsMenuView`** / **`AdvancedSettingsView`**) with trailing Done and refined layout.
+- **`PolarInstrumentView`**: `showTWSCaption` and `iPadStackCell` for embedding in the top stack without redundant chrome.
+- **Debug logging**: Verbose `debugLog` is **opt-in** in Debug via **`EXTASY_VERBOSE_LOG=1`**; **`consoleSignal`** carries high-signal lifecycle lines (UDP open/idle/reconnect, etc.). **`UDPHandler`** routes user-facing connection messages through `consoleSignal` and trims duplicate init noise.
+
+### Documentation
+
+- **Root `README.md`**: Added a short **Unreleased (Apr 2026)** changelog pointer and bullets for iPad layout, tactical palette, and VMG strip scaling.
+- **`ExtasyCompleteNavigation/README.md`**: Utilities tree lists **`TacticalPalette.swift`** and updated **`Logging.swift`** note.
+
+---
+
 ## [Unreleased] — 2026-04-14
 
 ### Features
 
 - **Configurable UI / Watch refresh**: `SettingsManager.uiRefreshIntervalPreset` (0.5s, 1s, 2s), General Settings segmented control, `NMEAParser.setPeriodicUIUpdateInterval`, wired from `ExtasyCompleteNavigationApp` (`onAppear` + `onChange`). Default preset `1` in `DefaultSettings`.
-- **Polar diagram (Canvas)**: `VMGCalculator.polarBoatSpeedCurve` / `VMGProcessor` / `NMEAParser` expose samples at live TWS; `PolarDiagramCanvasView` with boat dot and optimal TWA markers. **Polar** is its own surface: iPhone lower `TabView` tag 3 (waypoint/VMG → tag 4); iPad lower panel **Performance | Polar** segmented control. `PolarInstrumentView` keeps the **TWS** caption, **no** nav title or legend, and sizes the diagram to **fill remaining space** (nested `GeometryReader`) so `PageTabViewStyle` horizontal paging stays reliable.
+- **Polar diagram (Canvas)**: `VMGCalculator.polarBoatSpeedCurve` / `VMGProcessor` / `NMEAParser` expose samples at live TWS; `PolarDiagramCanvasView` with boat dot and optimal TWA markers. **Polar** is its own surface on **iPhone** (lower `TabView` tag 3; waypoint/VMG → tag 4). *2026-04-15:* On **iPad**, polar moved to the **top stack** (**Ultimate ↔ Polar**); the lower strip is **Performance | Waypoints/VMG** (see **2026-04-15** above). `PolarInstrumentView` sizes the diagram to **fill remaining space** (nested `GeometryReader`) so `PageTabViewStyle` horizontal paging stays reliable.
 
 ### Improvements
 
-- **iPad cockpit (v1 slice)**: `iPadView` main columns use a **45% / 55%** width split. On wide layouts (**window width ≥ 1000 pt**), the lower-left band shows **Performance** and **Polar** side by side; narrower layouts keep the segmented control.
+- **iPad cockpit (v1 slice)**: `iPadView` main columns use a **45% / 55%** width split. *Superseded 2026-04-15:* lower strip layout and polar placement — see **\[Unreleased] — 2026-04-15** (Performance | VMG/Waypoints + top-stack polar).
 
 ### Bug Fixes
 

@@ -97,7 +97,7 @@ struct UltimateView: View {
             .animation(.easeInOut(duration: 0.3), value: animatedValues)
         } // END GEOMETRY
         .aspectRatio(1, contentMode: .fit)
-        .padding()
+        .padding(DeviceType.isIPad ? 4 : 16)
     }
 
     // MARK: - Menu Corner View

@@ -13,20 +13,13 @@ struct InfoWaypointSection: View {
     @Environment(NMEAParser.self) private var navigationReadings
     
     var body: some View {
-        GeometryReader { geometry in
-            //let totalWidth = geometry.size.width
-            let sectionPadding: CGFloat = 8
-            
-            VStack(spacing: sectionPadding){
-                
-                WaypointCard(title: "", subtitle: "", destination: WaypointListView())
-                
-                InformationCard()
-            }
-            .padding(.bottom, sectionPadding)
-            .padding(.trailing, sectionPadding)
-            
+        let sectionPadding: CGFloat = 8
+
+        VStack(spacing: sectionPadding) {
+            WaypointCard(title: "", subtitle: "", destination: WaypointListView())
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .padding(sectionPadding)
     }
 }
 

@@ -19,18 +19,22 @@ class VMGProcessor {
     init(diagramFileName: String = "diagram", tackTableFileName: String = "optimal_tack") {
         if let diagram = DiagramLoader.loadDiagram(from: diagramFileName) {
             self.calculateVMG = VMGCalculator(diagram: diagram)
-            debugLog("VMGCalculator initialized with diagram: \(diagramFileName)")
+            consoleSignal("Polar: diagram loaded (\(diagramFileName))")
         } else {
-            debugLog("Failed to initialize VMGCalculator. Diagram not loaded.")
+            consoleSignal("Polar: diagram failed to load (\(diagramFileName))")
         }
 
         // Load the tack table
         if let calculateVMG = calculateVMG {
             calculateVMG.readOptimalTackTable(fileName: tackTableFileName)
             tackTableLoaded = !calculateVMG.optimalTackTable.isEmpty
-            debugLog("Tack table loaded: \(tackTableLoaded)")
+            if tackTableLoaded {
+                consoleSignal("Polar: optimal tack table OK (\(calculateVMG.optimalTackTable.count) rows)")
+            } else {
+                consoleSignal("Polar: optimal tack table missing or empty (\(tackTableFileName))")
+            }
         } else {
-            debugLog("Failed to load tack table. VMGCalculator not initialized.")
+            consoleSignal("Polar: tack table not loaded (VMGCalculator unavailable)")
         }
     }
     
@@ -38,8 +42,9 @@ class VMGProcessor {
     func loadDiagram(from fileName: String) {
         if let diagram = DiagramLoader.loadDiagram(from: fileName) {
             calculateVMG = VMGCalculator(diagram: diagram)
+            consoleSignal("Polar: diagram reloaded (\(fileName))")
         } else {
-            debugLog("Failed to load diagram from file: \(fileName)")
+            consoleSignal("Polar: failed to load diagram from file \(fileName)")
         }
     }
     

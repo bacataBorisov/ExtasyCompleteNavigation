@@ -103,6 +103,7 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     private var watchdogTimer: Timer?
     /// Interval for `performPeriodicUpdate` (UI + Watch batch). Kept off the 1 Hz NMEA cadence on purpose.
     private var periodicUIInterval: TimeInterval = 1.0
+    @ObservationIgnored private var lastSignaledPeriodicUIInterval: TimeInterval?
 
     // Temporary caches — protected by dataLock for cross-thread access
     private var cachedHydroData: HydroData?
@@ -189,6 +190,10 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
         let apply = { [weak self] in
             guard let self else { return }
             self.schedulePeriodicUpdateTimer(interval: clamped)
+            if self.lastSignaledPeriodicUIInterval != clamped {
+                self.lastSignaledPeriodicUIInterval = clamped
+                consoleSignal("NMEA: UI/Watch publish interval \(clamped)s")
+            }
         }
         if Thread.isMainThread {
             apply()

@@ -27,7 +27,7 @@ struct ExtasyCompleteNavigationApp: App {
             let config = ModelConfiguration(for: Waypoints.self)
             
             modelContainer = try ModelContainer(for: Waypoints.self, configurations: config)
-            debugLog("ModelContainer initialized successfully.")
+            consoleSignal("App: SwiftData ModelContainer ready (Waypoints)")
             
         } catch {
             fatalError("Could not initialize ModelContainer: \(error.localizedDescription)")

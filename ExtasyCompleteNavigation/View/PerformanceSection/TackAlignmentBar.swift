@@ -38,43 +38,54 @@ struct TackAlignmentBar: View {
     var body: some View {
         GeometryReader { geometry in
             let barWidth = geometry.size.width
+            let barH = geometry.size.height
+            /// iPad strip uses a ~22 pt bar; embedded performance uses a taller bar.
+            let thinBar = barH < 30
+            let barCorner = thinBar ? min(barH * 0.45, 5) : 8
+            let pillFont = Font.system(size: thinBar ? 9 : 11, weight: .semibold, design: .monospaced)
+            let pillHPad: CGFloat = thinBar ? 3 : 4
+            let pillVPad: CGFloat = thinBar ? 2 : 3
+            let pillCorner: CGFloat = thinBar ? 3 : 4
+            let edgePad: CGFloat = thinBar ? 4 : 6
+            let needleW: CGFloat = 3
 
             ZStack {
                 // Alignment Bar with Gradient
-                RoundedRectangle(cornerRadius: 8)
+                RoundedRectangle(cornerRadius: barCorner)
                     .fill(
                         LinearGradient(
-                            gradient: Gradient(stops: [
-                                .init(color: Color.red.opacity(0.1), location: 0),
-                                .init(color: Color.red.opacity(0.3), location: 0.25),
-                                .init(color: Color.green.opacity(0.8), location: 0.5),
-                                .init(color: Color.green.opacity(0.3), location: 0.75),
-                                .init(color: Color.mint.opacity(0.1), location: 1)
-                            ]),
+                            gradient: Gradient(stops: TacticalPalette.tackBarGradientStops),
                             startPoint: .leading,
                             endPoint: .trailing
                         )
                     )
                     .frame(maxHeight: .infinity)
-                    .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 3)
+                    .shadow(color: Color.black.opacity(thinBar ? 0.12 : 0.2), radius: thinBar ? 2 : 5, x: 0, y: thinBar ? 1 : 3)
+                    .zIndex(0)
 
-                // Current Heading Indicator
+                // Current Heading Indicator (centre of ZStack + horizontal offset)
                 Rectangle()
-                    .fill(Color.orange)
+                    .fill(TacticalPalette.transition)
                     .frame(maxHeight: .infinity)
-                    .frame(width: 3)
+                    .frame(width: needleW)
+                    .overlay {
+                        Rectangle()
+                            .strokeBorder(Color.white.opacity(0.85), lineWidth: thinBar ? 0.75 : 0.5)
+                    }
                     .offset(x: animatedOffset, y: 0)
                     .animation(shouldAnimate ? .interpolatingSpring(stiffness: 80, damping: 15) : .none, value: animatedOffset)
+                    .zIndex(1)
 
                 // Overlay: target angle (left) + deviation (right)
                 HStack {
                     // Optimal angle label — what we are targeting
                     let stateArrow = sailingState == "Upwind" ? "↑" : "↓"
                     Text("\(stateArrow) \(String(format: "%.0f", activeOptimalTWA))°")
-                        .font(.system(.caption2, design: .monospaced).bold())
-                        .foregroundStyle(.yellow)
-                        .padding(.horizontal, 4)
-                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 4))
+                        .font(pillFont)
+                        .foregroundStyle(Color.primary)
+                        .padding(.horizontal, pillHPad)
+                        .padding(.vertical, pillVPad)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: pillCorner))
 
                     Spacer()
 
@@ -82,27 +93,36 @@ struct TackAlignmentBar: View {
                     if let dev = tackDeviation {
                         let sign = dev >= 0 ? "+" : ""
                         Text("\(sign)\(String(format: "%.1f", dev))°")
-                            .font(.system(.caption2, design: .monospaced).bold())
-                            .foregroundStyle(abs(dev) <= tolerance ? Color.primary : Color.orange)
-                            .padding(.horizontal, 4)
-                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 4))
+                            .font(pillFont)
+                            .foregroundStyle(abs(dev) <= tolerance ? Color.primary : TacticalPalette.transition)
+                            .padding(.horizontal, pillHPad)
+                            .padding(.vertical, pillVPad)
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: pillCorner))
                     }
                 }
-                .padding(.horizontal, 6)
+                .padding(.horizontal, edgePad)
+                .allowsHitTesting(false)
+                .zIndex(2)
             }
             .onAppear {
-                let newOffset = xOffset(for: currentHeading, barWidth: barWidth)
-                animatedOffset = CGFloat(storedOffset) // Restore last known offset
+                // `storedOffset` is in **pixels** from a possibly different bar width — restoring it
+                // blindly can park the needle off-screen after layout changes (e.g. short iPad strip).
+                let newOffset = clampedPixelOffset(
+                    xOffset(for: currentHeading, barWidth: barWidth),
+                    barWidth: barWidth,
+                    needleWidth: needleW
+                )
+                animatedOffset = newOffset
+                storedOffset = Double(newOffset)
                 shouldAnimate = false
 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                    animatedOffset = newOffset
-                    storedOffset = Double(newOffset)  // Save the new position as Double
                     shouldAnimate = true
                 }
             }
             .onChange(of: currentHeading) { _, newValue in
-                let newOffset = xOffset(for: newValue, barWidth: barWidth)
+                let raw = xOffset(for: newValue, barWidth: barWidth)
+                let newOffset = clampedPixelOffset(raw, barWidth: barWidth, needleWidth: needleW)
                 animatedOffset = newOffset
                 storedOffset = Double(newOffset)
             }
@@ -119,6 +139,12 @@ struct TackAlignmentBar: View {
         let effectiveOffset = max(min(scaledOffset, 1), -1)
         let pixelOffset = CGFloat(effectiveOffset) * (barWidth / 2)
         return pixelOffset
+    }
+
+    /// Keeps the needle fully inside the bar (centre-origin layout + horizontal offset).
+    private func clampedPixelOffset(_ raw: CGFloat, barWidth: CGFloat, needleWidth: CGFloat) -> CGFloat {
+        let limit = max(0, barWidth / 2 - needleWidth / 2)
+        return max(-limit, min(limit, raw))
     }
 
     private func normalizeAngleTo180(_ angle: Double) -> Double {

@@ -62,29 +62,46 @@ public struct HVStack<Content: View>: View {
 }
 
 // MARK: - RoundedBackgroundView
+
+/// Presentation for content pushed inside navigation (e.g. settings).
+public enum RoundedBackgroundChrome: Sendable {
+    /// Inset “card” with shadow — fine for static panels; can fight `List` / `NavigationLink` width on iPad.
+    case card
+    /// Edge-to-edge background; content gets full width so pushed settings tabs don’t hit 0‑pt layout slots.
+    case fullBleed
+}
+
 public struct RoundedBackgroundView<Content: View>: View {
     let content: Content
-    let sectionPadding: CGFloat = 8
-    
-    init(@ViewBuilder content: () -> Content) {
+    let chrome: RoundedBackgroundChrome
+    private let sectionPadding: CGFloat = 8
+
+    public init(chrome: RoundedBackgroundChrome = .fullBleed, @ViewBuilder content: () -> Content) {
+        self.chrome = chrome
         self.content = content()
     }
 
     public var body: some View {
         ZStack {
-            Color(UIColor.systemBackground) // Background color
-                .edgesIgnoringSafeArea(.all)
-            
-            content
-                //.padding()
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(UIColor.systemBackground))
-                        .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 3)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .padding(sectionPadding)
+            Color(UIColor.systemBackground)
+                .ignoresSafeArea()
+
+            switch chrome {
+            case .card:
+                content
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(UIColor.systemBackground))
+                            .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 3)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .padding(sectionPadding)
+            case .fullBleed:
+                content
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            }
         }
+        .frame(minWidth: 1, minHeight: 1)
     }
 }
 

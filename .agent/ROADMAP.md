@@ -181,11 +181,12 @@ Prioritized list of improvements, organized by impact and effort.
 - **Origin**: From v2.0 notes
 
 ### iPad — primary cockpit layout (design direction)
-- **Status**: **In progress (Apr 2026)** — iPhone polar tab + `TabView` paging stabilized; **first implementation task**: default **landscape “cockpit dashboard”** preset (see targets below). Additional layout presets later.
+- **Status**: **In progress (Apr 2026)** — iPhone polar tab + `TabView` paging stabilized; lower strip and map chrome refined in the same pass.
 - **Context**: iPad is **typically mounted landscape** for readability on the boat.
-- **Target (v1 dashboard)**: Landscape-first **chart + instruments** on one surface (no map only behind a push). Rebalance column widths (~45/55 or similar), optional **Performance + Polar** side-by-side in the lower band when width allows; single root `NavigationStack` or map as **sheet/overlay** TBD. Waypoint-active mode may allocate more vertical space to VMG when navigating.
-- **Slice 1 (Apr 2026)**: `iPadView` uses a fixed **45% / 55%** main column split (instruments-left / multi+waypoint-right). When **full window width ≥ 1000 pt**, the lower-left band shows **Performance** and **Polar** side by side; narrower widths keep the segmented picker.
-- **Files (expected)**: `iPadView.swift`, `ContentView.swift`, possibly `MapView.swift` / `UltimateView.swift` for split sizing.
+- **Target (v1 dashboard)**: Landscape-first **chart + instruments** on one surface (no map only behind a push). Rebalance column widths (~45/55 or similar); waypoint-active mode allocates the lower-right cell to **VMG** when a mark is selected.
+- **Slice 1 (Apr 2026)**: `iPadView` uses a fixed **45% / 55%** main column split (instruments-left / multi+waypoint-right). **Lower strip**: **Performance | Waypoints/VMG** (right column is **VMG** when a mark is selected, otherwise waypoint info); **no Polar cell** in the strip — **Polar** toggles in the **top-right stack** via **Ultimate ↔ Polar**. **Full-width `TackAlignmentBar`** under both lower columns; **`PerformanceView(embeddedTackBar: false)`** avoids a duplicate tack bar inside Performance.
+- **Map chrome (Apr 2026)**: `MapView` uses shared **bleed / edge inset** constants so the chart column lines up with Multi; **settings** can open **in-map** with Advanced nested and a trailing Done.
+- **Files (expected)**: `iPadView.swift`, `ContentView.swift`, `MapView.swift`, `PerformanceView.swift`, `TackAlignmentBar.swift`, `VMGSimpleView.swift`, `PolarInstrumentView.swift`.
 
 ### Map Enhancements
 - **Status**: Partially done

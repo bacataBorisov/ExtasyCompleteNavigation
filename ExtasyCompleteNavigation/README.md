@@ -52,7 +52,8 @@ This internal README outlines the app's architecture and key modules.
 │   ├── GeometryProvider.swift     # Geometry utilities for views
 │   ├── KalmanFilter.swift         # Kalman filter for sensor smoothing
 │   ├── LayoutUtilities.swift      # VHStack/HVStack adaptive layout helpers
-│   ├── Logging.swift              # debugLog wrapper
+│   ├── Logging.swift              # Verbose debug (EXTASY_VERBOSE_LOG) + consoleSignal
+│   ├── TacticalPalette.swift      # Port/stbd tactical colors for instruments + tack UI
 │   ├── MathUtilities.swift        # Angle normalization, distance, bearing
 │   ├── UserDefaultWrapper.swift   # @UserDefault property wrapper
 │   └── UtilsNMEA.swift            # NMEA checksum and parsing helpers

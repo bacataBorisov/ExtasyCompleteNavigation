@@ -24,7 +24,7 @@ class VMGCalculator {
     /// Returns nil if the diagram data is empty or malformed.
     init?(diagram: [[Double]]) {
         guard !diagram.isEmpty, diagram[0].count > 1, diagram.count > 1 else {
-            debugLog("VMGCalculator: Diagram data is empty or malformed.")
+            consoleSignal("Polar: diagram data empty or malformed")
             return nil
         }
 
@@ -46,7 +46,7 @@ class VMGCalculator {
     @discardableResult
     func readOptimalTackTable(fileName: String) -> Bool {
         guard let path = Bundle.main.path(forResource: fileName, ofType: "txt") else {
-            debugLog("VMGCalculator: File not found: \(fileName).txt")
+            consoleSignal("Polar: tack table file not found (\(fileName).txt)")
             return false
         }
 
@@ -55,7 +55,7 @@ class VMGCalculator {
             let fileURL = URL(fileURLWithPath: path)
             contents = try String(contentsOf: fileURL, encoding: .utf8)
         } catch {
-            debugLog("VMGCalculator: Couldn't read file \(fileName).txt — \(error.localizedDescription)")
+            consoleSignal("Polar: could not read \(fileName).txt — \(error.localizedDescription)")
             return false
         }
 
@@ -73,7 +73,6 @@ class VMGCalculator {
             }
         }
 
-        debugLog("Optimal tack table loaded with \(optimalTackTable.count) rows.")
         return !optimalTackTable.isEmpty
     }
 

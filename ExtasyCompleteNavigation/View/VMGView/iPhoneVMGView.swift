@@ -96,14 +96,14 @@ struct iPhoneVMGView: View {
                             let normalizedTWA = (rawTWA + 360).truncatingRemainder(dividingBy: 360)
                             let isPortTack = normalizedTWA > 180
                             let tack1Label = isPortTack ? "PORT" : "STBD"
-                            let tack1Color: Color = isPortTack ? Color(red: 1, green: 0.3, blue: 0.3) : Color(red: 0.3, green: 1, blue: 0.5)
+                            let tack1Color = TacticalPalette.tackLabelColor(for: tack1Label)
 
                             // Next leg: tack derived from the second-leg heading vs TWD (computed in processor).
                             // This is independent of the current tack — e.g. on a downwind leg the wind
                             // can still come from the port side even though the boat just tacked.
                             let nextLegTackStr = navigationReadings.waypointData?.nextLegTack ?? "—"
                             let nextLabel: String = nextLegTackStr == "Port" ? "PORT" : (nextLegTackStr == "Starboard" ? "STBD" : "—")
-                            let nextColor: Color  = nextLegTackStr == "Port" ? Color(red: 1, green: 0.3, blue: 0.3) : Color(red: 0.3, green: 1, blue: 0.5)
+                            let nextColor: Color = nextLabel == "—" ? .white.opacity(0.55) : TacticalPalette.tackLabelColor(for: nextLabel)
 
                             // CURRENT subtitle = live boat mode (TWA vs polar threshold), same as debug “Boat”.
                             // `waypointApproachState` is mark-vs-wind only; it can say Downwind while you

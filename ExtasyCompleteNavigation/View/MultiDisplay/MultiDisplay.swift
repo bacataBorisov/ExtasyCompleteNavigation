@@ -35,7 +35,7 @@ struct MultiDisplay: View {
                     menuDisplayCell(aspectRatio: 1, currentValue: $cell3)
                 }
             }
-            .padding(6)
+            .padding(DeviceType.isIPad ? EdgeInsets(top: 3, leading: 3, bottom: 0, trailing: 3) : EdgeInsets(top: 6, leading: 6, bottom: 6, trailing: 6))
             .aspectRatio(1, contentMode: .fit)
         }
     }

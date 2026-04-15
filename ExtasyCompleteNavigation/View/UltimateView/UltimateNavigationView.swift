@@ -26,25 +26,19 @@ struct UltimateNavigationView: View {
                         y: geometry.size.height / 2 - geometry.size.height * 0.55 / 2 + geometry.size.height * 0.12
                     )
                 
-                // Navigation buttons in a vertical stack
+                // Navigation buttons in a vertical stack (iPhone only — iPad: settings from map in `iPadView`)
                 VStack(spacing: spacing) {
+                    if DeviceType.isIPhone {
                     NavigationButton(
                         systemName: "gear",
                         gradientColors: [Color.gray.opacity(0.6), Color.black],
                         buttonSize: buttonSize,
-                        destination: RoundedBackgroundView(content: {
+                        destination: RoundedBackgroundView(chrome: .fullBleed) {
                             SettingsMenuView()
-                        })
+                        }
                     )
-                    if DeviceType.isIPad {
-                        NavigationButton(
-                            systemName: "map",
-                            gradientColors: [Color.blue.opacity(0.6), Color.cyan],
-                            buttonSize: buttonSize,
-                            destination: MapView()
-                        )
                     }
-                    
+
                     //                    if DeviceType.isIPhone {
                     //                        NavigationButton(
                     //                            systemName: "scope",

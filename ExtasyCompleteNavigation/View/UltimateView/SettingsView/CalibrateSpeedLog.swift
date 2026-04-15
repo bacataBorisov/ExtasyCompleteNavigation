@@ -16,10 +16,7 @@ struct CalibrateSpeedLog: View {
     private let windowSize = 5 // Number of values to include in the moving average
 
     var body: some View {
-        
-        
-        VStack {
-            // Manual Calibration Section
+        Form {
             Section {
                 Toggle("Manual Calibration", isOn: $manualCalibrationEnabled.animation())
             }
@@ -28,26 +25,26 @@ struct CalibrateSpeedLog: View {
                 Section {
                     Text("Enter Calibration Coefficient")
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    
-                    HStack {
+                        .foregroundStyle(.secondary)
+
+                    HStack(alignment: .center, spacing: 10) {
                         TextField("Coefficient", text: $calibrationCoefficient)
                             .keyboardType(.decimalPad)
                             .textFieldStyle(.roundedBorder)
-                        
+                            .frame(maxWidth: .infinity)
+
                         MinimalButton(title: "Apply") {
                             applyManualCalibration()
-                            calibrationCoefficient = "0.00"  // Reset after applying
+                            calibrationCoefficient = "0.00"
                         }
                     }
-                    
+
                     Text("Last Applied: \(lastAppliedCoefficient)")
                         .font(.footnote)
-                        .foregroundColor(.gray)
+                        .foregroundStyle(.secondary)
                 }
             }
-            Divider()
-            // Compare with SOG Section
+
             Section {
                 Toggle("Compare with SOG", isOn: $sogComparisonEnabled.animation())
             }
@@ -56,8 +53,8 @@ struct CalibrateSpeedLog: View {
                 Section {
                     Text("Suggested Coefficient (SMA): \(String(format: "%.3f", coefficient))")
                         .font(.footnote)
-                        .foregroundColor(.green)
-                    
+                        .foregroundStyle(.green)
+
                     MinimalButton(title: "Apply Suggested") {
                         calibrationCoefficient = String(format: "%.3f", coefficient)
                         applyManualCalibration()
@@ -80,8 +77,6 @@ struct CalibrateSpeedLog: View {
         .onDisappear {
             stopMonitoringSOG()
         }
-        .padding(.all)
-        Spacer()
     }
 
     // MARK: - Methods
@@ -152,19 +147,21 @@ struct CalibrateSpeedLog: View {
 struct MinimalButton: View {
     let title: String
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             Text(title)
                 .fontWeight(.semibold)
-                .foregroundColor(.white)
-                .padding(.all, 2)
-                .frame(maxWidth: .infinity)
+                .foregroundStyle(.white)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
                         .fill(Color.secondary.gradient)
                 )
         }
+        .buttonStyle(.plain)
+        .fixedSize(horizontal: true, vertical: false)
     }
 }
 

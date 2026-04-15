@@ -19,9 +19,6 @@
 		0647305E2D29A535009BCF9A /* InformationCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0647305B2D29A535009BCF9A /* InformationCard.swift */; };
 		0647305F2D29A535009BCF9A /* InfoWaypointSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 064730592D29A535009BCF9A /* InfoWaypointSection.swift */; };
 		064730632D29A64D009BCF9A /* PerformanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 064730622D29A63E009BCF9A /* PerformanceView.swift */; };
-		EE11AA002EE11AA002EE0001 /* PolarDiagramCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE11AA002EE11AA002EE0002 /* PolarDiagramCanvasView.swift */; };
-		EE11AA002EE11AA002EE0005 /* PolarInstrumentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE11AA002EE11AA002EE0006 /* PolarInstrumentView.swift */; };
-		EE11AA002EE11AA002EE0003 /* NMEASentenceProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE11AA002EE11AA002EE0004 /* NMEASentenceProcessor.swift */; };
 		064ACD622A9EE3430018E449 /* NMEAParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 064ACD612A9EE3430018E449 /* NMEAParser.swift */; };
 		06529FA42D40734000CE6B66 /* share_your_passion.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 06529FA32D40734000CE6B66 /* share_your_passion.m4a */; };
 		065AAD7C2D4FFC2200F7A1ED /* AdvancedSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 065AAD7B2D4FFC2200F7A1ED /* AdvancedSettingsView.swift */; };
@@ -88,6 +85,9 @@
 		18EDC55B2ACD052C003C82B2 /* MultiDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18EDC55A2ACD052C003C82B2 /* MultiDisplay.swift */; };
 		383EEC252AB359BE00C2F22B /* RawNavigationDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 383EEC242AB359BE00C2F22B /* RawNavigationDataView.swift */; };
 		AA000001AAAA000100000001 /* Layline.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000001AAAA000100000002 /* Layline.swift */; };
+		EE11AA002EE11AA002EE0001 /* PolarDiagramCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE11AA002EE11AA002EE0002 /* PolarDiagramCanvasView.swift */; };
+		EE11AA002EE11AA002EE0003 /* NMEASentenceProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE11AA002EE11AA002EE0004 /* NMEASentenceProcessor.swift */; };
+		EE11AA002EE11AA002EE0005 /* PolarInstrumentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE11AA002EE11AA002EE0006 /* PolarInstrumentView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -150,9 +150,6 @@
 		0647305A2D29A535009BCF9A /* WaypointCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointCard.swift; sourceTree = "<group>"; };
 		0647305B2D29A535009BCF9A /* InformationCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InformationCard.swift; sourceTree = "<group>"; };
 		064730622D29A63E009BCF9A /* PerformanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceView.swift; sourceTree = "<group>"; };
-		EE11AA002EE11AA002EE0002 /* PolarDiagramCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarDiagramCanvasView.swift; sourceTree = "<group>"; };
-		EE11AA002EE11AA002EE0006 /* PolarInstrumentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarInstrumentView.swift; sourceTree = "<group>"; };
-		EE11AA002EE11AA002EE0004 /* NMEASentenceProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NMEASentenceProcessor.swift; sourceTree = "<group>"; };
 		064ACD612A9EE3430018E449 /* NMEAParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NMEAParser.swift; sourceTree = "<group>"; };
 		06529FA32D40734000CE6B66 /* share_your_passion.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = share_your_passion.m4a; sourceTree = "<group>"; };
 		065AAD7B2D4FFC2200F7A1ED /* AdvancedSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedSettingsView.swift; sourceTree = "<group>"; };
@@ -219,10 +216,13 @@
 		18A8FA732ACB974200EE2128 /* UltimateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UltimateView.swift; sourceTree = "<group>"; };
 		18EDC55A2ACD052C003C82B2 /* MultiDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiDisplay.swift; sourceTree = "<group>"; };
 		383EEC242AB359BE00C2F22B /* RawNavigationDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawNavigationDataView.swift; sourceTree = "<group>"; };
+		388E942982C3F924C0AF45AE /* AGENTS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AGENTS.md; sourceTree = "<group>"; };
 		AA000001AAAA000100000002 /* Layline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Layline.swift; sourceTree = "<group>"; };
 		E2F4482AC4543CA150652C5C /* .agent-os */ = {isa = PBXFileReference; lastKnownFileType = folder; path = ".agent-os"; sourceTree = "<group>"; };
+		EE11AA002EE11AA002EE0002 /* PolarDiagramCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarDiagramCanvasView.swift; sourceTree = "<group>"; };
+		EE11AA002EE11AA002EE0004 /* NMEASentenceProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NMEASentenceProcessor.swift; sourceTree = "<group>"; };
+		EE11AA002EE11AA002EE0006 /* PolarInstrumentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarInstrumentView.swift; sourceTree = "<group>"; };
 		F56B01D1A1835AA868239D62 /* AGENT_OS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AGENT_OS.md; sourceTree = "<group>"; };
-		388E942982C3F924C0AF45AE /* AGENTS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AGENTS.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */

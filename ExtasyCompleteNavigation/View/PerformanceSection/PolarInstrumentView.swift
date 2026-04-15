@@ -11,7 +11,30 @@ import SwiftUI
 struct PolarInstrumentView: View {
     @Environment(NMEAParser.self) private var navigationReadings
 
-    private let horizontalInset: CGFloat = 10
+    /// Tighter insets and no diagram “plate” (e.g. iPad lower strip).
+    var compactChrome: Bool = false
+    /// When `false`, the TWS caption is hidden and the diagram fills the height (e.g. iPad top cell + centered overlay).
+    var showTWSCaption: Bool = true
+    /// iPad top stack cell only: match `UltimateView`’s iPad padding (4) and center the plot so the Ultimate/Polar toggle lines up.
+    var iPadStackCell: Bool = false
+
+    private var horizontalInset: CGFloat {
+        if iPadStackCell { return 4 }
+        return compactChrome ? 6 : 10
+    }
+    private var verticalInset: CGFloat {
+        if iPadStackCell { return 0 }
+        if compactChrome { return showTWSCaption ? 4 : 0 }
+        return 6
+    }
+    /// Extra padding around `PolarDiagramCanvasView` inside the square frame (skipped in iPad stack cell for symmetric layout).
+    private var diagramCanvasPadding: CGFloat {
+        if iPadStackCell { return 0 }
+        return compactChrome ? 2 : 4
+    }
+    private var contentFrameAlignment: Alignment {
+        iPadStackCell ? .center : .top
+    }
 
     var body: some View {
         GeometryReader { geo in
@@ -24,12 +47,14 @@ struct PolarInstrumentView: View {
 
             VStack(alignment: .leading, spacing: 0) {
                 if tws > 0.4 {
-                    Text("TWS \(String(format: "%.1f", tws)) kn — boat speed vs TWA")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.85)
-                        .padding(.bottom, 8)
+                    if showTWSCaption {
+                        Text("TWS \(String(format: "%.1f", tws)) kn — boat speed vs TWA")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.85)
+                            .padding(.bottom, 8)
+                    }
 
                     GeometryReader { plotGeo in
                         let side = min(innerWidth, min(plotGeo.size.width, plotGeo.size.height))
@@ -45,11 +70,13 @@ struct PolarInstrumentView: View {
                                 showCaption: false
                             )
                             .frame(width: side, height: side)
-                            .padding(4)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .fill(Color.primary.opacity(0.06))
-                            )
+                            .padding(diagramCanvasPadding)
+                            .background {
+                                if !compactChrome {
+                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        .fill(Color.primary.opacity(0.06))
+                                }
+                            }
                             Spacer(minLength: 0)
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -65,8 +92,8 @@ struct PolarInstrumentView: View {
                 }
             }
             .padding(.horizontal, horizontalInset)
-            .padding(.vertical, 6)
-            .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
+            .padding(.vertical, verticalInset)
+            .frame(width: geo.size.width, height: geo.size.height, alignment: contentFrameAlignment)
         }
     }
 }

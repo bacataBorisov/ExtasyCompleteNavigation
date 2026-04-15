@@ -8,105 +8,104 @@ import CloudKit
 
 // MARK: - Advanced Settings View
 struct AdvancedSettingsView: View {
-    @Environment(\.dismiss) private var dismiss
+    /// Return to the main settings list (replaces `dismiss()` when this view is not a separate presentation).
+    let onDone: () -> Void
+
     @Environment(NMEAParser.self) private var navigationReadings
     @Environment(SettingsManager.self) private var settingsManager
     @State private var showRawNMEA = false
 
     var body: some View {
-        NavigationView {
-            List {
-                // Sensor Smoothing
-                Section {
-                    SmoothingRow(
-                        label: "Wind",
-                        detail: "AWA · TWA · AWS · TWS",
-                        level: Binding(
-                            get: { settingsManager.windDamping },
-                            set: { settingsManager.windDamping = $0; navigationReadings.updateWindDamping(level: $0) }
-                        )
+        List {
+            // Sensor Smoothing
+            Section {
+                SmoothingRow(
+                    label: "Wind",
+                    detail: "AWA · TWA · AWS · TWS",
+                    level: Binding(
+                        get: { settingsManager.windDamping },
+                        set: { settingsManager.windDamping = $0; navigationReadings.updateWindDamping(level: $0) }
                     )
-                    SmoothingRow(
-                        label: "Speed & Course",
-                        detail: "SOG · COG",
-                        level: Binding(
-                            get: { settingsManager.speedDamping },
-                            set: { settingsManager.speedDamping = $0; navigationReadings.updateSpeedDamping(level: $0) }
-                        )
+                )
+                SmoothingRow(
+                    label: "Speed & Course",
+                    detail: "SOG · COG",
+                    level: Binding(
+                        get: { settingsManager.speedDamping },
+                        set: { settingsManager.speedDamping = $0; navigationReadings.updateSpeedDamping(level: $0) }
                     )
-                    SmoothingRow(
-                        label: "Heading",
-                        detail: "HDG",
-                        level: Binding(
-                            get: { settingsManager.headingDamping },
-                            set: { settingsManager.headingDamping = $0; navigationReadings.updateHeadingDamping(level: $0) }
-                        )
+                )
+                SmoothingRow(
+                    label: "Heading",
+                    detail: "HDG",
+                    level: Binding(
+                        get: { settingsManager.headingDamping },
+                        set: { settingsManager.headingDamping = $0; navigationReadings.updateHeadingDamping(level: $0) }
                     )
-                    SmoothingRow(
-                        label: "Depth & Hydro",
-                        detail: "DPT · SWT · BSPD",
-                        level: Binding(
-                            get: { settingsManager.hydroDamping },
-                            set: { settingsManager.hydroDamping = $0; navigationReadings.updateHydroDamping(level: $0) }
-                        )
+                )
+                SmoothingRow(
+                    label: "Depth & Hydro",
+                    detail: "DPT · SWT · BSPD",
+                    level: Binding(
+                        get: { settingsManager.hydroDamping },
+                        set: { settingsManager.hydroDamping = $0; navigationReadings.updateHydroDamping(level: $0) }
                     )
-                } header: {
-                    Text("Sensor Smoothing")
-                } footer: {
-                    Text("0 = raw signal, no filtering  ·  11 = maximum damping. Higher values reduce noise but slow response to real changes.")
-                }
-                // Read NMEA Button
-                Button(action: {
-                    showRawNMEA.toggle()
-                }) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "doc.text.magnifyingglass")
-                            .foregroundColor(.gray)
-                            .font(.system(size: 20))
-                        Text("Read NMEA")
-                            .font(.subheadline)
-                            .padding(.vertical, 6)
-                    }
-                }
-                .buttonStyle(.plain)
-                
-                // Export CSV Button
-                Button(action: {
-                    exportCSVFiles()
-                }) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "square.and.arrow.up")
-                            .foregroundColor(.gray)
-                            .font(.system(size: 20))
-                        Text("Export CSV")
-                            .font(.subheadline)
-                            .padding(.vertical, 6)
-                    }
-                }
-                .buttonStyle(.plain)
-
-                // Sync to iCloud Button
-                Button(action: {
-                    syncFilesToiCloud()
-                }) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "icloud.and.arrow.up")
-                            .foregroundColor(.gray)
-                            .font(.system(size: 20))
-                        Text("Sync to iCloud")
-                            .font(.subheadline)
-                            .padding(.vertical, 6)
-                    }
-                }
-                .buttonStyle(.plain)
+                )
+            } header: {
+                Text("Sensor Smoothing")
+            } footer: {
+                Text("0 = raw signal, no filtering  ·  11 = maximum damping. Higher values reduce noise but slow response to real changes.")
             }
-            .listStyle(.insetGrouped)
-            .navigationTitle("Advanced Settings")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") {
-                        dismiss()
-                    }
+            // Read NMEA Button
+            Button(action: {
+                showRawNMEA.toggle()
+            }) {
+                HStack(spacing: 12) {
+                    Image(systemName: "doc.text.magnifyingglass")
+                        .foregroundColor(.gray)
+                        .font(.system(size: 20))
+                    Text("Read NMEA")
+                        .font(.subheadline)
+                        .padding(.vertical, 6)
+                }
+            }
+            .buttonStyle(.plain)
+
+            // Export CSV Button
+            Button(action: {
+                exportCSVFiles()
+            }) {
+                HStack(spacing: 12) {
+                    Image(systemName: "square.and.arrow.up")
+                        .foregroundColor(.gray)
+                        .font(.system(size: 20))
+                    Text("Export CSV")
+                        .font(.subheadline)
+                        .padding(.vertical, 6)
+                }
+            }
+            .buttonStyle(.plain)
+
+            // Sync to iCloud Button
+            Button(action: {
+                syncFilesToiCloud()
+            }) {
+                HStack(spacing: 12) {
+                    Image(systemName: "icloud.and.arrow.up")
+                        .foregroundColor(.gray)
+                        .font(.system(size: 20))
+                    Text("Sync to iCloud")
+                        .font(.subheadline)
+                        .padding(.vertical, 6)
+                }
+            }
+            .buttonStyle(.plain)
+        }
+        .listStyle(.insetGrouped)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: onDone) {
+                    Label("Settings", systemImage: "chevron.left")
                 }
             }
         }
@@ -191,16 +190,18 @@ private struct SmoothingRow: View {
             }
             // Visual bar
             GeometryReader { geo in
+                let barW = max(geo.size.width, 1)
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 3)
                         .fill(Color.secondary.opacity(0.2))
                         .frame(height: 4)
                     RoundedRectangle(cornerRadius: 3)
                         .fill(Color.accentColor)
-                        .frame(width: geo.size.width * CGFloat(level) / 11.0, height: 4)
+                        .frame(width: barW * CGFloat(level) / 11.0, height: 4)
                 }
             }
             .frame(height: 4)
+            .frame(maxWidth: .infinity)
         }
         .padding(.vertical, 4)
     }
@@ -208,7 +209,9 @@ private struct SmoothingRow: View {
 
 // MARK: - Preview
 #Preview {
-    AdvancedSettingsView()
-        .environment(NMEAParser())
-        .environment(SettingsManager())
+    NavigationStack {
+        AdvancedSettingsView(onDone: {})
+    }
+    .environment(NMEAParser())
+    .environment(SettingsManager())
 }

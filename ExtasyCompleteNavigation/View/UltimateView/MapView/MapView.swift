@@ -3,6 +3,14 @@ import SwiftData
 import MapKit
 import CoreLocation
 
+/// Top-left chrome on iPad only (`MapView` is full-screen on iPhone; no leading control there).
+enum MapIPadLeadingControl: Equatable {
+    /// Pushed from Ultimate: arrow pops the pushed map.
+    case dismissBack
+    /// Dashboard map (`iPadView`): gear opens **Settings** inside the map column (metrics column stays visible).
+    case settingsLink
+}
+
 struct MapView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(NMEAParser.self) private var navigationReadings
@@ -10,7 +18,16 @@ struct MapView: View {
     @Environment(\.dismiss) private var dismiss // Allows going back to the previous view
     @Query private var waypoints: [Waypoints]
     @Namespace var mapScope
-    
+
+    /// iPad-only; default keeps the back arrow when the map is pushed from Ultimate.
+    var iPadLeadingControl: MapIPadLeadingControl = .dismissBack
+
+    /// iPad dashboard: reduce outer insets (especially **bottom = 0**) so the chart aligns with the **Multi** row edge.
+    var iPadDashboardBleedMargins: Bool = false
+
+    /// iPad dashboard (`.settingsLink`): show settings **inside the map column** so cockpit metrics stay visible.
+    @State private var iPadDashboardSettingsPresented = false
+
     @State private var animatedBoatLocation: CLLocationCoordinate2D?
     @State private var animatedStarboardLayline: CLLocationCoordinate2D?
     @State private var animatedPortsideLayline: CLLocationCoordinate2D?
@@ -62,7 +79,16 @@ struct MapView: View {
         let portLon = navigationReadings.waypointData?.portsideIntersection?.intersection.longitude ?? .nan
         return "\(stbdLat),\(stbdLon),\(portLat),\(portLon)"
     }
-    
+
+    /// iPad map card insets (settings overlay uses the same values).
+    private var iPadMapChromeEdgeInsets: EdgeInsets {
+        guard DeviceType.isIPad else { return EdgeInsets() }
+        if iPadDashboardBleedMargins {
+            return EdgeInsets(top: 6, leading: 6, bottom: 0, trailing: 6)
+        }
+        return EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8)
+    }
+
     var body: some View {
         ZStack(alignment: .bottom) {
             
@@ -170,17 +196,30 @@ struct MapView: View {
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(Color.gray.opacity(0.2), lineWidth: 2) // Optional border
                     )
-                    .padding(8) // Extra padding for iPad
+                    .padding(iPadMapChromeEdgeInsets)
             }
             
             
-            // iPad back button — top left
+            // iPad — top left: back (pushed map) or settings (dashboard map)
             if DeviceType.isIPad {
                 VStack {
-                    Button(action: { dismiss() }) {
-                        IconButton(systemName: "arrow.backward", color: Color.blue.opacity(0.8))
+                    switch iPadLeadingControl {
+                    case .dismissBack:
+                        Button(action: { dismiss() }) {
+                            IconButton(systemName: "arrow.backward", color: Color.blue.opacity(0.8))
+                        }
+                        .buttonStyle(.plain)
+                    case .settingsLink:
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                iPadDashboardSettingsPresented.toggle()
+                            }
+                        } label: {
+                            MapGearChromeLabel()
+                        }
+                        .buttonStyle(.plain)
+                        .zIndex(3)
                     }
-                    .buttonStyle(.plain)
                     Spacer()
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -234,7 +273,22 @@ struct MapView: View {
             .clipShape(Capsule())
             .shadow(color: .black.opacity(0.25), radius: 8, x: 0, y: 4)
             .padding(.bottom, 16)
+
+            // In-map settings (dashboard only): occupies this view’s bounds — does not cover Ultimate / Multi.
+            if DeviceType.isIPad, iPadLeadingControl == .settingsLink, iPadDashboardSettingsPresented {
+                MapDashboardSettingsInMapColumn(
+                    onDismiss: {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            iPadDashboardSettingsPresented = false
+                        }
+                    },
+                    outerPadding: iPadMapChromeEdgeInsets
+                )
+                .transition(.asymmetric(insertion: .move(edge: .leading).combined(with: .opacity), removal: .opacity))
+                .zIndex(2)
+            }
         }
+        .animation(.easeInOut(duration: 0.25), value: iPadDashboardSettingsPresented)
         .navigationBarHidden(true)
     }
     
@@ -601,6 +655,59 @@ struct MapView: View {
         }
     }
 
+}
+
+// MARK: - Dashboard settings panel (map column only)
+
+private struct MapDashboardSettingsInMapColumn: View {
+    var onDismiss: () -> Void
+    var outerPadding: EdgeInsets
+
+    var body: some View {
+        ZStack(alignment: .top) {
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .ignoresSafeArea()
+
+            NavigationStack {
+                SettingsMenuView()
+                    .toolbar {
+                        // Trailing so it does not clash with Advanced’s leading “Settings” back control.
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button("Done", action: onDismiss)
+                        }
+                    }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: DeviceType.isIPad ? 12 : 0))
+        .padding(outerPadding)
+    }
+}
+
+// MARK: - Gear control (same look as `NavigationButton` in `UltimateNavigationView`)
+
+private struct MapGearChromeLabel: View {
+    private let buttonSize: CGFloat = 40
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: buttonSize / 4)
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [Color.gray.opacity(0.6), Color.black]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: buttonSize, height: buttonSize)
+                .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 3)
+
+            Image(systemName: "gear")
+                .foregroundColor(.white)
+                .font(.system(size: buttonSize * 0.5, weight: .bold))
+        }
+    }
 }
 
 // Reusable minimalist icon button style

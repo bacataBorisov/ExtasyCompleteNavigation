@@ -6,30 +6,53 @@ struct SettingsMenuView: View {
     @State private var showAdvancedSettings = false
 
     var body: some View {
-        List {
-            // General Settings
-            CompactRow(title: "General", icon: "gearshape.fill", destination: GeneralSettingsView())
-            
-            // Calibration
-            CompactRow(title: "Calibration", icon: "speedometer", destination: CalibrationView())
-            
-            // Alarms
-            CompactRow(title: "Set Alarms", icon: "exclamationmark.triangle.fill", destination: AlarmsView())
-            
-            // Glossary
-            CompactRow(title: "View Glossary", icon: "book.fill", destination: GlossaryView())
-            
-            // Advanced Settings (Full-screen Navigation)
-            Button(action: { showAdvancedSettings.toggle() }) {
-                CompactRow(title: "Advanced", icon: "gearshape.2.fill", destination: EmptyView())
+        Group {
+            if showAdvancedSettings {
+                AdvancedSettingsView(onDone: {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        showAdvancedSettings = false
+                    }
+                })
+            } else {
+                List {
+                    // General Settings
+                    CompactRow(title: "General", icon: "gearshape.fill", destination: GeneralSettingsView())
+
+                    // Calibration
+                    CompactRow(title: "Calibration", icon: "speedometer", destination: CalibrationView())
+
+                    // Alarms
+                    CompactRow(title: "Set Alarms", icon: "exclamationmark.triangle.fill", destination: AlarmsView())
+
+                    // Glossary
+                    CompactRow(title: "View Glossary", icon: "book.fill", destination: GlossaryView())
+
+                    // Advanced: same navigation column (map column / phone stack) — no full-screen cover.
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            showAdvancedSettings = true
+                        }
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "gearshape.2.fill")
+                                .foregroundStyle(.secondary)
+                                .font(.system(size: 20))
+                                .frame(width: 28, alignment: .center)
+                            Text("Advanced")
+                                .font(.subheadline)
+                                .padding(.vertical, 6)
+                            Spacer(minLength: 0)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+                .listStyle(.plain)
             }
-            .buttonStyle(.plain)
         }
-        .listStyle(.plain)
-        .navigationTitle("Settings")
-        .fullScreenCover(isPresented: $showAdvancedSettings) {
-            AdvancedSettingsView()
-        }
+        .navigationTitle(showAdvancedSettings ? "Advanced Settings" : "Settings")
+        .animation(.easeInOut(duration: 0.25), value: showAdvancedSettings)
     }
 }
 
@@ -40,18 +63,26 @@ struct CompactRow<Destination: View>: View {
     let title: String
     let icon: String
     let destination: Destination
-    
+
     var body: some View {
-        NavigationLink(destination: destination) {
+        NavigationLink {
+            destination
+                .frame(minWidth: 1, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        } label: {
             HStack(spacing: 12) {
                 Image(systemName: icon)
-                    .foregroundColor(.gray)
+                    .foregroundStyle(.secondary)
                     .font(.system(size: 20))
-                
+                    .frame(width: 28, alignment: .center)
+
                 Text(title)
                     .font(.subheadline)
                     .padding(.vertical, 6)
+
+                Spacer(minLength: 0)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
         }
     }
 }
@@ -93,6 +124,7 @@ struct GeneralSettingsView: View {
                     Text("2 s").tag(2)
                 }
                 .pickerStyle(.segmented)
+                .frame(maxWidth: .infinity)
 
                 Picker("Distance Unit", selection: Binding(
                     get: { settingsManager.distanceUnit },
@@ -102,6 +134,8 @@ struct GeneralSettingsView: View {
                     Text("Cables").tag(1)
                     Text("Meters").tag(2)
                 }
+                .pickerStyle(.segmented)
+                .frame(maxWidth: .infinity)
             }
         }
         .navigationTitle("General Settings")
@@ -132,7 +166,7 @@ struct AlarmsView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Threshold: \(String(format: "%.1f", settingsManager.depthAlarmThreshold)) m")
                             .font(.subheadline)
-                        
+
                         Slider(
                             value: Binding(
                                 get: { settingsManager.depthAlarmThreshold },
@@ -141,11 +175,14 @@ struct AlarmsView: View {
                             in: 1...20,
                             step: 0.5
                         )
-                        
+                        .frame(maxWidth: .infinity)
+
                         Text("Visual + haptic + sound alert when depth falls below this value")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
         }
@@ -180,19 +217,26 @@ struct GlossaryView: View {
     var body: some View {
         List(terms, id: \.abbr) { term in
             VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 8) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text(term.abbr)
                         .font(.headline)
-                        .foregroundColor(.accentColor)
-                        .frame(width: 50, alignment: .leading)
+                        .foregroundStyle(Color.accentColor)
+                        .frame(width: 52, alignment: .leading)
+                        .layoutPriority(1)
                     Text(term.full)
                         .font(.subheadline.bold())
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.85)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 Text(term.description)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.vertical, 4)
+            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
         }
         .listStyle(.insetGrouped)
         .navigationTitle("Glossary")
