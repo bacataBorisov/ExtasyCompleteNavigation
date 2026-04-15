@@ -8,66 +8,96 @@ struct iPadView: View {
     private var isTargetSelected: Bool {
         navigationReadings.gpsData?.isTargetSelected ?? false
     }
-    
+
+    /// Cockpit dashboard (ROADMAP): full-window width — wide landscape shows Performance + Polar together.
+    private func showLowerPerformancePolarSideBySide(totalWidth: CGFloat) -> Bool {
+        totalWidth >= 1000
+    }
+
     var body: some View {
         GeometryReader { geometry in
-            HStack(alignment: .top, spacing: 16) {
-                // Left Section: UltimateView and Performance Bars
+            let columnSpacing: CGFloat = 16
+            let innerWidth = max(0, geometry.size.width - columnSpacing)
+            let leftColumnWidth = innerWidth * 0.45
+            let rightColumnWidth = innerWidth * 0.55
+            let lowerBandHeight = geometry.size.height * 0.35
+            let upperBandHeight = geometry.size.height * 0.65
+
+            HStack(alignment: .top, spacing: columnSpacing) {
+                // Left (~45%): Ultimate + lower performance / polar
                 VStack(spacing: 0) {
                     NavigationStack {
                         UltimateView()
-                            .frame(height: geometry.size.height * 0.65)
-                        //.background(Color.red.opacity(0.2)) // Debugging background
+                            .frame(height: upperBandHeight)
                     }
-                    
-                    VStack(spacing: 8) {
-                        Picker("Lower panel", selection: $lowerInstrumentPanel) {
-                            Text("Performance").tag(0)
-                            Text("Polar").tag(1)
-                        }
-                        .pickerStyle(.segmented)
-                        .padding(.horizontal, 12)
 
-                        Group {
-                            if lowerInstrumentPanel == 0 {
-                                PerformanceView()
-                            } else {
-                                PolarInstrumentView()
-                            }
-                        }
-                        .frame(maxHeight: .infinity)
-                    }
-                    .frame(height: geometry.size.height * 0.35)
+                    lowerInstrumentBand(
+                        height: lowerBandHeight,
+                        totalWidth: geometry.size.width
+                    )
                 }
-                .frame(maxHeight: geometry.size.height)
-                // Right Section: MultiDisplay and VMGSimpleView
+                .frame(width: leftColumnWidth, height: geometry.size.height, alignment: .top)
+
+                // Right (~55%): Multi + VMG or waypoints
                 VStack(spacing: 0) {
                     if isTargetSelected {
                         MultiDisplay()
-                            .frame(height: geometry.size.height * 0.65)
+                            .frame(height: upperBandHeight)
                         NavigationStack {
                             VMGSimpleView(waypointName: navigationReadings.gpsData?.waypointName ?? "Mark Unknown")
-                                .frame(height: geometry.size.height * 0.35)
+                                .frame(height: lowerBandHeight)
                                 .transition(.asymmetric(
                                     insertion: .move(edge: .trailing).combined(with: .opacity),
                                     removal: .move(edge: .trailing).combined(with: .opacity)
                                 ))
                         }
-                        
                     } else {
                         MultiDisplay()
-                            .frame(height: geometry.size.height * 0.65)
+                            .frame(height: upperBandHeight)
                         NavigationStack {
                             InfoWaypointSection()
-                                .frame(height: geometry.size.height * 0.35)
+                                .frame(height: lowerBandHeight)
                         }
-                        
                     }
                 }
-                .frame(maxHeight: geometry.size.height)
+                .frame(width: rightColumnWidth, height: geometry.size.height, alignment: .top)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
-        .animation(.easeInOut(duration: 1), value: isTargetSelected) // Ensure smooth animations
+        .animation(.easeInOut(duration: 1), value: isTargetSelected)
+    }
+
+    @ViewBuilder
+    private func lowerInstrumentBand(height: CGFloat, totalWidth: CGFloat) -> some View {
+        let sideBySide = showLowerPerformancePolarSideBySide(totalWidth: totalWidth)
+
+        VStack(spacing: 8) {
+            if !sideBySide {
+                Picker("Lower panel", selection: $lowerInstrumentPanel) {
+                    Text("Performance").tag(0)
+                    Text("Polar").tag(1)
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, 12)
+            }
+
+            Group {
+                if sideBySide {
+                    HStack(alignment: .top, spacing: 10) {
+                        PerformanceView()
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        PolarInstrumentView()
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                } else if lowerInstrumentPanel == 0 {
+                    PerformanceView()
+                } else {
+                    PolarInstrumentView()
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .frame(height: height)
     }
 }
 

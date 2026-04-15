@@ -11,6 +11,10 @@ All notable changes to this project will be documented in this file.
 - **Configurable UI / Watch refresh**: `SettingsManager.uiRefreshIntervalPreset` (0.5s, 1s, 2s), General Settings segmented control, `NMEAParser.setPeriodicUIUpdateInterval`, wired from `ExtasyCompleteNavigationApp` (`onAppear` + `onChange`). Default preset `1` in `DefaultSettings`.
 - **Polar diagram (Canvas)**: `VMGCalculator.polarBoatSpeedCurve` / `VMGProcessor` / `NMEAParser` expose samples at live TWS; `PolarDiagramCanvasView` with boat dot and optimal TWA markers. **Polar** is its own surface: iPhone lower `TabView` tag 3 (waypoint/VMG → tag 4); iPad lower panel **Performance | Polar** segmented control. `PolarInstrumentView` keeps the **TWS** caption, **no** nav title or legend, and sizes the diagram to **fill remaining space** (nested `GeometryReader`) so `PageTabViewStyle` horizontal paging stays reliable.
 
+### Improvements
+
+- **iPad cockpit (v1 slice)**: `iPadView` main columns use a **45% / 55%** width split. On wide layouts (**window width ≥ 1000 pt**), the lower-left band shows **Performance** and **Polar** side by side; narrower layouts keep the segmented control.
+
 ### Bug Fixes
 
 - **iPhone lower `TabView` paging**: A root **`NavigationStack` around the entire `PageTabViewStyle` `TabView`** in `iPhoneView` prevented horizontal swipes past the Performance page. The stack now wraps only **`UltimateView`** (tabs that use `NavigationLink`). Polar no longer needs its own stack after the title was removed.

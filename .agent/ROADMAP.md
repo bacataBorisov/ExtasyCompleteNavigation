@@ -184,6 +184,7 @@ Prioritized list of improvements, organized by impact and effort.
 - **Status**: **In progress (Apr 2026)** — iPhone polar tab + `TabView` paging stabilized; **first implementation task**: default **landscape “cockpit dashboard”** preset (see targets below). Additional layout presets later.
 - **Context**: iPad is **typically mounted landscape** for readability on the boat.
 - **Target (v1 dashboard)**: Landscape-first **chart + instruments** on one surface (no map only behind a push). Rebalance column widths (~45/55 or similar), optional **Performance + Polar** side-by-side in the lower band when width allows; single root `NavigationStack` or map as **sheet/overlay** TBD. Waypoint-active mode may allocate more vertical space to VMG when navigating.
+- **Slice 1 (Apr 2026)**: `iPadView` uses a fixed **45% / 55%** main column split (instruments-left / multi+waypoint-right). When **full window width ≥ 1000 pt**, the lower-left band shows **Performance** and **Polar** side by side; narrower widths keep the segmented picker.
 - **Files (expected)**: `iPadView.swift`, `ContentView.swift`, possibly `MapView.swift` / `UltimateView.swift` for split sizing.
 
 ### Map Enhancements
