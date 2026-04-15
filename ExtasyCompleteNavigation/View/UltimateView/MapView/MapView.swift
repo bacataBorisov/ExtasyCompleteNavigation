@@ -14,10 +14,15 @@ struct MapView: View {
     @State private var animatedBoatLocation: CLLocationCoordinate2D?
     @State private var animatedStarboardLayline: CLLocationCoordinate2D?
     @State private var animatedPortsideLayline: CLLocationCoordinate2D?
-    @State private var timer: Timer?
+    @State private var animatedHeading: Double = 0.0
+    @State private var animatedTWD: Double = 0.0
+    @State private var targetBoatLocation: CLLocationCoordinate2D?
+    @State private var targetStarboardLayline: CLLocationCoordinate2D?
+    @State private var targetPortsideLayline: CLLocationCoordinate2D?
+    @State private var targetHeading: Double = 0.0
+    @State private var targetTWD: Double = 0.0
+    @State private var smoothingTimer: Timer?
     @State private var mapCameraPosition: MapCameraPosition = .automatic
-    @State private var initialPositionSet = false
-
 
     @AppStorage("savedCenterLat") private var savedCenterLat: Double = .nan
     @AppStorage("savedCenterLon") private var savedCenterLon: Double = .nan
@@ -28,7 +33,35 @@ struct MapView: View {
     @State private var starboardIntersection: CLLocationCoordinate2D?
     @State private var portsideIntersection: CLLocationCoordinate2D?
     
-    @State private var isMapCentered = true // Track if the map is centered
+    private var boatLocationKey: String {
+        let lat = navigationReadings.gpsData?.boatLocation?.latitude ?? .nan
+        let lon = navigationReadings.gpsData?.boatLocation?.longitude ?? .nan
+        return "\(lat),\(lon)"
+    }
+    
+    private var headingKey: Double {
+        navigationReadings.gpsData?.courseOverGround ?? .nan
+    }
+    
+    private var windDirectionKey: Double {
+        navigationReadings.windData?.trueWindDirection ?? .nan
+    }
+    
+    private var laylineKey: String {
+        let stbdLat = navigationReadings.vmgData?.starboardLayline?.latitude ?? .nan
+        let stbdLon = navigationReadings.vmgData?.starboardLayline?.longitude ?? .nan
+        let portLat = navigationReadings.vmgData?.portsideLayline?.latitude ?? .nan
+        let portLon = navigationReadings.vmgData?.portsideLayline?.longitude ?? .nan
+        return "\(stbdLat),\(stbdLon),\(portLat),\(portLon)"
+    }
+    
+    private var intersectionKey: String {
+        let stbdLat = navigationReadings.waypointData?.starboardIntersection?.intersection.latitude ?? .nan
+        let stbdLon = navigationReadings.waypointData?.starboardIntersection?.intersection.longitude ?? .nan
+        let portLat = navigationReadings.waypointData?.portsideIntersection?.intersection.latitude ?? .nan
+        let portLon = navigationReadings.waypointData?.portsideIntersection?.intersection.longitude ?? .nan
+        return "\(stbdLat),\(stbdLon),\(portLat),\(portLon)"
+    }
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -62,7 +95,8 @@ struct MapView: View {
                     }
                     // If no saved position and no GPS yet, map defaults to .automatic
 
-                    setupAnimationTimer()
+                    syncAnimatedState()
+                    startSmoothingTimer()
                 }
                 .onDisappear {
                     // Save the map position on disappearance if allowed
@@ -73,7 +107,7 @@ struct MapView: View {
                             savedZoomLevel = camera.distance
                         }
                     }
-                    timer?.invalidate() // Stop the timer when the view disappears
+                    stopSmoothingTimer()
                 }
                 .onMapCameraChange { context in
                     guard allowSave else { return }
@@ -97,6 +131,21 @@ struct MapView: View {
                         savedCenterLon = boatLocation.longitude
                         allowSave = true
                     }
+                }
+                .onChange(of: boatLocationKey) {
+                    updateBoatLocation()
+                }
+                .onChange(of: headingKey) {
+                    updateHeading()
+                }
+                .onChange(of: windDirectionKey) {
+                    updateWindDirection()
+                }
+                .onChange(of: laylineKey) {
+                    updateLaylines()
+                }
+                .onChange(of: intersectionKey) {
+                    updateIntersections()
                 }
                 // User taps and waypoint is being created
                 .gesture(
@@ -188,23 +237,6 @@ struct MapView: View {
         }
         .navigationBarHidden(true)
     }
-    // Timer for periodic location updates
-    private func setupAnimationTimer() {
-        timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
-            updateBoatLocation()
-            updateLaylines() // Update laylines when toggled
-            updateIntersections()
-            
-        }
-    }
-
-    private func restoreMapState() {
-        guard !initialPositionSet else { return } // Prevent double-setting of position
-        let lastPosition = CLLocationCoordinate2D(latitude: savedCenterLat, longitude: savedCenterLon)
-        mapCameraPosition = .camera(MapCamera(centerCoordinate: lastPosition, distance: savedZoomLevel))
-        debugLog("Restored last known position: Lat \(savedCenterLat), Lon \(savedCenterLon)")
-        initialPositionSet = true
-    }
     
     // Center the map on the boat's current location
     private func centerBoat() {
@@ -216,48 +248,97 @@ struct MapView: View {
         }
     }
     
-    // Smoothly update boat location
+    private func syncAnimatedState() {
+        updateBoatLocation()
+        updateHeading()
+        updateWindDirection()
+        updateLaylines()
+        animatedBoatLocation = targetBoatLocation
+        animatedStarboardLayline = targetStarboardLayline
+        animatedPortsideLayline = targetPortsideLayline
+        animatedHeading = targetHeading
+        animatedTWD = targetTWD
+        updateIntersections()
+    }
+    
     private func updateBoatLocation() {
-        if let newLocation = navigationReadings.gpsData?.boatLocation {
-            withAnimation(.easeInOut(duration: 1)) {
-                animatedBoatLocation = newLocation
-            }
+        targetBoatLocation = navigationReadings.gpsData?.boatLocation
+    }
+    
+    private func updateHeading() {
+        if let newCOG = navigationReadings.gpsData?.courseOverGround {
+            targetHeading = newCOG
         }
     }
     
-    // Smoothly update laylines
+    private func updateWindDirection() {
+        if let newTWD = navigationReadings.windData?.trueWindDirection {
+            targetTWD = newTWD
+        }
+    }
+    
+    // Update wind-mode layline endpoints.
     private func updateLaylines() {
-        if let starboardLayline = navigationReadings.vmgData?.starboardLayline,
-           let portsideLayline = navigationReadings.vmgData?.portsideLayline {
-            withAnimation(.easeInOut(duration: 1)) {
-                animatedStarboardLayline = starboardLayline
-                animatedPortsideLayline = portsideLayline
-            }
-        }
+        targetStarboardLayline = navigationReadings.vmgData?.starboardLayline
+        targetPortsideLayline  = navigationReadings.vmgData?.portsideLayline
     }
-    
-    // Smoothly update intersections
+
+    // Update waypoint tack intersection dots.
     private func updateIntersections() {
-        if let newStarboardIntersection = navigationReadings.waypointData?.starboardIntersection?.intersection,
-           let newPortsideIntersection = navigationReadings.waypointData?.portsideIntersection?.intersection {
-            
-            withAnimation(.easeInOut(duration: 1)) {
-                starboardIntersection = newStarboardIntersection
-                portsideIntersection = newPortsideIntersection
-            }
-        } else {
-            // Handle case where one or both intersections are nil
-            withAnimation(.easeInOut(duration: 1)) {
-                starboardIntersection = navigationReadings.waypointData?.starboardIntersection?.intersection
-                portsideIntersection = navigationReadings.waypointData?.portsideIntersection?.intersection
-            }
+        withAnimation(.easeInOut(duration: 1.0)) {
+            starboardIntersection = navigationReadings.waypointData?.starboardIntersection?.intersection
+            portsideIntersection  = navigationReadings.waypointData?.portsideIntersection?.intersection
         }
     }
     
-    private func updateCameraPosition() {
-        if let boatLocation = animatedBoatLocation {
-            mapCameraPosition = .camera(MapCamera(centerCoordinate: boatLocation, distance: savedZoomLevel))
+    private func startSmoothingTimer() {
+        smoothingTimer?.invalidate()
+        smoothingTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 30.0, repeats: true) { _ in
+            advanceAnimatedState()
         }
+    }
+    
+    private func stopSmoothingTimer() {
+        smoothingTimer?.invalidate()
+        smoothingTimer = nil
+    }
+    
+    private func advanceAnimatedState() {
+        animatedBoatLocation = interpolatedCoordinate(from: animatedBoatLocation, to: targetBoatLocation, factor: 0.18)
+        animatedStarboardLayline = interpolatedCoordinate(from: animatedStarboardLayline, to: targetStarboardLayline, factor: 0.12)
+        animatedPortsideLayline = interpolatedCoordinate(from: animatedPortsideLayline, to: targetPortsideLayline, factor: 0.12)
+        animatedHeading = interpolatedAngle(from: animatedHeading, to: targetHeading, factor: 0.18)
+        animatedTWD = interpolatedAngle(from: animatedTWD, to: targetTWD, factor: 0.10)
+    }
+    
+    private func interpolatedCoordinate(
+        from current: CLLocationCoordinate2D?,
+        to target: CLLocationCoordinate2D?,
+        factor: Double
+    ) -> CLLocationCoordinate2D? {
+        guard let target else { return nil }
+        guard let current else { return target }
+        
+        let latDelta = target.latitude - current.latitude
+        let lonDelta = target.longitude - current.longitude
+        
+        if abs(latDelta) < 0.000001, abs(lonDelta) < 0.000001 {
+            return target
+        }
+        
+        return CLLocationCoordinate2D(
+            latitude: current.latitude + latDelta * factor,
+            longitude: current.longitude + lonDelta * factor
+        )
+    }
+    
+    private func interpolatedAngle(from current: Double, to target: Double, factor: Double) -> Double {
+        let delta = (target - current).truncatingRemainder(dividingBy: 360)
+        let shortest = delta > 180 ? delta - 360 : (delta < -180 ? delta + 360 : delta)
+        if abs(shortest) < 0.1 {
+            return target
+        }
+        return current + shortest * factor
     }
     
     // MARK: - Dynamic Zoom Level
@@ -287,7 +368,7 @@ struct MapView: View {
     
     // Add a new waypoint at the tapped location
     private func addWaypoint(at location: CLLocationCoordinate2D) {
-        let newWaypoint = Waypoints(title: "Waypoint \(waypoints.count + 1)", lat: location.latitude, lon: location.longitude, isTargetSelected: true)
+        let newWaypoint = Waypoints(title: "Waypoint \(waypoints.count + 1)", lat: location.latitude, lon: location.longitude)
         modelContext.insert(newWaypoint)
         navigationReadings.selectWaypoint(at: location, name: newWaypoint.title)
     }
@@ -315,56 +396,26 @@ struct MapView: View {
             }
         }
     }
-    //Boat annotation and surrounding elements
+    // Boat annotation — custom hull shape + wind arrow
     @MapContentBuilder
     private func boatAnnotation() -> some MapContent {
         if let boatLocation = animatedBoatLocation {
-            Annotation("", coordinate: boatLocation) { // Empty label for the system
+            Annotation("", coordinate: boatLocation) {
                 ZStack {
-                    
-                    // Circle around the boat
-                    Circle()
-                        .stroke(Color.yellow.opacity(0.5), lineWidth: 4)
-                        .frame(width: 40, height: 40)
-                    // True Wind Direction (TWD) Arrow
-                    if let twa = navigationReadings.windData?.trueWindDirection {
-                        Path { path in
-                            path.move(to: CGPoint(x: 20, y: 20)) // Center of the circle
-                            path.addLine(to: CGPoint(x: 20, y: -20)) // Arrow length
-                        }
-                        .stroke(Color.blue, lineWidth: 2) // Blue line for TWD
-                        .rotationEffect(Angle(degrees: twa)) // Rotate based on TWD
-                    }
-                    
-                    // Course Over Ground (COG) Arrow
-                    if let cog = navigationReadings.gpsData?.courseOverGround {
-                        Path { path in
-                            path.move(to: CGPoint(x: 20, y: 20)) // Center of the circle
-                            path.addLine(to: CGPoint(x: 20, y: -20)) // Arrow length
-                        }
-                        .stroke(Color.black, lineWidth: 2) // Black line for COG
-                        .rotationEffect(Angle(degrees: cog)) // Rotate based on COG
-                    }
-                    
-                    // Boat Icon
-                    if let heading = navigationReadings.gpsData?.courseOverGround {
-                        Image(systemName: "location.north.line")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 40, height: 40) // Matches circle size
-                            .foregroundColor(Color.black) // Boat color
-                            .rotationEffect(Angle(degrees: heading)) // Rotate based on heading
-                            .animation(.easeInOut(duration: 0.5), value: heading) // Smooth animation
-                    }
-                    
-                    
-                    // Static "Boat" Label
+                    // TWD wind arrow — teal arrowhead pointing downwind, with degree badge
+                    WindDirectionArrow(twd: animatedTWD)
+
+                    MapBoatMarker(heading: animatedHeading)
+
+                    // Boat name label
                     Text(settingsManager.boatName)
-                        .font(.caption)
+                        .font(.caption2.bold())
                         .foregroundColor(.white)
-                        .background(Color.black.opacity(0.5))
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 2)
+                        .background(Color.black.opacity(0.55))
                         .clipShape(RoundedRectangle(cornerRadius: 4))
-                        .offset(y: 30)
+                        .offset(y: 36)
                 }
             }
         }
@@ -403,36 +454,33 @@ struct MapView: View {
     @MapContentBuilder
     private func laylinePolylines(opacity: Double) -> some MapContent {
         if let boatLocation = animatedBoatLocation {
-            // Starboard Layline
-            if let sailingState =  navigationReadings.vmgData?.sailingState {
-                
-                
-                //Colors are swapped depending on the sailing state
-                // TODO: - write it in a better way, more elegant
-                
+            if let sailingState = navigationReadings.vmgData?.sailingState {
+                // Colors are swapped depending on the sailing state.
+                // STBD gradient: green → teal  |  PORT gradient: red → purple
+                // (matches the AnemometerView wind sector palette)
+                // STBD: teal  |  PORT: purple — matching the anemometer sector end-colors.
+                // (Screen-space LinearGradient on map polylines renders mostly one colour,
+                //  so solid distinctive colours give the clearest visual match.)
+                let stbdColor = Color.teal.opacity(opacity)
+                let portColor = Color.purple.opacity(opacity)
+
                 if sailingState == "Upwind" {
                     if let starboardLayline = animatedStarboardLayline {
-                        
                         MapPolyline(coordinates: [boatLocation, starboardLayline])
-                            .stroke(Color.green.opacity(opacity), lineWidth: 2)
+                            .stroke(stbdColor, lineWidth: 2)
                     }
-                    
-                    // Portside Layline
                     if let portsideLayline = animatedPortsideLayline {
                         MapPolyline(coordinates: [boatLocation, portsideLayline])
-                            .stroke(Color.red.opacity(opacity), lineWidth: 2)
+                            .stroke(portColor, lineWidth: 2)
                     }
                 } else {
                     if let starboardLayline = animatedStarboardLayline {
-                        
                         MapPolyline(coordinates: [boatLocation, starboardLayline])
-                            .stroke(Color.red.opacity(opacity), lineWidth: 2)
+                            .stroke(portColor, lineWidth: 2)
                     }
-                    
-                    // Portside Layline
                     if let portsideLayline = animatedPortsideLayline {
                         MapPolyline(coordinates: [boatLocation, portsideLayline])
-                            .stroke(Color.green.opacity(opacity), lineWidth: 2)
+                            .stroke(stbdColor, lineWidth: 2)
                     }
                 }
             }
@@ -440,38 +488,119 @@ struct MapView: View {
     }
     
     // MARK: - Layline to Waypoint
+    //
+    // Uses the same diamond geometry as `WaypointProcessor.generateDiamondLaylines`
+    // (mark approach state + TWD + opt up/down TWA). Four infinite rays: two from the
+    // boat, two from the mark, forming a parallelogram / “diamond” regardless of
+    // whether the mark is upwind or downwind — avoids duplicating bearings in MapView.
     @MapContentBuilder
     private func laylinePolylinesToWaypoint() -> some MapContent {
-        if let boatLocation = animatedBoatLocation {
-            // Starboard Layline
-            if let starboardIntersection = starboardIntersection {
-                MapPolyline(coordinates: [boatLocation, starboardIntersection])
-                    .stroke(Color.purple.opacity(0.7), lineWidth: 2)
-                
-                if let waypointCoordinate = navigationReadings.gpsData?.waypointLocation {
-                    MapPolyline(coordinates: [starboardIntersection, waypointCoordinate])
-                        .stroke(Color.orange.opacity(0.7), lineWidth: 2)
-                }
-            } else if let waypointCoordinate = navigationReadings.gpsData?.waypointLocation {
-                MapPolyline(coordinates: [boatLocation, waypointCoordinate])
-                    .stroke(Color.yellow.opacity(0.7), lineWidth: 2)
-            }
-            
-            // Portside Layline
-            if let portsideIntersection = portsideIntersection {
-                MapPolyline(coordinates: [boatLocation, portsideIntersection])
-                    .stroke(Color.purple.opacity(0.7), lineWidth: 2)
-                
-                if let waypointCoordinate = navigationReadings.gpsData?.waypointLocation {
-                    MapPolyline(coordinates: [portsideIntersection, waypointCoordinate])
-                        .stroke(Color.orange.opacity(0.7), lineWidth: 2)
-                }
-            } else if let waypointCoordinate = navigationReadings.gpsData?.waypointLocation {
-                MapPolyline(coordinates: [boatLocation, waypointCoordinate])
-                    .stroke(Color.yellow.opacity(0.7), lineWidth: 2)
+        if let mark = navigationReadings.gpsData?.waypointLocation,
+           let boat = animatedBoatLocation,
+           let wp = navigationReadings.waypointData,
+           let stbdBoat = wp.starboardLayline,
+           let portBoat = wp.portsideLayline,
+           let stbdMark = wp.extendedStarboardLayline,
+           let portMark = wp.extendedPortsideLayline {
+
+            let teal = Color.teal.opacity(0.85)
+            let purple = Color.purple.opacity(0.85)
+
+            // si = starboard-named tack point (on boat’s stbd ray + mark’s port extension).
+            // pi = port-named tack point (on boat’s port ray + mark’s stbd extension).
+            let si = wp.starboardIntersection?.intersection
+            let pi = wp.portsideIntersection?.intersection
+
+            // Trim infinite rays past the tack when the tail points *away* from the tactical
+            // area (mark for boat rays, boat for mark rays). Stops long segments that look
+            // like they run “behind” the boat or off into empty chart.
+            let stbdBoatFar = trimmedLaylineFarEnd(
+                anchor: stbdBoat.start, nominalFar: stbdBoat.end, lookToward: mark, intersection: si)
+            let portBoatFar = trimmedLaylineFarEnd(
+                anchor: portBoat.start, nominalFar: portBoat.end, lookToward: mark, intersection: pi)
+            let stbdMarkFar = trimmedLaylineFarEnd(
+                anchor: stbdMark.start, nominalFar: stbdMark.end, lookToward: boat, intersection: pi)
+            let portMarkFar = trimmedLaylineFarEnd(
+                anchor: portMark.start, nominalFar: portMark.end, lookToward: boat, intersection: si)
+
+            MapPolyline(coordinates: [stbdBoat.start, stbdBoatFar]).stroke(teal, lineWidth: 2.5)
+            MapPolyline(coordinates: [portBoat.start, portBoatFar]).stroke(purple, lineWidth: 2.5)
+            MapPolyline(coordinates: [stbdMark.start, stbdMarkFar]).stroke(teal, lineWidth: 2.5)
+            MapPolyline(coordinates: [portMark.start, portMarkFar]).stroke(purple, lineWidth: 2.5)
+
+            // Approach corridor — fill the tactical diamond when both tack points exist
+            if let sInt = si, let pInt = pi {
+                let corners = convexQuadOrdered(boat: boat, mark: mark, intA: sInt, intB: pInt)
+                MapPolygon(coordinates: corners)
+                    .foregroundStyle(Color.white.opacity(0.16))
+                    .stroke(Color.white.opacity(0), lineWidth: 0)
+
+                // Tacking legs: boat → intersection (white), intersection → mark (match layline colour)
+                MapPolyline(coordinates: [boat, sInt])
+                    .stroke(Color.white.opacity(0.5), lineWidth: 1.5)
+                MapPolyline(coordinates: [sInt, mark])
+                    .stroke(purple.opacity(0.72), lineWidth: 1.5)
+
+                MapPolyline(coordinates: [boat, pInt])
+                    .stroke(Color.white.opacity(0.5), lineWidth: 1.5)
+                MapPolyline(coordinates: [pInt, mark])
+                    .stroke(teal.opacity(0.72), lineWidth: 1.5)
+            } else {
+                // No valid tack geometry yet — direct line so the mark is still connected
+                MapPolyline(coordinates: [boat, mark])
+                    .stroke(Color.yellow.opacity(0.55), lineWidth: 1.5)
             }
         }
     }
+
+    /// Clips a layline past the tack when the segment from the tack toward `nominalFar`
+    /// points away from `lookToward` (reduces misleading “runaway” rays on the map).
+    private func trimmedLaylineFarEnd(
+        anchor: CLLocationCoordinate2D,
+        nominalFar: CLLocationCoordinate2D,
+        lookToward: CLLocationCoordinate2D,
+        intersection: CLLocationCoordinate2D?
+    ) -> CLLocationCoordinate2D {
+        guard let ix = intersection else { return nominalFar }
+        let a = MKMapPoint(anchor)
+        let f = MKMapPoint(nominalFar)
+        let t = MKMapPoint(lookToward)
+        let i = MKMapPoint(ix)
+        let vx = f.x - a.x
+        let vy = f.y - a.y
+        let len2 = vx * vx + vy * vy
+        guard len2 > 1e-10 else { return nominalFar }
+        let invLen = 1.0 / sqrt(len2)
+        let ux = vx * invLen
+        let uy = vy * invLen
+        let tI = (i.x - a.x) * ux + (i.y - a.y) * uy
+        let tF = (f.x - a.x) * ux + (f.y - a.y) * uy
+        guard tI >= 0, tI <= tF else { return nominalFar }
+        let tailX = f.x - i.x
+        let tailY = f.y - i.y
+        let toX = t.x - i.x
+        let toY = t.y - i.y
+        if tailX * toX + tailY * toY >= 0 { return nominalFar }
+        let margin = min(tF - tI, max(400.0, 0.08 * tI))
+        let tShow = tI + margin
+        return MKMapPoint(x: a.x + ux * tShow, y: a.y + uy * tShow).coordinate
+    }
+
+    /// Cyclic order of four convex corners by polar angle around their centroid (map-stable).
+    private func convexQuadOrdered(
+        boat: CLLocationCoordinate2D,
+        mark: CLLocationCoordinate2D,
+        intA: CLLocationCoordinate2D,
+        intB: CLLocationCoordinate2D
+    ) -> [CLLocationCoordinate2D] {
+        let pts = [boat, mark, intA, intB]
+        let cLat = pts.map(\.latitude).reduce(0, +) / Double(pts.count)
+        let cLon = pts.map(\.longitude).reduce(0, +) / Double(pts.count)
+        return pts.sorted { p, q in
+            atan2(p.longitude - cLon, p.latitude - cLat) < atan2(q.longitude - cLon, q.latitude - cLat)
+        }
+    }
+
 }
 
 // Reusable minimalist icon button style
@@ -520,6 +649,105 @@ extension View {
     }
 }
 
+// MARK: - Map Boat Marker
+struct MapBoatMarker: View {
+    let heading: Double
+    
+    var body: some View {
+        ZStack {
+            Rectangle()
+                .fill(Color.white.opacity(0.9))
+                .frame(width: 2, height: 40)
+                .offset(y: -27)
+                .shadow(color: .black.opacity(0.2), radius: 2)
+                .rotationEffect(.degrees(heading))
+            
+            PseudoBoat()
+                .stroke(Color.black.opacity(0.45), style: StrokeStyle(lineWidth: 6.5, lineCap: .round, lineJoin: .round))
+                .frame(width: 20, height: 44)
+                .scaleEffect(x: 0.72, y: 1.0)
+                .rotationEffect(.degrees(heading))
+            
+            PseudoBoat()
+                .stroke(Color.white, style: StrokeStyle(lineWidth: 3.2, lineCap: .round, lineJoin: .round))
+                .frame(width: 20, height: 44)
+                .scaleEffect(x: 0.72, y: 1.0)
+                .rotationEffect(.degrees(heading))
+            
+            Rectangle()
+                .fill(Color.black.opacity(0.45))
+                .frame(width: 10, height: 5)
+                .offset(y: 20)
+                .rotationEffect(.degrees(heading))
+            
+            Rectangle()
+                .fill(Color.white)
+                .frame(width: 6, height: 2.5)
+                .offset(y: 20)
+                .rotationEffect(.degrees(heading))
+            
+            Circle()
+                .fill(Color.green.opacity(0.92))
+                .frame(width: 5, height: 5)
+                .offset(y: -22)
+                .rotationEffect(.degrees(heading))
+        }
+        .frame(width: 44, height: 84)
+    }
+}
+
+// MARK: - True Wind Direction arrow + badge
+// The arrowhead points TOWARD the boat bow (showing wind arriving at the sails).
+// The shaft extends upwind — acting as the tail of the arrow.
+// Whole view is rotated by TWD so the tail always aligns with the wind origin.
+struct WindDirectionArrow: View {
+    let twd: Double
+
+    private var displayTWD: Int {
+        let d = twd.truncatingRemainder(dividingBy: 360)
+        return Int(d < 0 ? d + 360 : d)
+    }
+
+    var body: some View {
+        ZStack {
+            // Shaft — extends upwind (tail)
+            Rectangle()
+                .fill(Color.teal.opacity(0.85))
+                .frame(width: 2, height: 28)
+                .offset(y: -44)          // top at −58, bottom at −30
+
+            // Arrowhead — points downward toward the boat bow (y = −22)
+            ArrowTip()
+                .fill(Color.teal)
+                .frame(width: 10, height: 8)
+                .rotationEffect(.degrees(180)) // flip so tip faces down
+                .offset(y: -26)          // bottom of frame at −22 = bow
+
+            // TWD badge sits at the upwind end of the shaft
+            Text("\(displayTWD)°")
+                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                .foregroundColor(.white)
+                .padding(.horizontal, 3)
+                .padding(.vertical, 1)
+                .background(Color.teal.opacity(0.85))
+                .clipShape(RoundedRectangle(cornerRadius: 3))
+                .offset(y: -66)
+        }
+        .rotationEffect(.degrees(twd))
+    }
+}
+
+private struct ArrowTip: Shape {
+    func path(in rect: CGRect) -> Path {
+        Path { p in
+            p.move(to:    CGPoint(x: rect.midX, y: rect.minY))
+            p.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+            p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+            p.closeSubpath()
+        }
+    }
+}
+
 // MARK: - Preview
 #Preview {
     NavigationStack {
@@ -527,4 +755,13 @@ extension View {
             .environment(NMEAParser())
             .modelContainer(for: Waypoints.self)
     }
+}
+
+#Preview("Boat Marker") {
+    ZStack {
+        LinearGradient(colors: [Color.blue.opacity(0.35), Color.cyan.opacity(0.2)], startPoint: .top, endPoint: .bottom)
+            .ignoresSafeArea()
+        MapBoatMarker(heading: 37)
+    }
+    .frame(width: 160, height: 160)
 }

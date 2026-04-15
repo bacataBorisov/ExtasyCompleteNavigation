@@ -12,6 +12,7 @@ struct CalibrateSpeedLog: View {
     @State private var speedLogValues: [Double] = [] // Stores the last N speed log values for SMA
     @State private var sogValues: [Double] = [] // Stores the last N SOG values for SMA
     @State private var lastAppliedCoefficient: String = "N/A" // Track last applied coefficient
+    @State private var monitoringTimer: Timer?
     private let windowSize = 5 // Number of values to include in the moving average
 
     var body: some View {
@@ -72,7 +73,12 @@ struct CalibrateSpeedLog: View {
         .onChange(of: sogComparisonEnabled) {
             if sogComparisonEnabled {
                 startMonitoringSOG()
+            } else {
+                stopMonitoringSOG()
             }
+        }
+        .onDisappear {
+            stopMonitoringSOG()
         }
         .padding(.all)
         Spacer()
@@ -97,10 +103,18 @@ struct CalibrateSpeedLog: View {
     }
 
     private func startMonitoringSOG() {
-        // Periodically update the calculated coefficient
-        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+        monitoringTimer?.invalidate()
+        monitoringTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             updateCalculatedCoefficient()
         }
+    }
+
+    private func stopMonitoringSOG() {
+        monitoringTimer?.invalidate()
+        monitoringTimer = nil
+        speedLogValues.removeAll()
+        sogValues.removeAll()
+        calculatedCoefficient = nil
     }
 
     private func updateCalculatedCoefficient() {

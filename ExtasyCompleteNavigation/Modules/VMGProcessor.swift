@@ -85,6 +85,12 @@ class VMGProcessor {
         )
     }
     
+    static func calculateTackDeviation(trueWindAngle: Double, optimalTWA: Double?) -> Double? {
+        guard let optimalTWA, optimalTWA > 0 else { return nil }
+        let angleToWind = abs(normalizeAngleTo180(trueWindAngle))
+        return angleToWind - optimalTWA
+    }
+    
     /// Processes VMG-related calculations based on input data
     func processVMGData(
         gpsData: GPSData?,
@@ -147,7 +153,7 @@ class VMGProcessor {
         // Tack deviation: signed degrees off optimal TWA for the current state
         // Positive = too broad, negative = too pinched
         let optimalTWA = sailingState == "Upwind" ? optimalUpTWA : optimalDnTWA
-        let tackDeviation: Double? = optimalTWA > 0 ? (angleToWind - optimalTWA) : nil
+        let tackDeviation = Self.calculateTackDeviation(trueWindAngle: trueWindAngle, optimalTWA: optimalTWA)
         
         
         // Laylines calculation

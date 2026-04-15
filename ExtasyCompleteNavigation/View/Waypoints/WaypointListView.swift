@@ -101,7 +101,7 @@ struct WaypointListView: View {
     private func waypointListView() -> some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 0) {
-                ForEach(sortedWaypoints, id: \.self) { waypoint in
+                ForEach(Array(displayedWaypoints.enumerated()), id: \.element.id) { index, waypoint in
                     waypointRow(waypoint)
                         .padding(.horizontal)
                         .contentShape(Rectangle())
@@ -110,6 +110,9 @@ struct WaypointListView: View {
                         }
                         .contextMenu {
                             waypointContextMenu(waypoint)
+                        }
+                        .onAppear {
+                            loadMoreWaypointsIfNeeded(currentIndex: index)
                         }
 
                     // Divider between rows

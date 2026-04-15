@@ -1,5 +1,7 @@
 # Extasy Complete Navigation
 
+**Repository context:** This directory is the **iOS app target** inside the repo. For the full project pitch (videos, screenshots, user-facing changelog), see the [root `README.md`](../README.md). For the documentation map (human canon, Agent OS, Cursor skills), see [`.agent/DOCUMENTATION.md`](../.agent/DOCUMENTATION.md).
+
 ## Overview
 
 **ExtasyCompleteNavigation** is a modular sailing navigation app that receives NMEA 0183 sentences over WiFi/UDP from boat instruments, processes and visualizes navigation data, and provides advanced calculations including VMG (Velocity Made Good) via polar diagrams.

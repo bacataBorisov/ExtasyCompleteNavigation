@@ -77,12 +77,12 @@ struct GeneralSettingsView: View {
             }
             
             Section("Navigation") {
-                Stepper("Tack Tolerance: \(Int(settingsManager.tackTolerance))°",
+                Stepper("Alignment bar range: ±\(Int(settingsManager.tackTolerance))°",
                         value: Binding(
                             get: { settingsManager.tackTolerance },
                             set: { settingsManager.tackTolerance = $0 }
                         ),
-                        in: 1...20)
+                        in: 5...30, step: 5)
                 
                 Picker("Distance Unit", selection: Binding(
                     get: { settingsManager.distanceUnit },

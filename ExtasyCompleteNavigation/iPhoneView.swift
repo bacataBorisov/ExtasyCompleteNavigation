@@ -1,28 +1,12 @@
 import SwiftUI
 
-struct IdentifiedView: Identifiable {
-    let id = UUID()
-    let view: AnyView
-    let label: String
-}
-
 struct iPhoneView: View {
     @Environment(NMEAParser.self) private var navigationReadings
     
     @AppStorage("lastSelectedTab") private var selectedTab: Int = 0
     
-    private var allViews: [IdentifiedView] {
-        [
-            IdentifiedView(view: AnyView(UltimateView()), label: "Ultimate"),
-            IdentifiedView(view: AnyView(MultiDisplay()), label: "MultiDisplay"),
-            IdentifiedView(view: AnyView(PerformanceView()), label: "Performance"),
-            IdentifiedView(
-                view: navigationReadings.gpsData?.isTargetSelected == true
-                ? AnyView(iPhoneVMGView(waypointName: navigationReadings.gpsData?.waypointName ?? ""))
-                : AnyView(WaypointListView()),
-                label: navigationReadings.gpsData?.isTargetSelected == true ? "VMGView" : "WaypointList"
-            )
-        ]
+    private var isTargetSelected: Bool {
+        navigationReadings.gpsData?.isTargetSelected == true
     }
     
     var body: some View {
@@ -35,11 +19,27 @@ struct iPhoneView: View {
 
                 NavigationStack {
                     TabView(selection: $selectedTab) {
-                        ForEach(allViews.indices, id: \.self) { index in
-                            allViews[index].view
-                                .background(Color.gray.opacity(0.05))
-                                .tag(index)
+                        UltimateView()
+                            .background(Color.gray.opacity(0.05))
+                            .tag(0)
+                        
+                        MultiDisplay()
+                            .background(Color.gray.opacity(0.05))
+                            .tag(1)
+                        
+                        PerformanceView()
+                            .background(Color.gray.opacity(0.05))
+                            .tag(2)
+                        
+                        Group {
+                            if isTargetSelected {
+                                iPhoneVMGView(waypointName: navigationReadings.gpsData?.waypointName ?? "")
+                            } else {
+                                WaypointListView()
+                            }
                         }
+                        .background(Color.gray.opacity(0.05))
+                        .tag(3)
                     }
                     .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                 }

@@ -1,0 +1,31 @@
+# macOS
+
+.DS_Store
+
+# Logs
+
+
+# Build files
+
+.build/
+DerivedData/
+
+# Agent OS generated (keep `.agent-os/config.json` tracked; run `agentos init .` locally)
+
+.agent-os/data/
+.agent-os/context/
+.agent-os/exports/
+.agent-os/logs/
+.agent-os/state/
+
+# Secrets
+
+# Additional files
+
+project-structure.txt
+*.xcuserstate
+
+# Jupyter / scratch (keep repo scans and git history clean)
+Untitled.ipynb
+.ipynb_checkpoints/
+.virtual_documents/

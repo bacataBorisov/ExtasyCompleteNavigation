@@ -3,6 +3,7 @@ import SwiftUI
 struct InformationCard: View {
     @State private var currentTime: String = ""
     @State private var weatherForecast: String = "Sunny, 15°C" // Placeholder weather info
+    @State private var timer: Timer?
     
     var body: some View {
         
@@ -47,6 +48,10 @@ struct InformationCard: View {
         .onAppear {
             updateCurrentTime()
         }
+        .onDisappear {
+            timer?.invalidate()
+            timer = nil
+        }
     }
     
     // Update Current Time
@@ -56,7 +61,8 @@ struct InformationCard: View {
         currentTime = formatter.string(from: Date())
         
         // Update the time every second
-        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             currentTime = formatter.string(from: Date())
         }
     }

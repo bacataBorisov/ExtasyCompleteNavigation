@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "chunk_lines": 100,
+  "exclude_dirs": [
+    ".git",
+    "node_modules",
+    ".agent-os",
+    ".build",
+    "DerivedData",
+    ".ipynb_checkpoints",
+    ".virtual_documents"
+  ],
+  "notes": "Exclude .build/DerivedData and Jupyter scratch dirs so handoff/context-pack stay useful. See .agent/DOCUMENTATION.md."
+}

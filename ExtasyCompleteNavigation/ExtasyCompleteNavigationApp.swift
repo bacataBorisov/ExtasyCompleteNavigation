@@ -64,6 +64,6 @@ struct ExtasyCompleteNavigationApp: App {
                 parser.updateHydroDamping(level: settingsManager.hydroDamping)
             }
         }
-        .modelContainer(for: Waypoints.self)
+        .modelContainer(modelContainer)
     }
 }

@@ -77,6 +77,10 @@ NMEAParser (checksum → split → route to processors)
 | RMB | Waypoint navigation (reserved for autopilot) |
 | VTG | Track made good (reserved) |
 
+## Guides
+
+How-tos and test-path notes live under **[`guides/`](guides/)** — for example **[`guides/testing-core-math.md`](guides/testing-core-math.md)** (Swift package tests for navigation math without the iOS simulator).
+
 ## File Organization
 
 ```
@@ -113,3 +117,29 @@ ExtasyCompleteNavigationWatchApp Watch App/
 
 - **CocoaAsyncSocket** (7.6.5) — UDP socket via GCDAsyncUdpSocket
 - Apple frameworks: MapKit, SwiftData, WatchConnectivity, CoreLocation, AVFoundation
+
+## Agent OS (repository index)
+
+**Where everything lives (human vs generated, scan exclusions):** [DOCUMENTATION.md](DOCUMENTATION.md).
+
+This repo uses **Agent OS** via the **`agentos`** Python CLI: a local SQLite index of the codebase, Markdown handoff/cache, and JSON/Markdown **context packs** for AI-assisted work.
+
+| Path | Purpose |
+|------|---------|
+| [`AGENT_OS.md`](../AGENT_OS.md) (repo root) | Entry point: where files live, Xcode notes (auto-updated by `agentos`) |
+| `.agent-os/` | Generated data: `data/agent_os.db`, `context/scanned-summary.md`, `state/cache.md`, `state/current-handoff.md`, `exports/context-pack.{json,md}` |
+| `.agent/` | Human-written project docs (this file, `ROADMAP.md`, `CHANGELOG.md`, etc.) — **not** replaced by Agent OS; link here for architecture |
+
+**Refresh after meaningful code or doc changes** (from repo root):
+
+```bash
+# Full rescan + regenerate cache, handoff, exports (same as first-time init)
+agentos init .
+
+# Lighter refresh (uses existing DB; good for small edits)
+agentos cache update && agentos handoff update && agentos export
+```
+
+**Optional:** `agentos drift check` — documentation vs index (useful in CI; exit code 2 on failure). `agentos xcode integrate` — ensure `AGENT_OS.md` / `.agent-os` are referenced in the Xcode project.
+
+**Current index snapshot** (see also `.agent-os/context/scanned-summary.md`): on last scan, **~106 Swift files** and the main Xcode project were indexed; counts update each scan.

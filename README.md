@@ -1,5 +1,7 @@
 # Extasy Complete Navigation
 
+**README roles:** This file is the **public overview** (videos, screenshots, release-style changelog). For the **Xcode app target folder map** and module layout, see [`ExtasyCompleteNavigation/README.md`](ExtasyCompleteNavigation/README.md). For **contributors and AI** (architecture, roadmap, Agent OS, doc index), start at [`.agent/DOCUMENTATION.md`](.agent/DOCUMENTATION.md).
+
 [📱 Check out the iPhone demo video](https://drive.google.com/file/d/1rVJDbGBMlsVFmgOLY960FpXGMJToISZk/view?usp=sharing)
 
 [🖥️ Check out the iPad demo video](https://drive.google.com/file/d/1omNMziGSfN7exxU7LXaitJ29QClQm2Oh/view?usp=sharing)
@@ -127,6 +129,8 @@ Ensure you are on the same network as the device sending data on port 4950. The 
 
 This is a navigation application project, featuring modular MVVM architecture. For a detailed look at the project's structure, refer to the [Software Architecture Diagram](https://github.com/bacataBorisov/ExtasyCompleteNavigation/blob/main/ExtasyCompleteNavigation/Docs/ExtasyNavigation-SoftwareArchitectureMap.pdf).
 
+**Contributors and AI:** how human docs, Cursor skills, and Agent OS generated output fit together — including scan exclusions — is described in **[`.agent/DOCUMENTATION.md`](.agent/DOCUMENTATION.md)**.
+
 ## **Authors and Acknowledgment**
 
 ExtasyCompleteNavigation was created by **[Vasil Borisov](https://github.com/bacataBorisov)**.
@@ -182,6 +186,19 @@ No breaking changes. This update improves code quality for future development.
 ---
 
 ### **1.0.0 - Initial release**
+
+## Agent OS and project documentation
+
+For contributors and AI-assisted development:
+
+- **Cursor agents:** [AGENTS.md](AGENTS.md) at the repo root (read this first in automated sessions).
+- **Doc map (layers + Agent OS tips):** [.agent/DOCUMENTATION.md](.agent/DOCUMENTATION.md)
+- **Architecture and conventions:** [.agent/PROJECT.md](.agent/PROJECT.md), [.agent/CONVENTIONS.md](.agent/CONVENTIONS.md), [.agent/ROADMAP.md](.agent/ROADMAP.md)
+- **Agent OS (indexed context):** [AGENT_OS.md](AGENT_OS.md) at the repo root; generated output under **`.agent-os/`** (cache, handoff, context pack). Many IDEs hide dot-folders — open `AGENT_OS.md` or use **File → Open** on `.agent-os/exports/context-pack.md`.
+
+After large refactors, refresh the index from the repo root: `agentos init .` or `agentos cache update && agentos handoff update && agentos export`.
+
+---
 
 ## **Contact**
 

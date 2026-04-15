@@ -101,10 +101,10 @@ struct TackAlignmentBar: View {
                     shouldAnimate = true
                 }
             }
-            .onChange(of: currentHeading) { newValue, _ in
+            .onChange(of: currentHeading) { _, newValue in
                 let newOffset = xOffset(for: newValue, barWidth: barWidth)
                 animatedOffset = newOffset
-                storedOffset = Double(newOffset)  // Persist new value
+                storedOffset = Double(newOffset)
             }
         }
     }
@@ -112,7 +112,10 @@ struct TackAlignmentBar: View {
     private func xOffset(for heading: Double, barWidth: CGFloat) -> CGFloat {
         let targetHeading = isPortTack ? portTackTarget : starboardTackTarget
         let offset = normalizeAngleTo180(heading - targetHeading)
-        let scaledOffset = offset / (tolerance * rangeMultiplier)
+        // Guard: clamp scale denominator to at least 5° so a mis-configured tolerance
+        // never makes the bar hyper-sensitive or causes division by zero.
+        let scale = max(tolerance * rangeMultiplier, 5.0)
+        let scaledOffset = offset / scale
         let effectiveOffset = max(min(scaledOffset, 1), -1)
         let pixelOffset = CGFloat(effectiveOffset) * (barWidth / 2)
         return pixelOffset

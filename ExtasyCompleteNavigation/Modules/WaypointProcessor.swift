@@ -60,6 +60,17 @@ class WaypointProcessor {
             // they only move when TWD or boat/mark position actually changes.
             let angleToMark = abs(normalizeAngleTo180(trueMarkBearing - trueWindDirection))
             let waypointSailingState = angleToMark <= sailingStateLimit ? "Upwind" : "Downwind"
+
+            // Layline geometry: use polar mode from live TWA when it is definitive (Upwind /
+            // Downwind). That is the optimum the boat is sailing for — same family as VMG
+            // and wind laylines — and matches “fastest path” when beating or running to the
+            // mark. Mark-vs-TWD alone can sit past the threshold while you are still
+            // close-hauled (AoM edge case); `waypointApproachState` below stays mark-centric
+            // for labels; only diamond generation uses `laylineSailingState`.
+            let polarMode = vmgData?.sailingState
+            let laylineSailingState: String = (polarMode == "Upwind" || polarMode == "Downwind")
+                ? polarMode!
+                : waypointSailingState
             
             // MARK: - Opposite Tack Calculations
             
@@ -108,7 +119,7 @@ class WaypointProcessor {
                 windDirection: trueWindDirection,
                 optimalUpTWA: optimalUpTWA,
                 optimalDnTWA: optimalDnTWA,
-                sailingState: waypointSailingState,
+                sailingState: laylineSailingState,
                 boatToWaypointDistance: distanceToMark
             )
             

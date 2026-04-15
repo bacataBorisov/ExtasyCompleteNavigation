@@ -39,6 +39,11 @@ Prioritized list of improvements, organized by impact and effort.
 - **What**: Define a `NMEAProcessor` protocol with `func process(_ sentence: [String]) -> SomeData`. Each processor conforms.
 - **Benefit**: Uniform interface, easier testing, potential for dynamic processor registration (e.g., custom NMEA sentences).
 
+### Consolidate waypoint & layline core (package vs app)
+- **Status**: Not started (noted Apr 2026)
+- **What**: Today `WaypointProcessor` (full pipeline) lives in the app target while `ExtasyNavigationCore` holds overlapping pieces (`generateDiamondLaylines`, tests). Move the **authoritative** waypoint + layline + tack-intersection pipeline into **`NavigationCorePackage`** behind a small service type, with **unit tests co-located**, and call it from `NMEAParser` / parsers only.
+- **Benefit**: One place to add **downwind path advisor**, new marks, and routing features — no duplicate drift between package and app.
+
 ### Structured Logging
 - **Status**: Done (Session 4, Mar 2026)
 - **What**: Replace `print` / `debugLog` with `os.Logger` using appropriate subsystems and categories.
@@ -131,8 +136,9 @@ Prioritized list of improvements, organized by impact and effort.
 - **Files**: `WindProcessor.swift`, `KalmanFilter.swift` (added `seed(to:)`)
 
 ### Layline Stability
-- **Status**: Done (Session 5, Mar 2026)
+- **Status**: Done (Session 5, Mar 2026) — **refined Apr 2026**
 - **What**: Laylines were heading-dependent because `sailingState` (from boat TWA) was used. Replaced with `waypointSailingState` derived from bearing-to-mark vs TWD (stable). Extended `laylineDistance` to `max(4× distance, 200 km)` to guarantee intersection. Added `waypointApproachState` to `WaypointData`. Guard restructured to always persist computed laylines even if tack intersection fails. `MapView` condition `isVMCNegative` removed so laylines always show.
+- **Apr 2026**: Diamond **tack angle** (`generateDiamondLaylines`) prefers **`VMGData.sailingState`** (live TWA vs polar threshold) when `Upwind`/`Downwind`, so mark geometry matches **optimal up/down angles you are actually sailing**; falls back to `waypointApproachState` if polar mode unknown. `waypointApproachState` kept for context (e.g. debug “Mark”). `MapView` draws the processor diamond + trim logic.
 - **Files**: `WaypointProcessor.swift`, `WaypointData.swift`, `MapView.swift`
 
 ### Waypoint View — Tack Display Redesign
@@ -162,6 +168,12 @@ Prioritized list of improvements, organized by impact and effort.
 - **Status**: Not started
 - **What**: Incorporate wind shift detection, current estimation, and drift into layline calculations for more realistic tactical information.
 - **Origin**: From v2.0 notes
+
+### Downwind path advisor — straight vs gybe(s)
+- **Status**: Not started (noted Apr 2026)
+- **What**: On downwind legs, estimate whether **sailing straight toward the mark** (fewer maneuvers) or **heating up / gybing** at **polar-optimal TWA** yields **shorter time to mark**. Compare **VMC toward the mark** on candidate headings with **polar boat speed** at relevant TWAs; start with a simple **stay vs one gybe** (or rhumb vs one “VMG leg”) ETA using existing `WaypointData` / dual-tack VMC fields before full route search.
+- **Benefit**: Answers “sometimes straight is faster, sometimes not” inside the app instead of crew guesswork alone.
+- **Related**: `.cursor/skills/sailing-racing-tactics/SKILL.md` (VMC vs VMG, fastest-path notes).
 
 ### Lock Screen Widget
 - **Status**: Not started

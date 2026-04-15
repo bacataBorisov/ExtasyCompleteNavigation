@@ -2,7 +2,10 @@ import SwiftUI
 
 struct iPadView: View {
     @Environment(NMEAParser.self) private var navigationReadings
-    @State private var isTargetSelected: Bool = false // State for target selection animation
+    
+    private var isTargetSelected: Bool {
+        navigationReadings.gpsData?.isTargetSelected ?? false
+    }
     
     var body: some View {
         GeometryReader { geometry in
@@ -47,18 +50,7 @@ struct iPadView: View {
                 .frame(maxHeight: geometry.size.height)
             }
         }
-        .onAppear {
-            updateTargetState()
-        }
-        .onChange(of: navigationReadings.gpsData?.isTargetSelected) {
-            updateTargetState()
-        }
         .animation(.easeInOut(duration: 1), value: isTargetSelected) // Ensure smooth animations
-    }
-    
-    // MARK: - Update Target State
-    private func updateTargetState() {
-        isTargetSelected = navigationReadings.gpsData?.isTargetSelected ?? false
     }
 }
 

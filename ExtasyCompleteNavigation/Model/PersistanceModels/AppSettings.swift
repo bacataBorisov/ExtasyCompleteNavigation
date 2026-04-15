@@ -13,7 +13,7 @@ struct AppSettings {
     @UserDefault(key: UserDefaultsKeys.metricWind, defaultValue: false)
     static var metricWind: Bool
 
-    @UserDefault(key: UserDefaultsKeys.tackTolerance, defaultValue: 10.0)
+    @UserDefault(key: UserDefaultsKeys.tackTolerance, defaultValue: 15.0)
     static var tackTolerance: Double
 
     @UserDefault(key: UserDefaultsKeys.isWindModeActive, defaultValue: false)
@@ -31,8 +31,10 @@ struct DefaultSettings {
         if UserDefaults.standard.value(forKey: UserDefaultsKeys.metricWind) == nil {
             UserDefaults.standard.set(false, forKey: UserDefaultsKeys.metricWind)
         }
-        if UserDefaults.standard.value(forKey: UserDefaultsKeys.tackTolerance) == nil {
-            UserDefaults.standard.set(10.0, forKey: UserDefaultsKeys.tackTolerance)
+        // Reset tolerance if it is missing or was set below the new minimum of 5°.
+        let saved = UserDefaults.standard.double(forKey: UserDefaultsKeys.tackTolerance)
+        if saved < 5.0 {
+            UserDefaults.standard.set(15.0, forKey: UserDefaultsKeys.tackTolerance)
         }
         if UserDefaults.standard.value(forKey: UserDefaultsKeys.isWindModeActive) == nil {
             UserDefaults.standard.set(false, forKey: UserDefaultsKeys.isWindModeActive)

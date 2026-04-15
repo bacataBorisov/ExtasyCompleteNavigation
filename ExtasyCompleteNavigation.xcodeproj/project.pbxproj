@@ -41,7 +41,6 @@
 		0686F5282CEF40CE007EE554 /* HydroData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0686F5272CEF40CB007EE554 /* HydroData.swift */; };
 		0686F52A2CEF4169007EE554 /* HydroProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0686F5292CEF4165007EE554 /* HydroProcessor.swift */; };
 		0686F52C2CEF4A9C007EE554 /* GPSData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0686F52B2CEF4A99007EE554 /* GPSData.swift */; };
-		AA000001AAAA000100000001 /* Layline.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000001AAAA000100000002 /* Layline.swift */; };
 		0686F52E2CEF4B31007EE554 /* GPSProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0686F52D2CEF4B2C007EE554 /* GPSProcessor.swift */; };
 		0686F5332CEF5893007EE554 /* VMGData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0686F5322CEF5893007EE554 /* VMGData.swift */; };
 		0686F5352CEF5D51007EE554 /* VMGProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0686F5342CEF5D51007EE554 /* VMGProcessor.swift */; };
@@ -85,6 +84,7 @@
 		18A8FA742ACB974200EE2128 /* UltimateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18A8FA732ACB974200EE2128 /* UltimateView.swift */; };
 		18EDC55B2ACD052C003C82B2 /* MultiDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18EDC55A2ACD052C003C82B2 /* MultiDisplay.swift */; };
 		383EEC252AB359BE00C2F22B /* RawNavigationDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 383EEC242AB359BE00C2F22B /* RawNavigationDataView.swift */; };
+		AA000001AAAA000100000001 /* Layline.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000001AAAA000100000002 /* Layline.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -170,7 +170,6 @@
 		0686F5272CEF40CB007EE554 /* HydroData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HydroData.swift; sourceTree = "<group>"; };
 		0686F5292CEF4165007EE554 /* HydroProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HydroProcessor.swift; sourceTree = "<group>"; };
 		0686F52B2CEF4A99007EE554 /* GPSData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPSData.swift; sourceTree = "<group>"; };
-		AA000001AAAA000100000002 /* Layline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Layline.swift; sourceTree = "<group>"; };
 		0686F52D2CEF4B2C007EE554 /* GPSProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPSProcessor.swift; sourceTree = "<group>"; };
 		0686F5322CEF5893007EE554 /* VMGData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VMGData.swift; sourceTree = "<group>"; };
 		0686F5342CEF5D51007EE554 /* VMGProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VMGProcessor.swift; sourceTree = "<group>"; };
@@ -214,6 +213,9 @@
 		18A8FA732ACB974200EE2128 /* UltimateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UltimateView.swift; sourceTree = "<group>"; };
 		18EDC55A2ACD052C003C82B2 /* MultiDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiDisplay.swift; sourceTree = "<group>"; };
 		383EEC242AB359BE00C2F22B /* RawNavigationDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawNavigationDataView.swift; sourceTree = "<group>"; };
+		AA000001AAAA000100000002 /* Layline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Layline.swift; sourceTree = "<group>"; };
+		F56B01D1A1835AA868239D62 /* AGENT_OS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AGENT_OS.md; sourceTree = "<group>"; };
+		E2F4482AC4543CA150652C5C /* .agent-os */ = {isa = PBXFileReference; lastKnownFileType = folder; path = ".agent-os"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -314,6 +316,8 @@
 		066311A22A38DB6B00AAE263 = {
 			isa = PBXGroup;
 			children = (
+				F56B01D1A1835AA868239D62 /* AGENT_OS.md */,
+				E2F4482AC4543CA150652C5C /* .agent-os */,
 				066311AD2A38DB6B00AAE263 /* ExtasyCompleteNavigation */,
 				069EEA772CECCA6B00357A05 /* ExtasyCompleteNavigationTests */,
 				0602077C2DD8122F0020FD92 /* ExtasyCompleteNavigationWatchApp Watch App */,

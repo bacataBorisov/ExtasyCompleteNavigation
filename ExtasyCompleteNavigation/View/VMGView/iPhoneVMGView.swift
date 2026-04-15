@@ -105,19 +105,29 @@ struct iPhoneVMGView: View {
                             let nextLabel: String = nextLegTackStr == "Port" ? "PORT" : (nextLegTackStr == "Starboard" ? "STBD" : "—")
                             let nextColor: Color  = nextLegTackStr == "Port" ? Color(red: 1, green: 0.3, blue: 0.3) : Color(red: 0.3, green: 1, blue: 0.5)
 
-                            // Approach context: single Upwind / Downwind badge for the section
-                            let approachState = navigationReadings.waypointData?.waypointApproachState ?? "—"
-                            let approachColor: Color = approachState == "Upwind" ? .cyan : .orange
+                            // CURRENT subtitle = live boat mode (TWA vs polar threshold), same as debug “Boat”.
+                            // `waypointApproachState` is mark-vs-wind only; it can say Downwind while you
+                            // are close-hauled (e.g. AoM 95° vs 93° threshold) — wrong label for this row.
+                            let currentLegMode = navigationReadings.vmgData?.sailingState
+                                ?? navigationReadings.waypointData?.waypointApproachState
+                                ?? "—"
+                            let currentLegModeColor: Color = {
+                                switch currentLegMode {
+                                case "Upwind": return .cyan
+                                case "Downwind": return .orange
+                                default: return .white.opacity(0.55)
+                                }
+                            }()
 
                             // MARK: - Row 2: Current tack leg (boat → tack point)
-                            // col3 = PORT/STBD (which tack), col3Sub = UPWIND/DOWNWIND (how to sail)
+                            // col3 = PORT/STBD (which tack), col3Sub = UPWIND/DOWNWIND (live boat mode)
                             tackRow(
                                 label: "CURRENT",
                                 col1: "\(settingsManager.formatDistanceFromNM(navigationReadings.waypointData?.tackDistance ?? 0)) \(settingsManager.distanceAbbreviation)",
                                 col2: formatTripDuration(navigationReadings.waypointData?.tackDuration),
                                 col3: tack1Label,
-                                col3Sub: approachState.uppercased(),
-                                col3SubColor: approachColor,
+                                col3Sub: currentLegMode.uppercased(),
+                                col3SubColor: currentLegModeColor,
                                 stateColor: tack1Color,
                                 headerFont: headerFont,
                                 valueFont: valueFont,
@@ -130,7 +140,9 @@ struct iPhoneVMGView: View {
                             // nextLegSailingState is computed from the INTERSECTION's bearing
                             // to the mark, not from the boat's current position — so it correctly
                             // reflects what the boat will actually sail on the second leg.
-                            let nextLegState = navigationReadings.waypointData?.nextLegSailingState ?? approachState
+                            let nextLegState = navigationReadings.waypointData?.nextLegSailingState
+                                ?? navigationReadings.waypointData?.waypointApproachState
+                                ?? "—"
                             let nextLegStateColor: Color = nextLegState == "Upwind" ? .cyan : .orange
                             tackRow(
                                 label: "NEXT",

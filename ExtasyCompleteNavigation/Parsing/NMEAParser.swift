@@ -100,6 +100,7 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     private var logTimer: Timer?
     
     private var periodicUpdateTimer: Timer?
+    private var watchdogTimer: Timer?
 
     // Temporary caches — protected by dataLock for cross-thread access
     private var cachedHydroData: HydroData?
@@ -263,7 +264,8 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     }
     
     func startDataWatchdog() {
-        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+        watchdogTimer?.invalidate()
+        watchdogTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 self?.checkForStaleData()
             }
@@ -500,8 +502,13 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
         default: return nil
         }
     }
-}
 
+    deinit {
+        logTimer?.invalidate()
+        periodicUpdateTimer?.invalidate()
+        watchdogTimer?.invalidate()
+    }
+}
 
 
 

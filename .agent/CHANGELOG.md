@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [Unreleased] — 2026-04-14
+
+### Documentation
+
+- **Repo doc layout:** Retired `ai/docs/` — **[`guides/testing-core-math.md`](guides/testing-core-math.md)** is the canonical math-test guide. Added root **[`AGENTS.md`](../AGENTS.md)** for Cursor. Cross-linked root vs **`ExtasyCompleteNavigation/README.md`**. Removed stray **`Untitled.ipynb`**; **`.gitignore`** now ignores Jupyter scratch (`Untitled.ipynb`, `.ipynb_checkpoints/`, `.virtual_documents/`). **`.agent-os/config.json`** also excludes **`DerivedData`**, **`.ipynb_checkpoints`**, **`.virtual_documents`**.
+
+- **Doc hub**: Added [.agent/DOCUMENTATION.md](DOCUMENTATION.md) — layers (`.agent/`, `.agent-os/`, `.cursor/skills/`, READMEs), Agent OS scan hygiene, and optional consolidation notes. Linked from [README.md](../README.md), [PROJECT.md](PROJECT.md), and [AGENT_OS.md](../AGENT_OS.md). Expanded `.agent-os/config.json` **`exclude_dirs`** with **`.build`** so SwiftPM build trees are not indexed into handoff/context-pack.
+
+- **Agent OS**: Initialized `.agent-os/` with `agentos init .` (SQLite index, scanned summary, cache, handoff, context pack exports). Documented refresh commands and paths in [.agent/PROJECT.md](PROJECT.md) and [README.md](../README.md). Root [AGENT_OS.md](../AGENT_OS.md) remains the CLI-maintained pointer for Xcode and hidden folders.
+
+- **Roadmap** ([.agent/ROADMAP.md](ROADMAP.md)): Added **Downwind path advisor** (straight vs gybe / VMC + polar ETA idea). Added **Consolidate waypoint & layline core** refactor (single implementation in `NavigationCorePackage`). Updated **Layline stability** bullet with Apr 2026 polar-mode refinement.
+
+---
+
 ## [Unreleased] — 2026-03-14
 
 ### Bug Fixes

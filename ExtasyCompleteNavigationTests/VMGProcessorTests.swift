@@ -122,4 +122,27 @@ final class VMGProcessorTests: XCTestCase {
         }
         XCTAssertGreaterThan(result.optUpTWA, 30.0, "Optimal upwind TWA should be greater than 30° (would be pinching)")
     }
+    
+    func testCalculateTackDeviationReturnsNilWithoutOptimalAngle() {
+        XCTAssertNil(VMGProcessor.calculateTackDeviation(trueWindAngle: 45.0, optimalTWA: nil))
+        XCTAssertNil(VMGProcessor.calculateTackDeviation(trueWindAngle: 45.0, optimalTWA: 0.0))
+    }
+    
+    func testCalculateTackDeviationPositiveWhenTooBroad() {
+        let deviation = VMGProcessor.calculateTackDeviation(trueWindAngle: 60.0, optimalTWA: 42.0)
+        XCTAssertNotNil(deviation)
+        XCTAssertEqual(deviation ?? 0.0, 18.0, accuracy: 1e-9)
+    }
+    
+    func testCalculateTackDeviationNegativeWhenPinching() {
+        let deviation = VMGProcessor.calculateTackDeviation(trueWindAngle: 30.0, optimalTWA: 42.0)
+        XCTAssertNotNil(deviation)
+        XCTAssertEqual(deviation ?? 0.0, -12.0, accuracy: 1e-9)
+    }
+    
+    func testCalculateTackDeviationUsesAbsoluteAngleToWind() {
+        let deviation = VMGProcessor.calculateTackDeviation(trueWindAngle: -60.0, optimalTWA: 42.0)
+        XCTAssertNotNil(deviation)
+        XCTAssertEqual(deviation ?? 0.0, 18.0, accuracy: 1e-9)
+    }
 }
