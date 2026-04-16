@@ -65,13 +65,17 @@ Those two **can disagree near the threshold** (e.g. sailing **upwind TWA** while
 
 **Extasy tradeoff:** diamond laylines prefer **mark vs smoothed TWD** for that family choice so the **map** does not swap up/down tack angles when **polar boat mode** flickers; you may rarely see chart laylines in the “other” polar band — prefer **crew / polar readouts** for “what mode we are sailing.”
 
+**Tack strip & anemometer (Apr 2026):** With an **active waypoint**, **`tackAlignmentSailingState`** / optimal chevrons follow **`waypointApproachState`** (same **mark vs wind** rule as diamond laylines) so cockpit **up/down** matches the chart; **VMG bars** still use polar **`sailingState`**. The tack bar compares **heading to tack target course** (TWD ± optimal) — that is **trim / course to the wind niche**, not “on the geographic layline” (a position problem).
+
+**Trip / ETA (Apr 2026):** Total **TRIP** uses **sum of SOG-based tactical legs** (boat→tack + tack→mark) when intersections exist, not **`DTM / VMC`** (tiny VMC inflated ETA to hundreds of hours while leg rows stayed sensible).
+
 ## Fastest path to the mark (what you want on the water)
 
 - **Mark to windward (you are beating):** fastest course to that mark is driven by **upwind polar optimum** (close‑hauled VMG), not downwind angles — laylines through the mark should use **optimal upwind TWA** for that TWS.
 - **Mark to leeward (you are running):** use **downwind** polar optimum for laylines / gybing geometry.
 - **“No matter what the label says”:** if one classifier says “downwind” but you are clearly in **upwind TWA band**, you still sail and plan with **upwind optimum** for speed to a windward mark.
 
-**Extasy behaviour:** **Map diamond laylines** use **layline‑only smoothed TWD** + **smoothed polar tack angles** for the rays, plus **bearing‑to‑mark vs smoothed TWD** for up/down **family**. **`waypointApproachState`** and VMC still use **live** TWD vs mark for tactics. Polar **`sailingState`** remains authoritative for **VMG bars** and trim hints, not for swapping layline tack‑angle family on every threshold cross.
+**Extasy behaviour:** **Map diamond laylines** use **layline‑only smoothed TWD** + **smoothed polar tack angles** for the rays, plus **bearing‑to‑mark vs smoothed TWD** for up/down **family**. **`waypointApproachState`** and VMC still use **live** TWD vs mark for tactics. Polar **`sailingState`** remains authoritative for **VMG bars**; **tack bar / anemometer optimal** use **`waypointApproachState` when a waypoint is selected** so cockpit up/down matches the chart (see **Tack strip & anemometer** above).
 
 **Future product (see `.agent/ROADMAP.md`):** **Downwind path advisor** — compare time‑to‑mark for **rhumb / straight** vs **one or more gybes** at polar‑optimal TWA using **VMC** and polar boat speed; start simple (stay vs one gybe) before full routing. Optional **Settings** later: Garmin‑style **layline filter interval** or **manual layline wind** if users want full control.
 

@@ -10,7 +10,8 @@
 .build/
 DerivedData/
 
-# Agent OS generated (keep `.agent-os/config.json` tracked; run `agentos init .` locally)
+# Agent OS: only `.agent-os/config.json` is tracked. All other `.agent-os/*` output is
+# local (gitignored). `agentos cache update` updates disk but not git — see `.agent/DOCUMENTATION.md`.
 
 .agent-os/data/
 .agent-os/context/

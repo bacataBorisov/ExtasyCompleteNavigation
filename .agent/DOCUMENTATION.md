@@ -10,7 +10,7 @@ This repo mixes **human-written canon**, **generated Agent OS artifacts**, **Cur
 |-------|------|---------|----------------|
 | **Project canon** | [`.agent/`](.) | Architecture, roadmap, changelog, conventions, lessons, hardware — **source of truth** for decisions. | Yes |
 | **Doc hub (this file)** | `.agent/DOCUMENTATION.md` | How docs are organized; Agent OS tips. | Yes |
-| **Agent OS (generated)** | [`.agent-os/`](../.agent-os) | SQLite index, `scanned-summary.md`, `cache.md`, `current-handoff.md`, `exports/context-pack.*` — **machine + session context**. Excluded from its own scan (see `config.json`). | Optional (team choice); often **yes** so CI/`drift` works |
+| **Agent OS (generated)** | [`.agent-os/`](../.agent-os) | SQLite index, `scanned-summary.md`, `cache.md`, `current-handoff.md`, `exports/context-pack.*` — **machine + session context**. Excluded from its own scan (see `config.json`). | **No** for almost everything: root [`.gitignore`](../.gitignore) ignores `data/`, `context/`, `exports/`, `state/`, `logs/` — **only** [`.agent-os/config.json`](../.agent-os/config.json) is meant to be committed |
 | **Agent OS entry** | [root `AGENT_OS.md`](../AGENT_OS.md) | Xcode-friendly pointer; **may be rewritten** by `agentos` CLI. | Yes |
 | **Cursor skills** | [`.cursor/skills/`](../.cursor/skills) | Reusable agent instructions (e.g. sailing tactics). **Indexed** unless you exclude `.cursor`. | Yes |
 | **Public / onboarding** | [root `README.md`](../README.md) | Videos, high-level pitch, link into `.agent/`. | Yes |
@@ -42,6 +42,18 @@ This repo mixes **human-written canon**, **generated Agent OS artifacts**, **Cur
 - **`cache.md` / `current-handoff.md` / `context-pack.*`** summarize what’s relevant for the **next** agent session.  
 - **Problem:** If the scan includes **build products** (`.build/`, SPM artifacts, headers), **handoff and exports get polluted** with hundreds of irrelevant paths — worse answers and wasted tokens.
 
+### Why Agent OS files look “empty” or never change in git
+
+1. **They are not in version control (by design).** After `agentos cache update` / `handoff update` / `export`, files under `.agent-os/state/`, `context/`, `exports/`, and `data/` update **on your machine only**. `git status` stays clean because those paths are **gitignored** — only `.agent-os/config.json` is tracked. Clones and PRs will not carry your regenerated handoff or context pack unless you change that policy.
+
+2. **`cache update` does not re-scan the repo.** Those commands **read the existing SQLite DB** and rewrite Markdown/JSON. They do **not** walk the tree again. To pick up new/changed source files or new `exclude_dirs`, run **`agentos init .`** from the repo root (full scan + cache + handoff + export), or run the underlying **`agentos-scan scan`** then the lighter `agentos cache update && agentos handoff update && agentos export`.
+
+3. **Human slots stay blank until you fill them.** Templates in `state/cache.md` (e.g. “Current objective”, “Immediate next step”) are for **you** to edit; the CLI mainly appends scan-derived sections (and may leave them sparse when there is nothing new to report).
+
+4. **If `current-handoff.md` lists `.build/` or other junk**, the index was created or incrementally updated while those paths were still indexed. Fix exclusions in `config.json`, then run **`agentos init .`** so the DB is rebuilt from a clean scan. If `.build` still appears, **delete the local `.build/` folder** (SwiftPM output) and run **`agentos init .`** again — some scans still pick up on-disk build trees despite `exclude_dirs`.
+
+5. **`AGENT_OS.md` is regenerated** by `agentos init` / some other commands. Do not rely on it for repo-specific prose that must survive a refresh; keep that in **`.agent/DOCUMENTATION.md`** (this file) or **`AGENTS.md`**.
+
 ### Recommended `config.json` practice
 
 Keep `exclude_dirs` tight for anything that is **regenerable** or **not source**:
@@ -50,11 +62,15 @@ Keep `exclude_dirs` tight for anything that is **regenerable** or **not source**
 - Add: **`.build`** (SwiftPM local build tree at repo root).  
 - Consider: `DerivedData` if ever present inside the repo; large `xcuserdata` trees are better **gitignored** than scanned (see root `.gitignore`).
 
-After editing exclusions, run:
+After editing exclusions, run a **full** refresh so the DB is rescanned:
 
 ```bash
 agentos init .
-# or
+```
+
+For day-to-day work **when the index is already healthy**, a lighter pass is enough:
+
+```bash
 agentos cache update && agentos handoff update && agentos export
 ```
 
@@ -81,7 +97,7 @@ If you later need a public **`docs/`** tree (e.g. compliance PDFs), add it at th
 - [ ] Is it **canonical**? → `.agent/` or `.agent/guides/` (and link from `README.md` if onboarding-critical).  
 - [ ] Is it **Cursor-only**? → `.cursor/rules/` or `.cursor/skills/`.  
 - [ ] Is it **generated**? → `.agent-os/` only; do not hand-edit as source of truth.  
-- [ ] Will **scans** pick up junk? → Update `.agent-os/config.json` `exclude_dirs`, then `agentos init .` or `cache update`.
+- [ ] Will **scans** pick up junk? → Update `.agent-os/config.json` `exclude_dirs`, then **`agentos init .`** (not `cache update` alone).
 
 ---
 

@@ -18,7 +18,7 @@ struct InfoWaypointSection: View {
         VStack(spacing: sectionPadding) {
             WaypointCard(title: "", subtitle: "", destination: WaypointListView())
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .padding(sectionPadding)
     }
 }

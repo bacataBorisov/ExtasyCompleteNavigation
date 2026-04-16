@@ -8,7 +8,6 @@ struct TackAlignmentBar: View {
     var tolerance: Double // Tolerance range in degrees (e.g., ±15°)
     var rangeMultiplier: Double = 1.0 // Setting to extend or shrink the range
     let trueWindDirection: Double // True Wind Direction (TWD)
-    var tackDeviation: Double? = nil // Signed degrees off optimal tack (debug)
 
     // Use Double instead of CGFloat to work with @AppStorage
     @AppStorage("tackAlignmentOffset") private var storedOffset: Double = 0.0
@@ -33,6 +32,18 @@ struct TackAlignmentBar: View {
 
     private var activeOptimalTWA: Double {
         sailingState == "Upwind" ? optimalUpTWA : optimalDnTWA
+    }
+
+    /// Same signed angle that drives the needle (before ±1 scale) — **not** polar TWA deviation,
+    /// so the value matches the bar centre when visually aligned with the iPad column midline.
+    private var headingErrorVsActiveTackTargetDegrees: Double {
+        let targetHeading = isPortTack ? portTackTarget : starboardTackTarget
+        return normalizeAngleTo180(currentHeading - targetHeading)
+    }
+
+    /// Bumps needle refresh when TWD / polar / mode change — `onChange(of: heading)` alone missed those.
+    private var needleInputSignature: String {
+        "\(currentHeading)|\(trueWindDirection)|\(sailingState)|\(optimalUpTWA)|\(optimalDnTWA)|\(tolerance)|\(rangeMultiplier)"
     }
 
     var body: some View {
@@ -89,44 +100,41 @@ struct TackAlignmentBar: View {
 
                     Spacer()
 
-                    // Signed deviation from optimal
-                    if let dev = tackDeviation {
-                        let sign = dev >= 0 ? "+" : ""
-                        Text("\(sign)\(String(format: "%.1f", dev))°")
-                            .font(pillFont)
-                            .foregroundStyle(abs(dev) <= tolerance ? Color.primary : TacticalPalette.transition)
-                            .padding(.horizontal, pillHPad)
-                            .padding(.vertical, pillVPad)
-                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: pillCorner))
-                    }
+                    // Signed **heading** error vs active tack target (same signal as needle).
+                    let dev = headingErrorVsActiveTackTargetDegrees
+                    let sign = dev >= 0 ? "+" : ""
+                    Text("\(sign)\(String(format: "%.1f", dev))°")
+                        .font(pillFont)
+                        .foregroundStyle(abs(dev) <= tolerance ? Color.primary : TacticalPalette.transition)
+                        .padding(.horizontal, pillHPad)
+                        .padding(.vertical, pillVPad)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: pillCorner))
                 }
                 .padding(.horizontal, edgePad)
                 .allowsHitTesting(false)
                 .zIndex(2)
             }
             .onAppear {
-                // `storedOffset` is in **pixels** from a possibly different bar width — restoring it
-                // blindly can park the needle off-screen after layout changes (e.g. short iPad strip).
-                let newOffset = clampedPixelOffset(
-                    xOffset(for: currentHeading, barWidth: barWidth),
-                    barWidth: barWidth,
-                    needleWidth: needleW
-                )
-                animatedOffset = newOffset
-                storedOffset = Double(newOffset)
+                applyNeedleOffset(barWidth: barWidth, needleW: needleW)
                 shouldAnimate = false
-
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                     shouldAnimate = true
                 }
             }
-            .onChange(of: currentHeading) { _, newValue in
-                let raw = xOffset(for: newValue, barWidth: barWidth)
-                let newOffset = clampedPixelOffset(raw, barWidth: barWidth, needleWidth: needleW)
-                animatedOffset = newOffset
-                storedOffset = Double(newOffset)
+            .onChange(of: needleInputSignature) { _, _ in
+                applyNeedleOffset(barWidth: barWidth, needleW: needleW)
+            }
+            .onChange(of: geometry.size.width) { _, newWidth in
+                applyNeedleOffset(barWidth: newWidth, needleW: needleW)
             }
         }
+    }
+
+    private func applyNeedleOffset(barWidth: CGFloat, needleW: CGFloat) {
+        let raw = xOffset(for: currentHeading, barWidth: barWidth)
+        let newOffset = clampedPixelOffset(raw, barWidth: barWidth, needleWidth: needleW)
+        animatedOffset = newOffset
+        storedOffset = Double(newOffset)
     }
 
     private func xOffset(for heading: Double, barWidth: CGFloat) -> CGFloat {

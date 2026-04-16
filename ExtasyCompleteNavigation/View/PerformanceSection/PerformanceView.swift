@@ -100,11 +100,10 @@ struct PerformanceView: View {
                             currentHeading: navigationReadings.compassData?.normalizedHeading ?? 0,
                             optimalUpTWA: navigationReadings.vmgData?.optimalUpTWA ?? 0,
                             optimalDnTWA: navigationReadings.vmgData?.optimalDnTWA ?? 0,
-                            sailingState: navigationReadings.vmgData?.sailingState ?? "Unknown",
+                            sailingState: navigationReadings.tackAlignmentSailingState,
                             tolerance: settingsManager.tackTolerance,
                             rangeMultiplier: 1,
-                            trueWindDirection: navigationReadings.windData?.trueWindDirection ?? 0,
-                            tackDeviation: navigationReadings.vmgData?.tackDeviation
+                            trueWindDirection: navigationReadings.windData?.trueWindDirection ?? 0
                         )
                         .frame(height: stripCompactBars ? 34 : 40)
                         .frame(maxWidth: .infinity)

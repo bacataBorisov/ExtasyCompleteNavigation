@@ -75,13 +75,7 @@ struct UltimateView: View {
                 AnemometerView(
                     trueWindAngle: navigationReadings.windData?.trueWindAngle ?? 0,
                     apparentWindAngle: navigationReadings.windData?.apparentWindAngle ?? 0,
-                    optimalTWA: {
-                        let vmg = navigationReadings.vmgData
-                        if vmg?.sailingState == "Downwind" {
-                            return vmg?.optimalDnTWA ?? 0
-                        }
-                        return vmg?.optimalUpTWA ?? 0
-                    }(),
+                    optimalTWA: navigationReadings.anemometerDisplayOptimalTWA,
                     width: width
                 )
 

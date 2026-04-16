@@ -36,7 +36,7 @@ struct iPadView: View {
     var body: some View {
         GeometryReader { geometry in
             let horizontalPadding: CGFloat = 8
-            let columnGap: CGFloat = 10
+            let columnGap: CGFloat = 0
             let stackSpacing: CGFloat = 6
 
             let innerWidth = max(0, geometry.size.width - horizontalPadding * 2)
@@ -53,7 +53,7 @@ struct iPadView: View {
 
             VStack(spacing: 0) {
                 HStack(alignment: .bottom, spacing: columnGap) {
-                    MapView(iPadLeadingControl: .settingsLink, iPadDashboardBleedMargins: true)
+                    MapView(iPadLeadingControl: .settingsLink)
                         .frame(width: metrics.mapWidth, height: mainRowHeight)
 
                     VStack(spacing: stackSpacing) {
@@ -104,20 +104,27 @@ struct iPadView: View {
         let tackGap: CGFloat = 6
 
         GeometryReader { stripGeo in
-            let columnGap: CGFloat = 10
             let total = stripGeo.size.width
-            let performanceWidth = max(200, (total - columnGap) * 0.56)
-            let waypointColumnWidth = max(120, total - columnGap - performanceWidth)
+            let inner = max(0, total - horizontalInset * 2)
+            let midlineWidth: CGFloat = 2
+            let columnWidth = max(0, (inner - midlineWidth) / 2)
+            /// Avoid `maxHeight: .infinity` in a `VStack` above a fixed tack row — it can confuse
+            /// layout and leave a dead band / clip `PerformanceView`’s `GeometryReader` stack.
+            let performanceBlockHeight = max(0, stripGeo.size.height - tackGap - tackRowHeight)
 
             VStack(spacing: tackGap) {
-                HStack(alignment: .top, spacing: columnGap) {
+                HStack(alignment: .top, spacing: 0) {
                     NavigationStack {
                         PerformanceView(useBarCardChrome: false, embeddedTackBar: false)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
-                    .frame(width: performanceWidth)
+                    .frame(width: columnWidth)
 
-                    Divider()
+                    Rectangle()
+                        .fill(TacticalPalette.cockpitStripMidline)
+                        .frame(width: midlineWidth)
+                        .frame(maxHeight: .infinity)
+                        .accessibilityLabel("Performance and waypoint column divider")
 
                     NavigationStack {
                         Group {
@@ -129,22 +136,24 @@ struct iPadView: View {
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
-                    .frame(width: waypointColumnWidth)
+                    .frame(width: columnWidth)
                 }
                 .padding(.horizontal, horizontalInset)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: .infinity)
+                .frame(height: performanceBlockHeight, alignment: .top)
 
+                // Same horizontal inset as the row above so the bar centre matches the column midline.
                 TackAlignmentBar(
                     currentHeading: navigationReadings.compassData?.normalizedHeading ?? 0,
                     optimalUpTWA: navigationReadings.vmgData?.optimalUpTWA ?? 0,
                     optimalDnTWA: navigationReadings.vmgData?.optimalDnTWA ?? 0,
-                    sailingState: navigationReadings.vmgData?.sailingState ?? "Unknown",
+                    sailingState: navigationReadings.tackAlignmentSailingState,
                     tolerance: settingsManager.tackTolerance,
                     rangeMultiplier: 1,
-                    trueWindDirection: navigationReadings.windData?.trueWindDirection ?? 0,
-                    tackDeviation: navigationReadings.vmgData?.tackDeviation
+                    trueWindDirection: navigationReadings.windData?.trueWindDirection ?? 0
                 )
                 .frame(height: tackRowHeight)
+                .padding(.horizontal, horizontalInset)
                 .frame(maxWidth: .infinity)
             }
             .frame(width: total, height: stripGeo.size.height, alignment: .top)

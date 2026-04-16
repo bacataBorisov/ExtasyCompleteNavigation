@@ -9,30 +9,32 @@ struct WaypointCard<Destination: View>: View {
     var body: some View {
         NavigationLink(destination: NavigationViewWrapper(content: destination)) {
             ZStack {
-                // Background with subtle gradients
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [Color.green.opacity(0.3), Color.teal.opacity(0.3)]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 3)
-                
                 Text("Select Waypoint")
-                    .font(.body)
-                    .fontWeight(.bold)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(Color.white.opacity(0.8))
-                    .cornerRadius(8)
-                    .foregroundColor(Color.green)
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(Color.accentColor)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 11)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(Color(UIColor.secondarySystemGroupedBackground))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .strokeBorder(Color.primary.opacity(0.12), lineWidth: 1)
+                    )
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity) // Set a fixed minimum height
+        .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(title), \(subtitle ?? "No subtitle")")
+        .accessibilityLabel(accessibilitySummary)
+    }
+
+    private var accessibilitySummary: String {
+        if title.isEmpty, (subtitle ?? "").isEmpty {
+            return "Select waypoint"
+        }
+        return "\(title), \(subtitle ?? "No subtitle")"
     }
 }
 

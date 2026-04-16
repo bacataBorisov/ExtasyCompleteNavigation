@@ -33,6 +33,9 @@ enum TacticalPalette {
         racingFillGradientColors.map { $0.opacity(0.14) }
     }
 
+    /// iPad dashboard strip: vertical rule between Performance and Waypoints/VMG. Same hue family as the tack needle (`transition`) so when the needle is **centred** it lines up with this edge for glance alignment.
+    static let cockpitStripMidline = transition.opacity(0.92)
+
     /// Background gradient for `TackAlignmentBar` (port / low error → starboard / high).
     static var tackBarGradientStops: [Gradient.Stop] {
         [

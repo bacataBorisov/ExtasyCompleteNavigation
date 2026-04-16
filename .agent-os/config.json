@@ -10,5 +10,5 @@
     ".ipynb_checkpoints",
     ".virtual_documents"
   ],
-  "notes": "Exclude .build/DerivedData and Jupyter scratch dirs so handoff/context-pack stay useful. See .agent/DOCUMENTATION.md."
+  "notes": "Exclude .build/DerivedData and Jupyter scratch dirs. Generated .agent-os/* (except this file) is gitignored — see .agent/DOCUMENTATION.md §3. If handoff still lists .build/*, delete local .build/ and run `agentos init .` from repo root."
 }

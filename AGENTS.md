@@ -7,7 +7,7 @@ When working in this repository:
 3. Use **[`.agent/DOCUMENTATION.md`](.agent/DOCUMENTATION.md)** for where docs live (human canon vs `.agent-os/` generated vs Cursor skills).
 4. Prefer **[`.agent/ROADMAP.md`](.agent/ROADMAP.md)** and **[`.agent/CHANGELOG.md`](.agent/CHANGELOG.md)** for scope and recent decisions.
 
-**Agent OS:** generated index and handoff live under **`.agent-os/`**; refresh from repo root with `agentos init .` or `agentos cache update && agentos handoff update && agentos export`. Entry pointer: **[`AGENT_OS.md`](AGENT_OS.md)**.
+**Agent OS:** generated output under **`.agent-os/`** is **gitignored** (only `config.json` is committed), so `agentos cache update` updates **local** files only — **`git status` will not show it.** Use **`agentos init .`** for a full rescan; `cache update` alone rewrites Markdown from the **existing** DB. **`AGENT_OS.md`** is often rewritten by the CLI; details live in **[`.agent/DOCUMENTATION.md`](.agent/DOCUMENTATION.md)** §3.
 
 **Math / package tests:** **[`.agent/guides/testing-core-math.md`](.agent/guides/testing-core-math.md)**.
 

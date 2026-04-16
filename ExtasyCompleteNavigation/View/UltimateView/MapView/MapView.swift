@@ -22,9 +22,6 @@ struct MapView: View {
     /// iPad-only; default keeps the back arrow when the map is pushed from Ultimate.
     var iPadLeadingControl: MapIPadLeadingControl = .dismissBack
 
-    /// iPad dashboard: **edge-to-edge map** in the map cell (no rounded card / chrome padding).
-    var iPadDashboardBleedMargins: Bool = false
-
     /// iPad dashboard (`.settingsLink`): show settings **inside the map column** so cockpit metrics stay visible.
     @State private var iPadDashboardSettingsPresented = false
 
@@ -78,16 +75,6 @@ struct MapView: View {
         let portLat = navigationReadings.waypointData?.portsideIntersection?.intersection.latitude ?? .nan
         let portLon = navigationReadings.waypointData?.portsideIntersection?.intersection.longitude ?? .nan
         return "\(stbdLat),\(stbdLon),\(portLat),\(portLon)"
-    }
-
-    /// iPad map card insets (settings overlay uses the same values). Dashboard **bleed** uses
-    /// `.zero` so the chart fills the map cell (no rounded card shrinking the drawable area).
-    private var iPadMapChromeEdgeInsets: EdgeInsets {
-        guard DeviceType.isIPad else { return EdgeInsets() }
-        if iPadDashboardBleedMargins {
-            return EdgeInsets()
-        }
-        return EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8)
     }
 
     var body: some View {
@@ -190,22 +177,6 @@ struct MapView: View {
                 MapCompass(scope: mapScope).mapControlVisibility(.hidden)
                 
             }
-            .if(DeviceType.isIPad) { view in
-                Group {
-                    if iPadDashboardBleedMargins {
-                        view
-                    } else {
-                        view
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.gray.opacity(0.2), lineWidth: 2)
-                            )
-                            .padding(iPadMapChromeEdgeInsets)
-                    }
-                }
-            }
-            
             
             // iPad — top left: back (pushed map) or settings (dashboard map)
             if DeviceType.isIPad {
@@ -230,8 +201,7 @@ struct MapView: View {
                     Spacer()
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.leading, 26)
-                .padding(.top, 26)
+                .safeAreaPadding([.top, .leading])
             }
 
             // Floating pill toolbar — bottom center
@@ -279,7 +249,7 @@ struct MapView: View {
             .background(.ultraThinMaterial)
             .clipShape(Capsule())
             .shadow(color: .black.opacity(0.25), radius: 8, x: 0, y: 4)
-            .padding(.bottom, 16)
+            .safeAreaPadding(.bottom)
 
             // In-map settings (dashboard only): occupies this view’s bounds — does not cover Ultimate / Multi.
             if DeviceType.isIPad, iPadLeadingControl == .settingsLink, iPadDashboardSettingsPresented {
@@ -288,8 +258,7 @@ struct MapView: View {
                         withAnimation(.easeInOut(duration: 0.25)) {
                             iPadDashboardSettingsPresented = false
                         }
-                    },
-                    outerPadding: iPadMapChromeEdgeInsets
+                    }
                 )
                 .transition(.asymmetric(insertion: .move(edge: .leading).combined(with: .opacity), removal: .opacity))
                 .zIndex(2)
@@ -600,10 +569,14 @@ struct MapView: View {
                 MapPolyline(coordinates: boatLaylineOuterSegment(boat: boat, far: portBoatFar, tack: pInt))
                     .stroke(purple, lineWidth: 2.5)
 
-                let corners = laylineDiamondCornersStable(boat: boat, mark: mark, si: sInt, pi: pInt)
-                MapPolygon(coordinates: corners)
-                    .foregroundStyle(Color.white.opacity(0.16))
-                    .stroke(Color.white.opacity(0), lineWidth: 0)
+                // `MapPolygon` triangulation uses **map point** space. Lat/lon convexity disagreed
+                // with that projection, so we sometimes fed a self‑intersecting quad → MapKit
+                // “Triangulator failed…” / index mismatch spam. Skip fill when not a simple convex quad.
+                if let corners = laylineDiamondFillPolygon(boat: boat, mark: mark, si: sInt, pi: pInt) {
+                    MapPolygon(coordinates: corners)
+                        .foregroundStyle(Color.white.opacity(0.16))
+                        .stroke(Color.white.opacity(0), lineWidth: 0)
+                }
 
                 MapPolyline(coordinates: [boat, sInt])
                     .stroke(Color.white.opacity(0.5), lineWidth: 1.5)
@@ -681,34 +654,51 @@ struct MapView: View {
         return MKMapPoint(x: a.x + ux * tShow, y: a.y + uy * tShow).coordinate
     }
 
-    /// Perimeter of the tactical diamond: **boat → starboard tack → mark → port tack** (or the
-    /// reverse winding). Avoids sorting by angle around the centroid — when the centroid
-    /// moves or two angles tie, order used to flip frame-to-frame and `MapPolygon` strobed.
-    private func laylineDiamondCornersStable(
+    /// Closed ring for the tactical diamond fill: **boat → starboard tack → mark → port tack**
+    /// or the swapped tack order. Returns `nil` if corners are degenerate or not a simple convex
+    /// quad in **map point** space (avoids feeding `MapPolygon` a bow‑tie / collapsed polygon).
+    private func laylineDiamondFillPolygon(
         boat: CLLocationCoordinate2D,
         mark: CLLocationCoordinate2D,
         si: CLLocationCoordinate2D,
         pi: CLLocationCoordinate2D
-    ) -> [CLLocationCoordinate2D] {
+    ) -> [CLLocationCoordinate2D]? {
         let ringA = [boat, si, mark, pi]
-        if isConvexQuadLatLon(ringA) { return ringA }
         let ringB = [boat, pi, mark, si]
-        if isConvexQuadLatLon(ringB) { return ringB }
-        return ringA
+        let minEdgeMeters: Double = 3
+        if isConvexQuadMapPoints(ringA), laylineQuadMinEdgeMeters(ringA) >= minEdgeMeters { return ringA }
+        if isConvexQuadMapPoints(ringB), laylineQuadMinEdgeMeters(ringB) >= minEdgeMeters { return ringB }
+        return nil
     }
 
-    /// Convexity test in a local lon/lat plane (fine for harbour-to-offshore spans on this chart).
-    private func isConvexQuadLatLon(_ v: [CLLocationCoordinate2D]) -> Bool {
+    private func laylineQuadMinEdgeMeters(_ v: [CLLocationCoordinate2D]) -> Double {
+        guard v.count == 4 else { return 0 }
+        var m = Double.greatestFiniteMagnitude
+        for i in 0..<4 {
+            let a = MKMapPoint(v[i])
+            let b = MKMapPoint(v[(i + 1) % 4])
+            m = min(m, a.distance(to: b))
+        }
+        return m
+    }
+
+    /// Convexity in `MKMapPoint` space — matches how MapKit tessellates `MapPolygon`.
+    private func isConvexQuadMapPoints(_ v: [CLLocationCoordinate2D]) -> Bool {
         guard v.count == 4 else { return false }
+        let p = v.map { MKMapPoint($0) }
+        var span: Double = 0
+        for pt in p {
+            span = max(span, abs(pt.x), abs(pt.y))
+        }
+        let colinearEps = max(0.25, span * 1e-12)
         var nonZeroSign: Int?
         for i in 0..<4 {
-            let p0 = v[i]
-            let p1 = v[(i + 1) % 4]
-            let p2 = v[(i + 2) % 4]
-            let cross = (p1.longitude - p0.longitude) * (p2.latitude - p1.latitude)
-                - (p1.latitude - p0.latitude) * (p2.longitude - p1.longitude)
+            let p0 = p[i]
+            let p1 = p[(i + 1) % 4]
+            let p2 = p[(i + 2) % 4]
+            let cross = (p1.x - p0.x) * (p2.y - p1.y) - (p1.y - p0.y) * (p2.x - p1.x)
             let s: Int
-            if cross > 1e-16 { s = 1 } else if cross < -1e-16 { s = -1 } else { continue }
+            if cross > colinearEps { s = 1 } else if cross < -colinearEps { s = -1 } else { continue }
             if let prev = nonZeroSign, prev != s { return false }
             nonZeroSign = s
         }
@@ -721,7 +711,6 @@ struct MapView: View {
 
 private struct MapDashboardSettingsInMapColumn: View {
     var onDismiss: () -> Void
-    var outerPadding: EdgeInsets
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -740,8 +729,6 @@ private struct MapDashboardSettingsInMapColumn: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        .clipShape(RoundedRectangle(cornerRadius: DeviceType.isIPad ? 12 : 0))
-        .padding(outerPadding)
     }
 }
 

@@ -144,10 +144,10 @@ ExtasyCompleteNavigation was created by **[Vasil Borisov](https://github.com/bac
 
 Summary only; full technical notes live in **[`.agent/CHANGELOG.md`](.agent/CHANGELOG.md)**.
 
-- **iPad**: Map column **bleed/insets** aligned with Multi; **dashboard map** can run **edge-to-edge** in the map cell when bleed margins apply; **settings** (including Advanced) usable **from the map**; bottom strip **Performance** and **Waypoints/VMG** with a **single full-width tack bar** under both columns (**flush** to strip bottom); **polar** via **Ultimate ↔ Polar** in the top instrument stack (not a third bottom tab).
-- **Racing UI**: Shared **port/starboard palette** across anemometer, performance bars, tack bar, and iPhone VMG tack labels; iPad performance strip **racing fill** uses an **absolute 0–100 %** colour scale along the bar (masked gradient + dim track).
-- **VMG waypoint strip**: Flat summary card whose **type scales with available width and height**; **leading-packed** DTM/Trip/ETA; **ETA** shows **date** when not same-day or beyond ~24 h.
-- **Laylines**: **Smoothed layline wind** plus **smoothed polar tack angles** for diamond rays; **MapView** geometry tuned so boat-side rays and white legs stay readable through tacks.
+- **iPad**: Map column **bleed/insets** aligned with Multi; **dashboard map** can run **edge-to-edge** in the map cell when bleed margins apply; **settings** (including Advanced) usable **from the map**; bottom strip **Performance** and **Waypoints/VMG** in a **50/50** split with a **cockpit midline** and a **single full-width tack bar** (**flush** to strip bottom, layout-stable height for the performance stack); **polar** via **Ultimate ↔ Polar** in the top instrument stack (not a third bottom tab).
+- **Racing UI**: Shared **port/starboard palette** across anemometer, performance bars, tack bar, and iPhone VMG tack labels; iPad performance strip **racing fill** uses an **absolute 0–100 %** colour scale along the bar (masked gradient + dim track). **Tack bar** degree readout matches the **needle** (heading vs tack target); with a waypoint, **up/down** mode follows **mark vs wind** so it tracks **layline** family choice.
+- **VMG waypoint strip**: Flat summary card whose **type scales with available width and height**; **leading-packed** DTM/Trip/ETA; **TRIP/ETA** from **SOG tactical legs** (not tiny VMC); **ETA** shows **date** when not same-day or beyond ~24 h.
+- **Laylines**: **Smoothed layline wind** plus **smoothed polar tack angles** for diamond rays; **MapView** geometry tuned so boat-side rays and white legs stay readable through tacks; **diamond fill** skipped when the quad is not safely tessellated in map space.
 
 ### **2.0.0 - [25-Jan-2025]**
 #### **New Features**
@@ -203,9 +203,9 @@ For contributors and AI-assisted development:
 - **Cursor agents:** [AGENTS.md](AGENTS.md) at the repo root (read this first in automated sessions).
 - **Doc map (layers + Agent OS tips):** [.agent/DOCUMENTATION.md](.agent/DOCUMENTATION.md)
 - **Architecture and conventions:** [.agent/PROJECT.md](.agent/PROJECT.md), [.agent/CONVENTIONS.md](.agent/CONVENTIONS.md), [.agent/ROADMAP.md](.agent/ROADMAP.md)
-- **Agent OS (indexed context):** [AGENT_OS.md](AGENT_OS.md) at the repo root; generated output under **`.agent-os/`** (cache, handoff, context pack). Many IDEs hide dot-folders — open `AGENT_OS.md` or use **File → Open** on `.agent-os/exports/context-pack.md`.
+- **Agent OS (indexed context):** [AGENT_OS.md](AGENT_OS.md) at the repo root; generated output under **`.agent-os/`** (cache, handoff, context pack). That output is **gitignored** (only `config.json` is committed), so refreshes are **local** unless you change ignore rules. Many IDEs hide dot-folders — open `AGENT_OS.md` or use **File → Open** on `.agent-os/exports/context-pack.md`.
 
-After large refactors, refresh the index from the repo root: `agentos init .` or `agentos cache update && agentos handoff update && agentos export`.
+After large refactors or `exclude_dirs` changes, run **`agentos init .`** from the repo root (full rescan). For a quick pass on an already-good index: `agentos cache update && agentos handoff update && agentos export`.
 
 ---
 

@@ -30,6 +30,25 @@ class WaypointProcessor {
     private var hasLoggedWaypointSkipped = false
     private var hasLoggedWaypointInitialized = false
     
+    /// Total trip time in **hours** for waypoint TRIP/ETA.
+    ///
+    /// When both tactical legs exist, uses **leg1 + leg2 at SOG** (same model as `tackDuration` /
+    /// `tripDurationOnOppositeTack`). Otherwise uses rhumb-line **DTM / SOG**. Avoids
+    /// `DTM / VMC`, which blows up when VMC is small but the boat is still moving at SOG.
+    static func tripDurationToWaypointHours(
+        distanceToMarkMeters: Double,
+        effectiveSOGKnots: Double,
+        leg1Hours: Double?,
+        leg2Hours: Double?
+    ) -> Double? {
+        guard effectiveSOGKnots > 0 else { return nil }
+        if let a = leg1Hours, let b = leg2Hours, a.isFinite, b.isFinite, a >= 0, b >= 0 {
+            return a + b
+        }
+        guard distanceToMarkMeters > 0 else { return nil }
+        return distanceToMarkMeters * toNauticalMiles / effectiveSOGKnots
+    }
+
     // MARK: - Reset Waypoint Data
     func resetWaypointCalculations() {
         laylineWindDirectionSmoothed = nil
@@ -135,14 +154,6 @@ class WaypointProcessor {
             // Use signed values for directional feedback
             let currentTackVMCDisplay = abs(currentTackVMC)
             let oppositeTackVMCDisplay = abs(oppositeTackVMC)
-            // MARK: - Time Calculations
-            
-            // Trip Duration and ETA to Waypoint — only meaningful when making positive progress
-            let tripDurationToWaypoint: Double? = currentTackVMC > 0
-                ? (distanceToMark * toNauticalMiles / currentTackVMC)
-                : nil
-            let etaToWaypoint: Date? = tripDurationToWaypoint.map { Date().addingTimeInterval($0 * 3600) }
-            
             let effectiveSOG = max(speedOverGround, 0) // Ensure positive SOG
             
             // MARK: - Laylines
@@ -171,11 +182,18 @@ class WaypointProcessor {
                 debugLog("Not enough intersections (\(intersections.count)) — saving laylines without tack distances.")
                 self.starboardIntersection = nil
                 self.portsideIntersection = nil
+                let tripNoLegs = Self.tripDurationToWaypointHours(
+                    distanceToMarkMeters: distanceToMark,
+                    effectiveSOGKnots: effectiveSOG,
+                    leg1Hours: nil,
+                    leg2Hours: nil
+                )
+                let etaNoLegs = tripNoLegs.map { Date().addingTimeInterval($0 * 3600) }
                 self.waypointData = WaypointData(
                     distanceToMark: distanceToMark,
                     trueMarkBearing: trueMarkBearing,
-                    tripDurationToWaypoint: tripDurationToWaypoint,
-                    etaToWaypoint: etaToWaypoint,
+                    tripDurationToWaypoint: tripNoLegs,
+                    etaToWaypoint: etaNoLegs,
                     currentTackRelativeBearing: relativeMarkBearing,
                     waypointApproachState: waypointSailingState,
                     currentTackVMC: currentTackVMC,
@@ -219,6 +237,17 @@ class WaypointProcessor {
             // Use distanceWaypoint of the closer intersection (not distanceBoat of the far one).
             let oppositeTackDistance = tackStates.nextLegDistance * toNauticalMiles
             let oppositeTackDuration = (effectiveSOG > 0) ? (oppositeTackDistance / effectiveSOG) : 0.0
+
+            // TRIP / ETA must match the **tactical leg model** (SOG along boat→tack→mark), not
+            // `DTM / currentTackVMC` — tiny VMC inflates time to hundreds of hours while the
+            // leg rows still show a ~10 h sum (see `tackDuration` + `tripDurationOnOppositeTack`).
+            let tripDurationToWaypoint = Self.tripDurationToWaypointHours(
+                distanceToMarkMeters: distanceToMark,
+                effectiveSOGKnots: effectiveSOG,
+                leg1Hours: currentTackDuration,
+                leg2Hours: oppositeTackDuration
+            )
+            let etaToWaypoint = tripDurationToWaypoint.map { Date().addingTimeInterval($0 * 3600) }
 
             // Sailing state for leg 2 is determined from the INTERSECTION's perspective,
             // not from the boat's current position. The bearing from the intersection to

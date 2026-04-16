@@ -9,13 +9,26 @@ All notable changes to this project will be documented in this file.
 ### Improvements
 
 - **Laylines (`WaypointProcessor` + `MapView`)**: Chart laylines use **slower low-pass TWD** (layline-only) plus **smoothed polar optimal up/down TWA** for ray angles; **mark vs smoothed TWD** for up/down family. **`MapView`**: boat-side outer rays start at **tack** when the diamond is valid (avoids overlap flash with white legs / fill); **stable polygon vertex order**; **no `withAnimation`** on tack dots; waypoint bundle uses **processor boat** anchor. **Dashboard map** (`iPadDashboardBleedMargins`): **no rounded card** — map fills the map cell (**`iPadMapChromeEdgeInsets`** zero).
+- **Layline diamond fill (`MapView`)**: `MapPolygon` only when the quad is **convex in `MKMapPoint` space** and edges meet a **minimum length** (avoids MapKit triangulation failures / log spam from bow‑tie or degenerate rings).
+- **Tack / anemometer vs chart (`RacingNavigationSemantics` + `NMEAParser`)**: With a **selected waypoint**, **`tackAlignmentSailingState`** and **`anemometerDisplayOptimalTWA`** follow **`waypointApproachState`** (mark vs wind), matching **diamond layline** up/down choice; otherwise polar **`sailingState`**.
 - **Performance bars (`PerformanceDoubleBarView` + `TacticalPalette`)**: Racing fill uses **full-width gradient masked to fill %** (absolute 0–100 % hue scale); dim full-width track; **`PowerSegments`** empty cells use faint segment hue instead of flat grey.
-- **iPad strip (`iPadView`)**: **Tack alignment bar flush** to strip bottom (removed inner bottom pad and outer safe-area-style bottom pad on the strip).
-- **`VMGSimpleView`**: No **top** content padding; **header** row fixed height with title **vertically centered** with list/close; **DTM / Trip / ETA** **leading-packed** columns; **ETA** shows **`d MMM HH:mm`** when not same-day or beyond ~24 h; **downwind/upwind** on one **distance · time** line each; tighter **`StripMetrics`** when the strip is short.
+- **iPad strip (`iPadView`)**: **Tack alignment bar flush** to strip bottom; **Performance | Waypoint** columns **50/50** with **`cockpitStripMidline`** divider; secondary strip uses an **explicit performance block height** so **`PerformanceView`** is not starved or clipped; tack bar uses **horizontal inset** to line up with the column midline.
+- **`TackAlignmentBar`**: Degree readout uses the **same heading error** as the needle (not polar TWA `tackDeviation`); needle **re-syncs** when TWD / sailing mode / optimal angles / bar width change.
+- **`VMGSimpleView`**: No **top** content padding; **header** row fixed height with title **vertically centered** with list/close; **DTM / Trip / ETA** **leading-packed** columns; **ETA** shows **`d MMM HH:mm`** when not same-day or beyond ~24 h; **downwind/upwind** on one **distance · time** line each; tighter **`StripMetrics`** when the strip is short; **type** scales so long values do not resize the strip.
+- **Waypoint card (`WaypointCard` + `InfoWaypointSection`)**: No green gradient when **no waypoint** selected — centred **Select Waypoint** pill.
+
+### Bug Fixes
+
+- **Waypoint TRIP / ETA (`WaypointProcessor`)**: Total trip time is **tactical leg₁ + leg₂ at SOG** when two layline intersections exist, else **rhumb DTM / SOG** — fixes **multi‑day TRIP** when **`currentTackVMC`** was tiny while leg rows showed sensible hours.
+
+### Testing
+
+- **`RacingNavigationSemanticsTests`**: Mark approach vs polar UI state; tack target headings; edge case where modes disagree.
+- **`WaypointTripTimeTests`**: `tripDurationToWaypointHours` prefers leg sum, rhumb fallback, regression vs tiny VMC.
 
 ### Documentation
 
-- **`.cursor/skills/sailing-racing-tactics/SKILL.md`**: Vendor layline filter notes (Garmin / B&G); **Extasy** dual smoothing (TWD + tack angles) and “filtered not locked” expectation; editing bullets updated.
+- **`.cursor/skills/sailing-racing-tactics/SKILL.md`**: Vendor layline filter notes (Garmin / B&G); **Extasy** dual smoothing (TWD + tack angles) and “filtered not locked” expectation; tack strip / TRIP semantics (Apr 2026); editing bullets updated.
 - **`.agent/ROADMAP.md`**: Layline stability line updated; **Optional C / Accelerate kernels** task (profile-first NMEA / polar / geodesic / matrices) from prior planning.
 
 ---

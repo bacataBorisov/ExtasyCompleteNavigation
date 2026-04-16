@@ -79,17 +79,21 @@ struct VMGSimpleView: View {
                 value: "\(settingsManager.formatDistance(meters: navigationReadings.waypointData?.distanceToMark ?? 0)) \(settingsManager.distanceAbbreviation)",
                 metrics: m
             )
+            .frame(width: m.metricColumnMaxWidth, alignment: .leading)
+
             stripMetricLeading(
                 title: "Trip",
                 value: formatTripDuration(navigationReadings.waypointData?.tripDurationToWaypoint),
                 metrics: m
             )
+            .frame(width: m.metricColumnMaxWidth, alignment: .leading)
+
             stripMetricLeading(
                 title: "ETA",
                 value: formatETA(navigationReadings.waypointData?.etaToWaypoint),
                 metrics: m
             )
-            Spacer(minLength: 0)
+            .frame(width: m.metricColumnMaxWidth, alignment: .leading)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -136,16 +140,16 @@ struct VMGSimpleView: View {
                 .font(.system(size: m.metricLabel, weight: .semibold))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
-                .minimumScaleFactor(0.8)
+                .minimumScaleFactor(0.75)
 
             Text(value)
                 .font(.system(size: m.metricValue, weight: .bold, design: .rounded))
                 .foregroundStyle(Color("display_font"))
-                .lineLimit(2)
-                .minimumScaleFactor(0.5)
-                .fixedSize(horizontal: false, vertical: true)
+                .lineLimit(1)
+                .minimumScaleFactor(m.metricValueMinScale)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(minWidth: m.metricColumnMinWidth, alignment: .leading)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func formatTripDuration(_ eta: Double?) -> String {
@@ -194,8 +198,10 @@ private struct StripMetrics {
     let metricTitleValueGap: CGFloat
     let metricLabel: CGFloat
     let metricValue: CGFloat
-    /// Minimum width per DTM / Trip / ETA column so values do not collapse when leading-packed.
-    let metricColumnMinWidth: CGFloat
+    /// `minimumScaleFactor` for DTM / Trip / ETA values — tight columns need more shrink for long ETAs.
+    let metricValueMinScale: CGFloat
+    /// Equal width for each DTM / Trip / ETA column (`innerW` minus gaps, ÷ 3).
+    let metricColumnMaxWidth: CGFloat
     let tackColumnGap: CGFloat
     let tackStateToDetailGap: CGFloat
     let tackState: CGFloat
@@ -211,8 +217,8 @@ private struct StripMetrics {
         edgePad = stripTight ? max(4, min(8, w * 0.028)) : max(6, min(14, w * 0.035))
         let innerW = w - edgePad * 2
         let innerH = h - edgePad * 2
-        /// Slightly upsize type when the strip is tall so the block does not look underscaled.
-        let vScale = min(1.22, max(1.0, innerH / 100))
+        /// Keep vertical scaling modest so the metrics row does not jump to oversized type in tall strips.
+        let vScale = min(1.08, max(1.0, innerH / 100))
 
         dividerPad = stripTight ? max(2, min(5, innerH * 0.028)) : max(3, min(10, innerH * 0.045))
         sectionGap = max(4, innerH * 0.03)
@@ -224,12 +230,16 @@ private struct StripMetrics {
         closeIcon = max(14, min(18, headerTitle * 1.12))
 
         metricsColumnGap = max(4, innerW * 0.02)
-        let colCount: CGFloat = 3
-        let colW = max(40, (innerW - metricsColumnGap * (colCount - 1)) / colCount)
+        let metricColCount: CGFloat = 3
+        let metricsUsable = max(0, innerW - metricsColumnGap * (metricColCount - 1))
+        metricColumnMaxWidth = max(28, metricsUsable / metricColCount)
         metricTitleValueGap = stripTight ? max(1, innerH * 0.014) : max(2, innerH * 0.018)
-        metricValue = min(32, max(stripTight ? 13 : 15, colW * (stripTight ? 0.19 : 0.22)) * vScale)
-        metricLabel = max(8, min(14, metricValue * 0.42))
-        metricColumnMinWidth = max(52, min(100, innerW * 0.22))
+        // One line per value: cap pt size from **column** width so long ETAs shrink via `minimumScaleFactor`, not layout growth.
+        let valueFromCol = metricColumnMaxWidth * (stripTight ? 0.34 : 0.36)
+        metricValue = min(21, max(stripTight ? 12 : 13, valueFromCol)) * vScale
+        metricLabel = max(7, min(12, metricValue * 0.44))
+        let narrowCol = metricColumnMaxWidth < 56
+        metricValueMinScale = narrowCol ? 0.38 : (stripTight ? 0.42 : 0.48)
 
         tackColumnGap = max(6, innerW * 0.025)
         let tackHalfW = max(50, (innerW - tackColumnGap) / 2)

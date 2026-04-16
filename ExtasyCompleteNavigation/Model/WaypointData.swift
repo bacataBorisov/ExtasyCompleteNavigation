@@ -19,7 +19,8 @@ struct WaypointData {
     var trueMarkBearing: Double?                     // True bearing from boat to waypoint
     
     // MARK: - Time & ETA Calculations
-    var tripDurationToWaypoint: Double?              // Estimated trip duration to the waypoint
+    /// Hours — tactical **leg1 + leg2 at SOG** when layline intersections exist, else rhumb **DTM/SOG**.
+    var tripDurationToWaypoint: Double?
     var etaToWaypoint: Date?                         // Estimated Time of Arrival (ETA) at the waypoint
     
     var tackDistance: Double?                        // Distance to tack intersection

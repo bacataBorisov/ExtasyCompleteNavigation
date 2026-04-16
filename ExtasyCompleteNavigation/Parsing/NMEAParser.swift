@@ -542,7 +542,34 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
     }
 }
 
+// MARK: - Tack / layline UI (mark approach vs polar)
 
+extension NMEAParser {
+    /// Up/down mode for `TackAlignmentBar` and anemometer chevrons: with an active waypoint, match
+    /// `WaypointProcessor` / chart laylines (`waypointApproachState`); otherwise polar `sailingState`.
+    var tackAlignmentSailingState: String {
+        RacingNavigationSemantics.sailingStateForWaypointTackUI(
+            isWaypointTargetSelected: gpsData?.isTargetSelected ?? false,
+            waypointApproachState: waypointData?.waypointApproachState,
+            polarSailingState: vmgData?.sailingState
+        )
+    }
 
+    /// Optimal TWA for anemometer target chevrons (same mark-vs-wind vs polar rule as the tack bar).
+    var anemometerDisplayOptimalTWA: Double {
+        let vmg = vmgData
+        let state = tackAlignmentSailingState
+        if state == "Downwind" {
+            return vmg?.optimalDnTWA ?? 0
+        }
+        if state == "Upwind" {
+            return vmg?.optimalUpTWA ?? 0
+        }
+        if vmg?.sailingState == "Downwind" {
+            return vmg?.optimalDnTWA ?? 0
+        }
+        return vmg?.optimalUpTWA ?? 0
+    }
+}
 
 

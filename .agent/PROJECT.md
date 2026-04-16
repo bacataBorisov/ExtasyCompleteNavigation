@@ -136,9 +136,11 @@ This repo uses **Agent OS** via the **`agentos`** Python CLI: a local SQLite ind
 # Full rescan + regenerate cache, handoff, exports (same as first-time init)
 agentos init .
 
-# Lighter refresh (uses existing DB; good for small edits)
+# Lighter refresh (uses existing DB only — does NOT re-scan the tree)
 agentos cache update && agentos handoff update && agentos export
 ```
+
+**Git:** Everything under `.agent-os/` except **`config.json`** is **gitignored**. Regenerated `cache.md`, handoff, and context packs update **locally** only; they will not show up in commits unless you change `.gitignore`. Use **`agentos init .`** after changing scan exclusions or if handoff lists build artifacts (e.g. `.build/`).
 
 **Optional:** `agentos drift check` — documentation vs index (useful in CI; exit code 2 on failure). `agentos xcode integrate` — ensure `AGENT_OS.md` / `.agent-os` are referenced in the Xcode project.
 
