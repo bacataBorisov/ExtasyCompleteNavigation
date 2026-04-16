@@ -35,11 +35,14 @@ struct iPadView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            let horizontalPadding: CGFloat = 8
-            let columnGap: CGFloat = 0
+            /// Map flush to the leading edge; small inset on the trailing screen edge only.
+            let leadingInset: CGFloat = 0
+            let trailingInset: CGFloat = 8
+            /// Breathing room between map and Ultimate / Multi column (not flush).
+            let columnGap: CGFloat = 8
             let stackSpacing: CGFloat = 6
 
-            let innerWidth = max(0, geometry.size.width - horizontalPadding * 2)
+            let innerWidth = max(0, geometry.size.width - leadingInset - trailingInset)
 
             let secondaryHeight = min(max(geometry.size.height * 0.26, 160), geometry.size.height * 0.34)
             let mainRowHeight = max(geometry.size.height - secondaryHeight - 14, 200)
@@ -82,13 +85,15 @@ struct iPadView: View {
                     .frame(height: mainRowHeight, alignment: .top)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.horizontal, horizontalPadding)
+                .padding(.leading, leadingInset)
+                .padding(.trailing, trailingInset)
                 .padding(.top, 6)
 
                 Divider()
-                    .padding(.vertical, 4)
+                    .padding(.top, 0)
+                    .padding(.bottom, 4)
 
-                secondaryStrip(height: secondaryHeight, horizontalInset: horizontalPadding)
+                secondaryStrip(height: secondaryHeight, horizontalLeading: leadingInset, horizontalTrailing: trailingInset)
                     .padding(.bottom, 0)
             }
             .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
@@ -98,14 +103,14 @@ struct iPadView: View {
     }
 
     @ViewBuilder
-    private func secondaryStrip(height: CGFloat, horizontalInset: CGFloat) -> some View {
+    private func secondaryStrip(height: CGFloat, horizontalLeading: CGFloat, horizontalTrailing: CGFloat) -> some View {
         // Short bar: flush to bottom of dashboard (no extra strip padding — avoids white gap).
         let tackRowHeight: CGFloat = 22
         let tackGap: CGFloat = 6
 
         GeometryReader { stripGeo in
             let total = stripGeo.size.width
-            let inner = max(0, total - horizontalInset * 2)
+            let inner = max(0, total - horizontalLeading - horizontalTrailing)
             let midlineWidth: CGFloat = 2
             let columnWidth = max(0, (inner - midlineWidth) / 2)
             /// Avoid `maxHeight: .infinity` in a `VStack` above a fixed tack row — it can confuse
@@ -138,7 +143,8 @@ struct iPadView: View {
                     }
                     .frame(width: columnWidth)
                 }
-                .padding(.horizontal, horizontalInset)
+                .padding(.leading, horizontalLeading)
+                .padding(.trailing, horizontalTrailing)
                 .frame(maxWidth: .infinity)
                 .frame(height: performanceBlockHeight, alignment: .top)
 
@@ -153,7 +159,8 @@ struct iPadView: View {
                     trueWindDirection: navigationReadings.windData?.trueWindDirection ?? 0
                 )
                 .frame(height: tackRowHeight)
-                .padding(.horizontal, horizontalInset)
+                .padding(.leading, horizontalLeading)
+                .padding(.trailing, horizontalTrailing)
                 .frame(maxWidth: .infinity)
             }
             .frame(width: total, height: stripGeo.size.height, alignment: .top)

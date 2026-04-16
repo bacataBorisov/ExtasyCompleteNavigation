@@ -97,6 +97,10 @@ final class VMGCalculatorTests: XCTestCase {
         XCTAssertNil(VMGCalculator(diagram: [[0.0, 5.0, 10.0]]))
     }
 
+    func testInitFailsWhenWindHeaderRowHasNoTwsSamples() {
+        XCTAssertNil(VMGCalculator(diagram: [[0.0], [45.0, 4.0]]))
+    }
+
     func testInitParsesWindAndAngles() {
         let calc = makeCalculator()
         XCTAssertEqual(calc.wind,   [5.0, 10.0, 15.0, 20.0])
@@ -155,6 +159,31 @@ final class VMGCalculatorTests: XCTestCase {
         XCTAssertEqual(speed, 7.051, accuracy: 0.01)
     }
 
+    func testEvaluateDiagramNormalizesAngleGreaterThan360() {
+        let calc = makeCalculator()
+        let base = calc.evaluateDiagram(windForce: 7.5, windAngle: 90.0)
+        let wrapped = calc.evaluateDiagram(windForce: 7.5, windAngle: 450.0)
+        XCTAssertEqual(base, wrapped, accuracy: 1e-9)
+    }
+
+    func testEvaluateDiagramMirrorsObtuseTrueWindAngleToAcute() {
+        let calc = makeCalculator()
+        let beam = calc.evaluateDiagram(windForce: 7.5, windAngle: 90.0)
+        let mirrored = calc.evaluateDiagram(windForce: 7.5, windAngle: 270.0)
+        XCTAssertEqual(beam, mirrored, accuracy: 1e-9)
+    }
+
+    func testPolarBoatSpeedCurveHasOneSamplePerDiagramTwa() {
+        let calc = makeCalculator()
+        let curve = calc.polarBoatSpeedCurve(forTrueWindSpeedKnots: 7.5)
+        XCTAssertEqual(curve.count, calc.gradus.count)
+        guard let first = curve.first else {
+            XCTFail("expected non-empty polar curve")
+            return
+        }
+        XCTAssertEqual(first.twa, 45.0, accuracy: 1e-9)
+    }
+
     func testEvaluateDiagramHigherWindMeansHigherSpeed() {
         let calc = makeCalculator()
         let low  = calc.evaluateDiagram(windForce:  8.0, windAngle: 90.0)
@@ -178,6 +207,13 @@ final class VMGCalculatorTests: XCTestCase {
     func testSailingStateDownwind() {
         let calc = makeCalculator()
         XCTAssertEqual(calc.determineSailingState(trueWindAngle: 120.0, threshold: 80.0), "Downwind")
+    }
+
+    func testSailingStateSignedTwaAtThreshold() {
+        let calc = makeCalculator()
+        XCTAssertEqual(calc.determineSailingState(trueWindAngle: 90.0, threshold: 90.0), "Upwind")
+        XCTAssertEqual(calc.determineSailingState(trueWindAngle: -90.0, threshold: 90.0), "Upwind")
+        XCTAssertEqual(calc.determineSailingState(trueWindAngle: 90.01, threshold: 90.0), "Downwind")
     }
 
     // MARK: interpolateTackTableUsingSpline – boundaries
@@ -214,6 +250,22 @@ final class VMGCalculatorTests: XCTestCase {
         let calc = makeCalculatorWithTackTable()
         let result = calc.interpolateTackTableUsingSpline(for: 40.0, trueWindAngle: 45.0)
         XCTAssertNil(result.interpolatedRow, "Wind above table maximum (30 kts) should return nil")
+    }
+
+    func testTackTableInterpolatesNearMaxWind() {
+        let calc = makeCalculatorWithTackTable()
+        let result = calc.interpolateTackTableUsingSpline(for: 29.0, trueWindAngle: 45.0)
+        guard let row = result.interpolatedRow else {
+            XCTFail("expected interpolation between 25 and 30 kts rows")
+            return
+        }
+        XCTAssertEqual(row[0], 29.0, accuracy: 1e-9)
+        XCTAssertNotNil(result.sailingState)
+    }
+
+    func testReadOptimalTackTableMissingResourceReturnsFalse() {
+        let calc = makeCalculator()
+        XCTAssertFalse(calc.readOptimalTackTable(fileName: "nonexistent_tack_table_xyz"))
     }
 
     // MARK: interpolateTackTableUsingSpline – accuracy (First 40.7 VPP data)
@@ -279,10 +331,13 @@ final class VMGCalculatorTests: XCTestCase {
         XCTAssertEqual(result.sailingState, "Downwind")
     }
 
-    func testTackTableSailingLimitIsFirstRowThreshold() {
+    func testTackTableSailingLimitMatchesLastInterpolatedColumn() {
         let calc = makeCalculatorWithTackTable()
-        // sailingStateLimit is always first-row threshold (100°) per current implementation
         let result = calc.interpolateTackTableUsingSpline(for: 10.0, trueWindAngle: 45.0)
-        XCTAssertEqual(result.sailingStateLimit ?? 0, 100.0, accuracy: 0.01)
+        guard let row = result.interpolatedRow else {
+            XCTFail("expected interpolated row at TWS 10")
+            return
+        }
+        XCTAssertEqual(result.sailingStateLimit ?? -1, row[row.count - 1], accuracy: 1e-9)
     }
 }

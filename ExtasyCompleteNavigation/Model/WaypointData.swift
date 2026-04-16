@@ -78,6 +78,7 @@ struct WaypointData {
     // MARK: - Reset Function
     /// Resets all waypoint-related data to its default state
     mutating func reset() {
+        boatLocation = nil
         waypointCoordinate = nil
         distanceToMark = nil
         

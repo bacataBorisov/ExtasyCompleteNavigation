@@ -16,20 +16,26 @@ All notable changes to this project will be documented in this file.
 - **`TackAlignmentBar`**: Degree readout uses the **same heading error** as the needle (not polar TWA `tackDeviation`); needle **re-syncs** when TWD / sailing mode / optimal angles / bar width change.
 - **`VMGSimpleView`**: No **top** content padding; **header** row fixed height with title **vertically centered** with list/close; **DTM / Trip / ETA** **leading-packed** columns; **ETA** shows **`d MMM HH:mm`** when not same-day or beyond ~24 h; **downwind/upwind** on one **distance · time** line each; tighter **`StripMetrics`** when the strip is short; **type** scales so long values do not resize the strip.
 - **Waypoint card (`WaypointCard` + `InfoWaypointSection`)**: No green gradient when **no waypoint** selected — centred **Select Waypoint** pill.
+- **iPad dashboard map (`iPadView`)**: Map **flush to the leading edge** (`leadingInset` 0); **8pt trailing** screen inset; **8pt `columnGap`** between map and Ultimate/Multi column; **divider** uses **no top padding** so the map meets the strip; secondary strip uses the **same leading/trailing** as the top row.
 
 ### Bug Fixes
 
 - **Waypoint TRIP / ETA (`WaypointProcessor`)**: Total trip time is **tactical leg₁ + leg₂ at SOG** when two layline intersections exist, else **rhumb DTM / SOG** — fixes **multi‑day TRIP** when **`currentTackVMC`** was tiny while leg rows showed sensible hours.
+- **`WaypointData.reset()`**: Clears **`boatLocation`** so waypoint navigation state is fully reset (live GPS remains on **`GPSData`**; the field was test-only before).
 
 ### Testing
 
 - **`RacingNavigationSemanticsTests`**: Mark approach vs polar UI state; tack target headings; edge case where modes disagree.
 - **`WaypointTripTimeTests`**: `tripDurationToWaypointHours` prefers leg sum, rhumb fallback, regression vs tiny VMC.
+- **`ExtasyNavigationCorePackage`**: Additional **edge-case** tests for **`Layline`** (equality / `Set` hashing), **`VMGCalculator`** (invalid spline `u`, diagram init failures, `evaluateDiagram` / `polarBoatSpeedCurve`, tack table + missing resource), **`WaypointData.reset()`**; line coverage on library sources ~**92%** with `swift test --disable-sandbox --enable-code-coverage` + `llvm-cov` (local).
+- **`ExtasyCompleteNavigationTests`**: **`LaylineTests`**, **`WaypointDataTests`** (app `WaypointData`); **`VMGCalculatorTests`** extended (init header row, angle wrap, polar curve, sailing-state thresholds, near-max tack interpolation, missing tack file); **`testTackTableSailingLimitMatchesLastInterpolatedColumn`** replaces the obsolete fixed “first row threshold” expectation.
 
 ### Documentation
 
 - **`.cursor/skills/sailing-racing-tactics/SKILL.md`**: Vendor layline filter notes (Garmin / B&G); **Extasy** dual smoothing (TWD + tack angles) and “filtered not locked” expectation; tack strip / TRIP semantics (Apr 2026); editing bullets updated.
 - **`.agent/ROADMAP.md`**: Layline stability line updated; **Optional C / Accelerate kernels** task (profile-first NMEA / polar / geodesic / matrices) from prior planning.
+- **`.agent/HANDOFF.md`**: Short **session handoff** for the next contributor (tests, Agent OS refresh, pointers).
+- **`.agent/guides/testing-core-math.md`**: **Xcode** (`⌘U`) vs **`swift test`** for package vs app targets.
 
 ---
 

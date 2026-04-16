@@ -29,8 +29,9 @@ This repo mixes **human-written canon**, **generated Agent OS artifacts**, **Cur
 3. **[Guides](guides/)** — Optional deep dives (e.g. [`guides/testing-core-math.md`](guides/testing-core-math.md)).  
 4. **[ROADMAP.md](ROADMAP.md)** — Prioritized work.  
 5. **[CHANGELOG.md](CHANGELOG.md)** — What changed, session notes.  
-6. **[LESSONS.md](LESSONS.md)** — Pitfalls and “why we did X”.  
-7. **[HISTORY.md](HISTORY.md)** / **[HARDWARE.md](HARDWARE.md)** — Context as needed.
+6. **[HANDOFF.md](HANDOFF.md)** — Short contributor handoff when switching context (tests, Agent OS refresh); complements generated `.agent-os/state/current-handoff.md`.  
+7. **[LESSONS.md](LESSONS.md)** — Pitfalls and “why we did X”.  
+8. **[HISTORY.md](HISTORY.md)** / **[HARDWARE.md](HARDWARE.md)** — Context as needed.
 
 **Rule of thumb:** If it’s a **decision or architecture**, it belongs in `.agent/`, not only in a chat or `.agent-os/state/`.
 

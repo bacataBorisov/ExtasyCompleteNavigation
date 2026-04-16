@@ -76,4 +76,120 @@ final class VMGCalculatorTests: XCTestCase {
         let result = calc.interpolateTackTableUsingSpline(for: 9.0, trueWindAngle: 120.0)
         XCTAssertEqual(result.sailingState, "Downwind")
     }
+
+    // MARK: - Init / malformed diagram
+
+    func testInitReturnsNilForEmptyDiagram() {
+        XCTAssertNil(VMGCalculator(diagram: []))
+    }
+
+    func testInitReturnsNilForSingleRowDiagram() {
+        XCTAssertNil(VMGCalculator(diagram: [[0.0, 5.0, 10.0]]))
+    }
+
+    func testInitReturnsNilWhenWindHeaderRowHasNoTwsSamples() {
+        XCTAssertNil(VMGCalculator(diagram: [[0.0], [45.0, 4.0]]))
+    }
+
+    // MARK: - Cubic spline edge cases
+
+    func testCubicSplineReturnsZeroWhenUIsBelowZero() {
+        let calc = makeCalculator()
+        XCTAssertEqual(calc.eval_cubic_spline(u: -0.01, xa: 1, xb: 2, xc: 3, xd: 4), 0, accuracy: 0)
+    }
+
+    func testCubicSplineReturnsZeroWhenUIsAboveOne() {
+        let calc = makeCalculator()
+        XCTAssertEqual(calc.eval_cubic_spline(u: 1.01, xa: 1, xb: 2, xc: 3, xd: 4), 0, accuracy: 0)
+    }
+
+    func testCubicSplineEndpointsMatchCatmullRomWeights() {
+        let calc = makeCalculator()
+        let xa = 10.0, xb = 20.0, xc = 30.0, xd = 40.0
+        let atZero = (xa + 4 * xb + xc) / 6.0
+        XCTAssertEqual(calc.eval_cubic_spline(u: 0, xa: xa, xb: xb, xc: xc, xd: xd), atZero, accuracy: 1e-9)
+        XCTAssertEqual(calc.eval_cubic_spline(u: 1, xa: xa, xb: xb, xc: xc, xd: xd), xc, accuracy: 1e-9)
+    }
+
+    // MARK: - evaluateDiagram boundaries
+
+    func testEvaluateDiagramReturnsZeroWhenWindBelowGridMinimum() {
+        let calc = makeCalculator()
+        XCTAssertEqual(calc.evaluateDiagram(windForce: 4.0, windAngle: 90.0), 0, accuracy: 0)
+    }
+
+    func testEvaluateDiagramReturnsZeroWhenWindAboveGridMaximum() {
+        let calc = makeCalculator()
+        XCTAssertEqual(calc.evaluateDiagram(windForce: 25.0, windAngle: 90.0), 0, accuracy: 0)
+    }
+
+    func testEvaluateDiagramNormalizesAngleGreaterThan360() {
+        let calc = makeCalculator()
+        let a = calc.evaluateDiagram(windForce: 7.5, windAngle: 90.0)
+        let b = calc.evaluateDiagram(windForce: 7.5, windAngle: 450.0)
+        XCTAssertEqual(a, b, accuracy: 1e-9)
+    }
+
+    func testEvaluateDiagramMirrorsObtuseTrueWindAngle() {
+        let calc = makeCalculator()
+        let acute = calc.evaluateDiagram(windForce: 7.5, windAngle: 90.0)
+        let obtuse = calc.evaluateDiagram(windForce: 7.5, windAngle: 270.0)
+        XCTAssertEqual(acute, obtuse, accuracy: 1e-9)
+    }
+
+    func testEvaluateDiagramUsesAbsoluteNegativeAngle() {
+        let calc = makeCalculator()
+        let pos = calc.evaluateDiagram(windForce: 7.5, windAngle: 90.0)
+        let neg = calc.evaluateDiagram(windForce: 7.5, windAngle: -90.0)
+        XCTAssertEqual(pos, neg, accuracy: 1e-9)
+    }
+
+    func testEvaluateDiagramReturnsZeroWhenAnglePastPolarRange() {
+        let calc = makeCalculator()
+        XCTAssertEqual(calc.evaluateDiagram(windForce: 7.5, windAngle: 1.0), 0, accuracy: 0)
+    }
+
+    // MARK: - polarBoatSpeedCurve
+
+    func testPolarBoatSpeedCurveMatchesGradusCount() {
+        let calc = makeCalculator()
+        let curve = calc.polarBoatSpeedCurve(forTrueWindSpeedKnots: 7.5)
+        XCTAssertEqual(curve.count, calc.gradus.count)
+        guard let first = curve.first else {
+            XCTFail("expected non-empty polar curve")
+            return
+        }
+        XCTAssertEqual(first.twa, 45.0, accuracy: 1e-9)
+    }
+
+    // MARK: - Sailing state / tack table
+
+    func testDetermineSailingStateBoundaryAtThreshold() {
+        let calc = makeCalculator()
+        XCTAssertEqual(calc.determineSailingState(trueWindAngle: 90.0, threshold: 90.0), "Upwind")
+        XCTAssertEqual(calc.determineSailingState(trueWindAngle: -90.0, threshold: 90.0), "Upwind")
+        XCTAssertEqual(calc.determineSailingState(trueWindAngle: 90.01, threshold: 90.0), "Downwind")
+    }
+
+    func testInterpolateTackTableWhenTableEmpty() {
+        let calc = makeCalculator()
+        let result = calc.interpolateTackTableUsingSpline(for: 8.0, trueWindAngle: 45.0)
+        XCTAssertNil(result.interpolatedRow)
+        XCTAssertNil(result.sailingState)
+    }
+
+    func testInterpolateTackTableNearMaxWindStillInterpolates() {
+        let calc = makeCalculatorWithTackTable()
+        let result = calc.interpolateTackTableUsingSpline(for: 11.5, trueWindAngle: 45.0)
+        guard let row = result.interpolatedRow else {
+            XCTFail("expected interpolated row near max wind")
+            return
+        }
+        XCTAssertEqual(row[0], 11.5, accuracy: 1e-9)
+    }
+
+    func testReadOptimalTackTableWithoutBundleResourceReturnsFalse() {
+        let calc = makeCalculator()
+        XCTAssertFalse(calc.readOptimalTackTable(fileName: "nonexistent_tack_table_xyz"))
+    }
 }

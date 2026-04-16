@@ -42,6 +42,8 @@ swift test --disable-sandbox
 
 Run it from the repository root.
 
+**Full app + Watch / UI tests** are not in this package; use **Xcode** with an iOS Simulator selected, then **Product → Test** (**⌘U**) to run **`ExtasyCompleteNavigationTests`** (and other scheme test bundles). The package and app tests overlap for **`VMGCalculator`**, **`Layline`**, **`WaypointProcessor`**, etc., but only the **Xcode target** exercises the full app module graph.
+
 `--disable-sandbox` is currently required in this environment because plain `swift test` fails during manifest evaluation with:
 
 - `sandbox_apply: Operation not permitted`
