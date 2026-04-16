@@ -29,11 +29,12 @@ This repo mixes **human-written canon**, **generated Agent OS artifacts**, **Cur
 3. **[Guides](guides/)** — Optional deep dives (e.g. [`guides/testing-core-math.md`](guides/testing-core-math.md)).  
 4. **[ROADMAP.md](ROADMAP.md)** — Prioritized work.  
 5. **[CHANGELOG.md](CHANGELOG.md)** — What changed, session notes.  
-6. **[HANDOFF.md](HANDOFF.md)** — Short contributor handoff when switching context (tests, Agent OS refresh); complements generated `.agent-os/state/current-handoff.md`.  
-7. **[LESSONS.md](LESSONS.md)** — Pitfalls and “why we did X”.  
-8. **[HISTORY.md](HISTORY.md)** / **[HARDWARE.md](HARDWARE.md)** — Context as needed.
+6. **[LESSONS.md](LESSONS.md)** — Pitfalls and “why we did X”.  
+7. **[HISTORY.md](HISTORY.md)** / **[HARDWARE.md](HARDWARE.md)** — Context as needed.
 
-**Rule of thumb:** If it’s a **decision or architecture**, it belongs in `.agent/`, not only in a chat or `.agent-os/state/`.
+**Session handoff (next task / context for agents):** Use **Agent OS** outputs — primarily **[`.agent-os/state/current-handoff.md`](../.agent-os/state/current-handoff.md)** (and **`cache.md`**, **`exports/context-pack.*`**). They are **generated locally** (see §3); refresh with `agentos handoff update` or `agentos init .`. **Do not** maintain a separate committed handoff file under `.agent/`; policy detail is in **§3** (“Maintainer preference”).
+
+**Rule of thumb:** If it’s a **decision or architecture**, it belongs in `.agent/`, not only in a chat. **Session handoff** belongs in the **Agent OS** pipeline, not duplicated as ad-hoc canon.
 
 ---
 
@@ -79,6 +80,14 @@ agentos cache update && agentos handoff update && agentos export
 
 Generated files under `.agent-os/` **summarize** the repo; they are not a substitute for **`.agent/PROJECT.md`**. When something is wrong in a summary, **fix the source doc** in `.agent/` and re-scan.
 
+### Maintainer preference: handoff and new files (Agent OS compliance)
+
+This project **uses Agent OS for handoff**, not a parallel Markdown file in `.agent/`.
+
+- **Handoff:** Rely on **`.agent-os/state/current-handoff.md`** (plus **`cache.md`** and **`exports/`** as needed). Regenerate after meaningful work: `agentos cache update && agentos handoff update && agentos export`, or **`agentos init .`** when the index or **`config.json`** `exclude_dirs` changes.
+- **New files:** If something belongs to **indexing, session context, or exports**, add or adjust it **in compliance with Agent OS** — typically **[`.agent-os/config.json`](../.agent-os/config.json)** (scan rules), then regenerate; do not invent a second handoff system under `.agent/`. **Human canon** (architecture, changelog, roadmap) stays in **`.agent/`** per §1.
+- **Git:** Only **`config.json`** (and similar committed hooks) are tracked; generated `.agent-os/` trees remain **gitignored** by design.
+
 ---
 
 ## 4. Layout choices applied in this repo
@@ -98,6 +107,7 @@ If you later need a public **`docs/`** tree (e.g. compliance PDFs), add it at th
 - [ ] Is it **canonical**? → `.agent/` or `.agent/guides/` (and link from `README.md` if onboarding-critical).  
 - [ ] Is it **Cursor-only**? → `.cursor/rules/` or `.cursor/skills/`.  
 - [ ] Is it **generated**? → `.agent-os/` only; do not hand-edit as source of truth.  
+- [ ] Is it **handoff / session context**? → **Agent OS** (`current-handoff.md`, etc.); do **not** add a new `.agent/HANDOFF.md`-style file — use **`agentos handoff update`** or **`agentos init .`**.  
 - [ ] Will **scans** pick up junk? → Update `.agent-os/config.json` `exclude_dirs`, then **`agentos init .`** (not `cache update` alone).
 
 ---

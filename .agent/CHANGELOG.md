@@ -34,8 +34,8 @@ All notable changes to this project will be documented in this file.
 
 - **`.cursor/skills/sailing-racing-tactics/SKILL.md`**: Vendor layline filter notes (Garmin / B&G); **Extasy** dual smoothing (TWD + tack angles) and “filtered not locked” expectation; tack strip / TRIP semantics (Apr 2026); editing bullets updated.
 - **`.agent/ROADMAP.md`**: Layline stability line updated; **Optional C / Accelerate kernels** task (profile-first NMEA / polar / geodesic / matrices) from prior planning.
-- **`.agent/HANDOFF.md`**: Short **session handoff** for the next contributor (tests, Agent OS refresh, pointers).
 - **`.agent/guides/testing-core-math.md`**: **Xcode** (`⌘U`) vs **`swift test`** for package vs app targets.
+- **`.agent/DOCUMENTATION.md`**: Session handoff documented as **Agent OS** only (`.agent-os/state/current-handoff.md`); removed committed `.agent/HANDOFF.md`; **§3** “Maintainer preference” for Agent OS compliance when adding new context files.
 
 ---
 
