@@ -54,6 +54,16 @@ Prioritized list of improvements, organized by impact and effort.
 - **What**: `Layline` struct is defined in `MapView.swift` but used by `WaypointProcessor` and `WaypointData`. Move to its own file in `Model/`.
 - **Files**: `MapView.swift` → `Model/Layline.swift`
 
+### Optional C / Accelerate kernels (profile first)
+- **Status**: Not started — **only** if **Instruments (Release, device, real NMEA)** shows meaningful CPU in listed areas.
+- **What** (narrow APIs; Swift owns lifecycle, state, and UI):
+  - **NMEA hot path**: Single-pass parser over a **fixed byte buffer** — checksums, field splits, `strtod`-style numeric parse for high-rate sentences (`MWV`, `RMC`, `GGA`, …) in **plain C** (or keep Swift and measure **Accelerate** / `simd` first). Avoids `String` / `Substring` churn on the UDP delegate path. Glue: `UDPHandler` / `NMEAParser` call into an **SPM `.target` C module** (module map) or a tiny static lib + bridging header; **`const char *` + length**, clear buffer ownership.
+  - **Polar / VMG grid**: Bilinear or spline lookup over dense **TWS × TWA** — **Accelerate** (`vDSP`, etc.) or C if `VMGCalculator` / tack table dominates samples; often optimized Swift is enough without C.
+  - **Geodesic / rhumb at scale**: Small **WGS84** (or equirectangular) C or vetted library behind a thin Swift API **if** batch routing / replay does thousands of distance/bearing calls; current boat + mark + laylines usually fine in Swift.
+  - **Kalman / matrices**: Small filters stay Swift; **larger state vectors** → `cblas` / LAPACK via Accelerate or a small C layer if profiling demands it.
+- **What not to do**: No C for SwiftUI, view models, SwiftData, or code paths that do not show up hot in profiles — C adds build, safety, and review cost.
+- **Process**: (1) Profile Release on device with real NMEA rates. (2) Extract **one** hot kernel with fuzz/unit tests on the C side if used. (3) Prefer **SPM-wrapped C** for interop; **no C++** at the Swift boundary.
+
 ---
 
 ## Priority 3 — Testing
@@ -138,7 +148,7 @@ Prioritized list of improvements, organized by impact and effort.
 ### Layline Stability
 - **Status**: Done (Session 5, Mar 2026) — **refined Apr 2026**
 - **What**: Laylines were heading-dependent because `sailingState` (from boat TWA) was used. Replaced with `waypointSailingState` derived from bearing-to-mark vs TWD (stable). Extended `laylineDistance` to `max(4× distance, 200 km)` to guarantee intersection. Added `waypointApproachState` to `WaypointData`. Guard restructured to always persist computed laylines even if tack intersection fails. `MapView` condition `isVMCNegative` removed so laylines always show.
-- **Apr 2026**: Diamond **tack angle** (`generateDiamondLaylines`) prefers **`VMGData.sailingState`** (live TWA vs polar threshold) when `Upwind`/`Downwind`, so mark geometry matches **optimal up/down angles you are actually sailing**; falls back to `waypointApproachState` if polar mode unknown. `waypointApproachState` kept for context (e.g. debug “Mark”). `MapView` draws the processor diamond + trim logic.
+- **Apr 2026**: Diamond laylines use **layline-only smoothed TWD** (slower low-pass), **smoothed polar optimal up/down TWA** for ray angles, and **mark vs smoothed TWD** for up/down **family**; live wind / polar values unchanged for instruments and VMC. *(Polar `sailingState` for diamond family — reverted; see `.cursor/skills/sailing-racing-tactics/SKILL.md`.)*
 - **Files**: `WaypointProcessor.swift`, `WaypointData.swift`, `MapView.swift`
 
 ### Waypoint View — Tack Display Redesign

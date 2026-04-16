@@ -144,9 +144,10 @@ ExtasyCompleteNavigation was created by **[Vasil Borisov](https://github.com/bac
 
 Summary only; full technical notes live in **[`.agent/CHANGELOG.md`](.agent/CHANGELOG.md)**.
 
-- **iPad**: Map column **bleed/insets** aligned with Multi; **settings** (including Advanced) usable **from the map**; bottom strip **Performance** and **Waypoints/VMG** with a **single full-width tack bar** under both columns; **polar** via **Ultimate ↔ Polar** in the top instrument stack (not a third bottom tab).
-- **Racing UI**: Shared **port/starboard palette** across anemometer, performance bars, tack bar, and iPhone VMG tack labels; iPad performance strip can show **racing fill** bars in compact mode.
-- **VMG waypoint strip**: Flat summary card whose **type scales with available width and height** so DTM/Trip/ETA and tack lines use space instead of leaving large empty bands.
+- **iPad**: Map column **bleed/insets** aligned with Multi; **dashboard map** can run **edge-to-edge** in the map cell when bleed margins apply; **settings** (including Advanced) usable **from the map**; bottom strip **Performance** and **Waypoints/VMG** with a **single full-width tack bar** under both columns (**flush** to strip bottom); **polar** via **Ultimate ↔ Polar** in the top instrument stack (not a third bottom tab).
+- **Racing UI**: Shared **port/starboard palette** across anemometer, performance bars, tack bar, and iPhone VMG tack labels; iPad performance strip **racing fill** uses an **absolute 0–100 %** colour scale along the bar (masked gradient + dim track).
+- **VMG waypoint strip**: Flat summary card whose **type scales with available width and height**; **leading-packed** DTM/Trip/ETA; **ETA** shows **date** when not same-day or beyond ~24 h.
+- **Laylines**: **Smoothed layline wind** plus **smoothed polar tack angles** for diamond rays; **MapView** geometry tuned so boat-side rays and white legs stay readable through tacks.
 
 ### **2.0.0 - [25-Jan-2025]**
 #### **New Features**

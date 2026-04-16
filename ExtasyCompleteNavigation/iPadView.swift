@@ -89,7 +89,7 @@ struct iPadView: View {
                     .padding(.vertical, 4)
 
                 secondaryStrip(height: secondaryHeight, horizontalInset: horizontalPadding)
-                    .padding(.bottom, max(8, geometry.safeAreaInsets.bottom))
+                    .padding(.bottom, 0)
             }
             .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
         }
@@ -99,10 +99,9 @@ struct iPadView: View {
 
     @ViewBuilder
     private func secondaryStrip(height: CGFloat, horizontalInset: CGFloat) -> some View {
-        // Short bar: just above caption text — leaves more room for performance + waypoint.
+        // Short bar: flush to bottom of dashboard (no extra strip padding — avoids white gap).
         let tackRowHeight: CGFloat = 22
         let tackGap: CGFloat = 6
-        let tackBottomPad: CGFloat = 10
 
         GeometryReader { stripGeo in
             let columnGap: CGFloat = 10
@@ -148,7 +147,6 @@ struct iPadView: View {
                 .frame(height: tackRowHeight)
                 .frame(maxWidth: .infinity)
             }
-            .padding(.bottom, tackBottomPad)
             .frame(width: total, height: stripGeo.size.height, alignment: .top)
         }
         .frame(maxWidth: .infinity, minHeight: height, maxHeight: height, alignment: .top)

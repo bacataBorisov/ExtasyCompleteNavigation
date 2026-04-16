@@ -22,7 +22,7 @@ struct MapView: View {
     /// iPad-only; default keeps the back arrow when the map is pushed from Ultimate.
     var iPadLeadingControl: MapIPadLeadingControl = .dismissBack
 
-    /// iPad dashboard: reduce outer insets (especially **bottom = 0**) so the chart aligns with the **Multi** row edge.
+    /// iPad dashboard: **edge-to-edge map** in the map cell (no rounded card / chrome padding).
     var iPadDashboardBleedMargins: Bool = false
 
     /// iPad dashboard (`.settingsLink`): show settings **inside the map column** so cockpit metrics stay visible.
@@ -80,11 +80,12 @@ struct MapView: View {
         return "\(stbdLat),\(stbdLon),\(portLat),\(portLon)"
     }
 
-    /// iPad map card insets (settings overlay uses the same values).
+    /// iPad map card insets (settings overlay uses the same values). Dashboard **bleed** uses
+    /// `.zero` so the chart fills the map cell (no rounded card shrinking the drawable area).
     private var iPadMapChromeEdgeInsets: EdgeInsets {
         guard DeviceType.isIPad else { return EdgeInsets() }
         if iPadDashboardBleedMargins {
-            return EdgeInsets(top: 6, leading: 6, bottom: 0, trailing: 6)
+            return EdgeInsets()
         }
         return EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8)
     }
@@ -190,13 +191,19 @@ struct MapView: View {
                 
             }
             .if(DeviceType.isIPad) { view in
-                view
-                    .clipShape(RoundedRectangle(cornerRadius: 12)) // Round corners
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.gray.opacity(0.2), lineWidth: 2) // Optional border
-                    )
-                    .padding(iPadMapChromeEdgeInsets)
+                Group {
+                    if iPadDashboardBleedMargins {
+                        view
+                    } else {
+                        view
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.gray.opacity(0.2), lineWidth: 2)
+                            )
+                            .padding(iPadMapChromeEdgeInsets)
+                    }
+                }
             }
             
             
@@ -338,11 +345,11 @@ struct MapView: View {
     }
 
     // Update waypoint tack intersection dots.
+    /// No implicit animation — small coordinate jitter every frame was restarting a 1s ease,
+    /// which fought `MapPolyline` updates and read as flashing on the layline bundle.
     private func updateIntersections() {
-        withAnimation(.easeInOut(duration: 1.0)) {
-            starboardIntersection = navigationReadings.waypointData?.starboardIntersection?.intersection
-            portsideIntersection  = navigationReadings.waypointData?.portsideIntersection?.intersection
-        }
+        starboardIntersection = navigationReadings.waypointData?.starboardIntersection?.intersection
+        portsideIntersection = navigationReadings.waypointData?.portsideIntersection?.intersection
     }
     
     private func startSmoothingTimer() {
@@ -550,12 +557,17 @@ struct MapView: View {
     @MapContentBuilder
     private func laylinePolylinesToWaypoint() -> some MapContent {
         if let mark = navigationReadings.gpsData?.waypointLocation,
-           let boat = animatedBoatLocation,
            let wp = navigationReadings.waypointData,
            let stbdBoat = wp.starboardLayline,
            let portBoat = wp.portsideLayline,
            let stbdMark = wp.extendedStarboardLayline,
            let portMark = wp.extendedPortsideLayline {
+
+            // One boat vertex for the whole bundle — must match `Layline.start` from
+            // `WaypointProcessor`, not `animatedBoatLocation`. Mixing smoothed icon position
+            // with raw geometry made inner legs and outer rays diverge by a few metres each
+            // frame → strobes / “flashing” on overlapping MapPolylines.
+            let boat = stbdBoat.start
 
             let teal = Color.teal.opacity(0.85)
             let purple = Color.purple.opacity(0.85)
@@ -577,19 +589,22 @@ struct MapView: View {
             let portMarkFar = trimmedLaylineFarEnd(
                 anchor: portMark.start, nominalFar: portMark.end, lookToward: boat, intersection: si)
 
-            MapPolyline(coordinates: [stbdBoat.start, stbdBoatFar]).stroke(teal, lineWidth: 2.5)
-            MapPolyline(coordinates: [portBoat.start, portBoatFar]).stroke(purple, lineWidth: 2.5)
             MapPolyline(coordinates: [stbdMark.start, stbdMarkFar]).stroke(teal, lineWidth: 2.5)
             MapPolyline(coordinates: [portMark.start, portMarkFar]).stroke(purple, lineWidth: 2.5)
 
-            // Approach corridor — fill the tactical diamond when both tack points exist
             if let sInt = si, let pInt = pi {
-                let corners = convexQuadOrdered(boat: boat, mark: mark, intA: sInt, intB: pInt)
+                // Boat-side thick rays: start **at the tack** so they do not redraw the same
+                // segment as the white boat→tack legs + polygon edge (reduces flashing).
+                MapPolyline(coordinates: boatLaylineOuterSegment(boat: boat, far: stbdBoatFar, tack: sInt))
+                    .stroke(teal, lineWidth: 2.5)
+                MapPolyline(coordinates: boatLaylineOuterSegment(boat: boat, far: portBoatFar, tack: pInt))
+                    .stroke(purple, lineWidth: 2.5)
+
+                let corners = laylineDiamondCornersStable(boat: boat, mark: mark, si: sInt, pi: pInt)
                 MapPolygon(coordinates: corners)
                     .foregroundStyle(Color.white.opacity(0.16))
                     .stroke(Color.white.opacity(0), lineWidth: 0)
 
-                // Tacking legs: boat → intersection (white), intersection → mark (match layline colour)
                 MapPolyline(coordinates: [boat, sInt])
                     .stroke(Color.white.opacity(0.5), lineWidth: 1.5)
                 MapPolyline(coordinates: [sInt, mark])
@@ -600,11 +615,37 @@ struct MapView: View {
                 MapPolyline(coordinates: [pInt, mark])
                     .stroke(teal.opacity(0.72), lineWidth: 1.5)
             } else {
-                // No valid tack geometry yet — direct line so the mark is still connected
+                MapPolyline(coordinates: [boat, stbdBoatFar]).stroke(teal, lineWidth: 2.5)
+                MapPolyline(coordinates: [boat, portBoatFar]).stroke(purple, lineWidth: 2.5)
                 MapPolyline(coordinates: [boat, mark])
                     .stroke(Color.yellow.opacity(0.55), lineWidth: 1.5)
             }
         }
+    }
+
+    /// Outer boat ray **from tack toward `far`**, or full **boat→far** if the tack is not
+    /// on the forward segment (degenerate / partial geometry).
+    private func boatLaylineOuterSegment(
+        boat: CLLocationCoordinate2D,
+        far: CLLocationCoordinate2D,
+        tack: CLLocationCoordinate2D
+    ) -> [CLLocationCoordinate2D] {
+        let a = MKMapPoint(boat)
+        let f = MKMapPoint(far)
+        let t = MKMapPoint(tack)
+        let vx = f.x - a.x
+        let vy = f.y - a.y
+        let len2 = vx * vx + vy * vy
+        guard len2 > 1e-10 else { return [boat, far] }
+        let invLen = 1.0 / sqrt(len2)
+        let ux = vx * invLen
+        let uy = vy * invLen
+        let tTack = (t.x - a.x) * ux + (t.y - a.y) * uy
+        let tFar = (f.x - a.x) * ux + (f.y - a.y) * uy
+        if tTack > 1, tTack < tFar - 1 {
+            return [tack, far]
+        }
+        return [boat, far]
     }
 
     /// Clips a layline past the tack when the segment from the tack toward `nominalFar`
@@ -640,19 +681,38 @@ struct MapView: View {
         return MKMapPoint(x: a.x + ux * tShow, y: a.y + uy * tShow).coordinate
     }
 
-    /// Cyclic order of four convex corners by polar angle around their centroid (map-stable).
-    private func convexQuadOrdered(
+    /// Perimeter of the tactical diamond: **boat → starboard tack → mark → port tack** (or the
+    /// reverse winding). Avoids sorting by angle around the centroid — when the centroid
+    /// moves or two angles tie, order used to flip frame-to-frame and `MapPolygon` strobed.
+    private func laylineDiamondCornersStable(
         boat: CLLocationCoordinate2D,
         mark: CLLocationCoordinate2D,
-        intA: CLLocationCoordinate2D,
-        intB: CLLocationCoordinate2D
+        si: CLLocationCoordinate2D,
+        pi: CLLocationCoordinate2D
     ) -> [CLLocationCoordinate2D] {
-        let pts = [boat, mark, intA, intB]
-        let cLat = pts.map(\.latitude).reduce(0, +) / Double(pts.count)
-        let cLon = pts.map(\.longitude).reduce(0, +) / Double(pts.count)
-        return pts.sorted { p, q in
-            atan2(p.longitude - cLon, p.latitude - cLat) < atan2(q.longitude - cLon, q.latitude - cLat)
+        let ringA = [boat, si, mark, pi]
+        if isConvexQuadLatLon(ringA) { return ringA }
+        let ringB = [boat, pi, mark, si]
+        if isConvexQuadLatLon(ringB) { return ringB }
+        return ringA
+    }
+
+    /// Convexity test in a local lon/lat plane (fine for harbour-to-offshore spans on this chart).
+    private func isConvexQuadLatLon(_ v: [CLLocationCoordinate2D]) -> Bool {
+        guard v.count == 4 else { return false }
+        var nonZeroSign: Int?
+        for i in 0..<4 {
+            let p0 = v[i]
+            let p1 = v[(i + 1) % 4]
+            let p2 = v[(i + 2) % 4]
+            let cross = (p1.longitude - p0.longitude) * (p2.latitude - p1.latitude)
+                - (p1.latitude - p0.latitude) * (p2.longitude - p1.longitude)
+            let s: Int
+            if cross > 1e-16 { s = 1 } else if cross < -1e-16 { s = -1 } else { continue }
+            if let prev = nonZeroSign, prev != s { return false }
+            nonZeroSign = s
         }
+        return nonZeroSign != nil
     }
 
 }

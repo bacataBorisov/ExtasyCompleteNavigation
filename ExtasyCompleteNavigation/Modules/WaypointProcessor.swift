@@ -14,15 +14,50 @@ class WaypointProcessor {
     
     // Serial queue for thread safety
     private let serialQueue = DispatchQueue(label: "com.extasy.waypointProcessor")
-    
+
+    /// Low-pass **true wind direction** used **only** for diamond layline geometry (chart stability).
+    /// Live `WindData.trueWindDirection` stays unmodified for instruments, VMC, and `waypointApproachState`.
+    private var laylineWindDirectionSmoothed: Double?
+    private var laylineOptimalUpSmoothed: Double?
+    private var laylineOptimalDnSmoothed: Double?
+
+    /// TWD blend for chart laylines only (slower ≈ Garmin-style **layline filter** — real shifts still converge).
+    private static let laylineWindDirectionBlend = 0.045
+    /// Polar optimal up/down **TWA** blend for layline rays only (damps TWS table jitter).
+    private static let laylineTackAngleBlend = 0.10
+
     // Flags for logging control
     private var hasLoggedWaypointSkipped = false
     private var hasLoggedWaypointInitialized = false
     
     // MARK: - Reset Waypoint Data
     func resetWaypointCalculations() {
+        laylineWindDirectionSmoothed = nil
+        laylineOptimalUpSmoothed = nil
+        laylineOptimalDnSmoothed = nil
         waypointData.reset()
         debugLog("Waypoint data has been reset.")
+    }
+
+    private func laylineSmoothedWindDirection(measured: Double) -> Double {
+        if let prev = laylineWindDirectionSmoothed {
+            let delta = normalizeAngleTo180(measured - prev)
+            laylineWindDirectionSmoothed = normalizeAngle(prev + Self.laylineWindDirectionBlend * delta)
+        } else {
+            laylineWindDirectionSmoothed = normalizeAngle(measured)
+        }
+        return laylineWindDirectionSmoothed!
+    }
+
+    private func laylineSmoothedTackAngles(up measuredUp: Double, down measuredDn: Double) -> (up: Double, down: Double) {
+        if let prevU = laylineOptimalUpSmoothed, let prevD = laylineOptimalDnSmoothed {
+            laylineOptimalUpSmoothed = prevU + (measuredUp - prevU) * Self.laylineTackAngleBlend
+            laylineOptimalDnSmoothed = prevD + (measuredDn - prevD) * Self.laylineTackAngleBlend
+        } else {
+            laylineOptimalUpSmoothed = measuredUp
+            laylineOptimalDnSmoothed = measuredDn
+        }
+        return (laylineOptimalUpSmoothed!, laylineOptimalDnSmoothed!)
     }
     
     // MARK: - Process Waypoint Data
@@ -55,23 +90,23 @@ class WaypointProcessor {
                 courseOverGround: courseOverGround
             )
 
-            // Sailing state for the WAYPOINT approach: derived from bearing to mark vs wind,
-            // not the current boat TWA. This keeps laylines stable when heading changes —
-            // they only move when TWD or boat/mark position actually changes.
+            // Sailing state for the WAYPOINT approach: bearing to mark vs **live** TWD — for
+            // labels, VMC, tack hints (`waypointApproachState`); not coupled to heading alone.
             let angleToMark = abs(normalizeAngleTo180(trueMarkBearing - trueWindDirection))
             let waypointSailingState = angleToMark <= sailingStateLimit ? "Upwind" : "Downwind"
 
-            // Layline geometry: use polar mode from live TWA when it is definitive (Upwind /
-            // Downwind). That is the optimum the boat is sailing for — same family as VMG
-            // and wind laylines — and matches “fastest path” when beating or running to the
-            // mark. Mark-vs-TWD alone can sit past the threshold while you are still
-            // close-hauled (AoM edge case); `waypointApproachState` below stays mark-centric
-            // for labels; only diamond generation uses `laylineSailingState`.
-            let polarMode = vmgData?.sailingState
-            let laylineSailingState: String = (polarMode == "Upwind" || polarMode == "Downwind")
-                ? polarMode!
-                : waypointSailingState
-            
+            // Layline geometry: **smoothed** TWD + **mark-only** up/down vs that wind.
+            // Live TWD can jitter when NMEA HDG/TWA updates shift derived direction during course
+            // changes; using polar `sailingState` for laylines swapped optimal up/down angles
+            // whenever TWA crossed the polar threshold. Diamond laylines instead follow a
+            // low-pass wind (Garmin-style “layline filter”) and the same mark-vs-wind rule
+            // used for approach state — chart lines move mainly with real shifts and boat–mark
+            // geometry, not every heading wobble.
+            let windForLaylines = laylineSmoothedWindDirection(measured: trueWindDirection)
+            let angleToMarkLay = abs(normalizeAngleTo180(trueMarkBearing - windForLaylines))
+            let laylineSailingState = angleToMarkLay <= sailingStateLimit ? "Upwind" : "Downwind"
+            let tackAnglesForLaylines = laylineSmoothedTackAngles(up: optimalUpTWA, down: optimalDnTWA)
+
             // MARK: - Opposite Tack Calculations
             
             let (_, oppositeRelativeMarkBearing) = calculateOppositeTack(
@@ -116,9 +151,9 @@ class WaypointProcessor {
             let (laylines, intersections) = generateDiamondLaylines(
                 boatLocation: boatLocation,
                 waypoint: markerCoordinate,
-                windDirection: trueWindDirection,
-                optimalUpTWA: optimalUpTWA,
-                optimalDnTWA: optimalDnTWA,
+                windDirection: windForLaylines,
+                optimalUpTWA: tackAnglesForLaylines.up,
+                optimalDnTWA: tackAnglesForLaylines.down,
                 sailingState: laylineSailingState,
                 boatToWaypointDistance: distanceToMark
             )

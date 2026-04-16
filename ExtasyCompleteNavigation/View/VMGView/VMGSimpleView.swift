@@ -20,7 +20,7 @@ struct VMGSimpleView: View {
 
                 Divider().padding(.vertical, m.dividerPad)
 
-                tackPairRow(metrics: m)
+                tackPairRowCompact(metrics: m)
 
                 if navigationReadings.waypointData?.isVMCNegative == true {
                     Text("Moving away from waypoint")
@@ -33,21 +33,21 @@ struct VMGSimpleView: View {
                         .padding(.top, m.sectionGap)
                 }
 
-                Spacer(minLength: 0)
             }
-            .padding(m.edgePad)
+            .padding(.horizontal, m.edgePad)
+            .padding(.bottom, m.edgePad)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .background(Color(UIColor.systemBackground))
     }
 
     private func headerRow(metrics m: StripMetrics) -> some View {
-        HStack(spacing: m.headerSpacing) {
+        HStack(alignment: .center, spacing: m.headerSpacing) {
             NavigationLink(destination: WaypointListView()) {
                 Image(systemName: "list.bullet")
                     .font(.system(size: m.headerIcon, weight: .semibold))
                     .foregroundStyle(.secondary)
-                    .frame(width: m.headerChrome, height: m.headerChrome)
+                    .frame(width: m.headerRowHeight, height: m.headerRowHeight)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -56,8 +56,9 @@ struct VMGSimpleView: View {
                 .font(.system(size: m.headerTitle, weight: .semibold))
                 .foregroundStyle(Color("display_font"))
                 .lineLimit(1)
-                .minimumScaleFactor(0.65)
-                .frame(maxWidth: .infinity)
+                .minimumScaleFactor(0.7)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, maxHeight: m.headerRowHeight, alignment: .leading)
 
             Button(action: deselectWaypoint) {
                 Image(systemName: "xmark.circle.fill")
@@ -66,39 +67,44 @@ struct VMGSimpleView: View {
                     .foregroundStyle(.secondary)
             }
             .buttonStyle(.plain)
+            .frame(width: m.headerRowHeight, height: m.headerRowHeight)
         }
+        .frame(height: m.headerRowHeight, alignment: .center)
     }
 
     private func metricsRow(metrics m: StripMetrics) -> some View {
         HStack(alignment: .top, spacing: m.metricsColumnGap) {
-            stripMetric(
+            stripMetricLeading(
                 title: "DTM",
                 value: "\(settingsManager.formatDistance(meters: navigationReadings.waypointData?.distanceToMark ?? 0)) \(settingsManager.distanceAbbreviation)",
                 metrics: m
             )
-            stripMetric(
+            stripMetricLeading(
                 title: "Trip",
                 value: formatTripDuration(navigationReadings.waypointData?.tripDurationToWaypoint),
                 metrics: m
             )
-            stripMetric(
+            stripMetricLeading(
                 title: "ETA",
                 value: formatETA(navigationReadings.waypointData?.etaToWaypoint),
                 metrics: m
             )
+            Spacer(minLength: 0)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func tackPairRow(metrics m: StripMetrics) -> some View {
+    /// One **distance · time** line per tack column (was two icon rows) so the strip does not clip.
+    private func tackPairRowCompact(metrics m: StripMetrics) -> some View {
         HStack(alignment: .top, spacing: m.tackColumnGap) {
-            tackStrip(
-                stateLabel: navigationReadings.vmgData?.sailingState ?? "—",
+            tackLegColumn(
+                title: navigationReadings.vmgData?.sailingState ?? "—",
                 distanceNM: navigationReadings.waypointData?.tackDistance ?? 0,
                 duration: navigationReadings.waypointData?.tackDuration,
                 metrics: m
             )
-            tackStrip(
-                stateLabel: navigationReadings.waypointData?.oppositeTackState ?? "—",
+            tackLegColumn(
+                title: navigationReadings.waypointData?.oppositeTackState ?? "—",
                 distanceNM: navigationReadings.waypointData?.distanceOnOppositeTack ?? 0,
                 duration: navigationReadings.waypointData?.tripDurationOnOppositeTack,
                 metrics: m
@@ -106,60 +112,40 @@ struct VMGSimpleView: View {
         }
     }
 
-    private func stripMetric(title: String, value: String, metrics m: StripMetrics) -> some View {
-        VStack(spacing: m.metricTitleValueGap) {
-            Text(title.uppercased())
-                .font(.system(size: m.metricLabel, weight: .semibold))
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-                .frame(maxWidth: .infinity)
-
-            Text(value)
-                .font(.system(size: m.metricValue, weight: .bold, design: .rounded))
-                .foregroundStyle(Color("display_font"))
-                .lineLimit(1)
-                .minimumScaleFactor(0.55)
-                .frame(maxWidth: .infinity)
-        }
-        .frame(maxWidth: .infinity)
-    }
-
-    private func tackStrip(stateLabel: String, distanceNM: Double, duration: Double?, metrics m: StripMetrics) -> some View {
+    private func tackLegColumn(title: String, distanceNM: Double, duration: Double?, metrics m: StripMetrics) -> some View {
         VStack(alignment: .leading, spacing: m.tackStateToDetailGap) {
-            Text(stateLabel)
+            Text(title)
                 .font(.system(size: m.tackState, weight: .medium))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
 
-            VStack(alignment: .leading, spacing: m.tackLineGap) {
-                Label {
-                    Text("\(settingsManager.formatDistanceFromNM(distanceNM)) \(settingsManager.distanceAbbreviation)")
-                        .font(.system(size: m.tackDetail, weight: .semibold))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.6)
-                } icon: {
-                    Image(systemName: "arrow.triangle.swap")
-                        .font(.system(size: m.tackIcon, weight: .medium))
-                }
-                .labelStyle(.titleAndIcon)
+            Text("\(settingsManager.formatDistanceFromNM(distanceNM)) \(settingsManager.distanceAbbreviation) · \(formatTripDuration(duration))")
+                .font(.system(size: m.tackDetail, weight: .semibold, design: .rounded))
                 .foregroundStyle(Color("display_font"))
-
-                Label {
-                    Text(formatTripDuration(duration))
-                        .font(.system(size: m.tackDetail, weight: .semibold))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.6)
-                } icon: {
-                    Image(systemName: "timer")
-                        .font(.system(size: m.tackIcon, weight: .medium))
-                }
-                .labelStyle(.titleAndIcon)
-                .foregroundStyle(Color("display_font"))
-            }
+                .lineLimit(1)
+                .minimumScaleFactor(0.62)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// Leading-aligned metric block (packed from the start of the row with `Spacer` after).
+    private func stripMetricLeading(title: String, value: String, metrics m: StripMetrics) -> some View {
+        VStack(alignment: .leading, spacing: m.metricTitleValueGap) {
+            Text(title.uppercased())
+                .font(.system(size: m.metricLabel, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+
+            Text(value)
+                .font(.system(size: m.metricValue, weight: .bold, design: .rounded))
+                .foregroundStyle(Color("display_font"))
+                .lineLimit(2)
+                .minimumScaleFactor(0.5)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(minWidth: m.metricColumnMinWidth, alignment: .leading)
     }
 
     private func formatTripDuration(_ eta: Double?) -> String {
@@ -170,11 +156,21 @@ struct VMGSimpleView: View {
         return String(format: "%02d:%02d", hours, minutes)
     }
 
+    /// Time-only when ETA is **today** within the next 24 h; otherwise **date + time** for multi-day trips.
     private func formatETA(_ eta: Date?) -> String {
         guard let eta = eta else { return "—" }
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return formatter.string(from: eta)
+        let cal = Calendar.current
+        let now = Date()
+        let hoursUntil = eta.timeIntervalSince(now) / 3600.0
+        let sameCalendarDay = cal.isDate(eta, inSameDayAs: now)
+        let f = DateFormatter()
+        f.locale = .current
+        if sameCalendarDay, hoursUntil <= 24, hoursUntil >= -1 {
+            f.dateFormat = "HH:mm"
+        } else {
+            f.dateFormat = "d MMM HH:mm"
+        }
+        return f.string(from: eta)
     }
 
     private func deselectWaypoint() {
@@ -189,7 +185,8 @@ private struct StripMetrics {
     let dividerPad: CGFloat
     let sectionGap: CGFloat
     let headerSpacing: CGFloat
-    let headerChrome: CGFloat
+    /// One row height for list / title / close — icons centered with the title cap height.
+    let headerRowHeight: CGFloat
     let headerIcon: CGFloat
     let closeIcon: CGFloat
     let headerTitle: CGFloat
@@ -197,12 +194,12 @@ private struct StripMetrics {
     let metricTitleValueGap: CGFloat
     let metricLabel: CGFloat
     let metricValue: CGFloat
+    /// Minimum width per DTM / Trip / ETA column so values do not collapse when leading-packed.
+    let metricColumnMinWidth: CGFloat
     let tackColumnGap: CGFloat
     let tackStateToDetailGap: CGFloat
-    let tackLineGap: CGFloat
     let tackState: CGFloat
     let tackDetail: CGFloat
-    let tackIcon: CGFloat
     let warningFont: CGFloat
     let warningVerticalPad: CGFloat
 
@@ -210,34 +207,35 @@ private struct StripMetrics {
         let w = max(size.width, 120)
         let h = max(size.height, 80)
 
-        edgePad = max(6, min(14, w * 0.035))
+        let stripTight = h < 118
+        edgePad = stripTight ? max(4, min(8, w * 0.028)) : max(6, min(14, w * 0.035))
         let innerW = w - edgePad * 2
         let innerH = h - edgePad * 2
         /// Slightly upsize type when the strip is tall so the block does not look underscaled.
         let vScale = min(1.22, max(1.0, innerH / 100))
 
-        dividerPad = max(3, min(10, innerH * 0.045))
+        dividerPad = stripTight ? max(2, min(5, innerH * 0.028)) : max(3, min(10, innerH * 0.045))
         sectionGap = max(4, innerH * 0.03)
-        headerSpacing = max(6, innerW * 0.02)
-        headerChrome = max(28, min(40, innerW * 0.1))
-        headerIcon = max(15, headerChrome * 0.48)
-        closeIcon = max(18, min(26, headerChrome * 0.62))
-        headerTitle = max(14, min(22, innerW * 0.065))
+        headerSpacing = max(5, innerW * 0.018)
+        // Title stays secondary to DTM / Trip / ETA — modest size, not strip‑dominant.
+        headerTitle = max(12, min(15, innerW * 0.038))
+        headerRowHeight = max(26, min(32, headerTitle * 1.85))
+        headerIcon = max(12, min(16, headerTitle * 0.95))
+        closeIcon = max(14, min(18, headerTitle * 1.12))
 
         metricsColumnGap = max(4, innerW * 0.02)
         let colCount: CGFloat = 3
         let colW = max(40, (innerW - metricsColumnGap * (colCount - 1)) / colCount)
-        metricTitleValueGap = max(2, innerH * 0.018)
-        metricValue = min(32, max(15, colW * 0.22) * vScale)
+        metricTitleValueGap = stripTight ? max(1, innerH * 0.014) : max(2, innerH * 0.018)
+        metricValue = min(32, max(stripTight ? 13 : 15, colW * (stripTight ? 0.19 : 0.22)) * vScale)
         metricLabel = max(8, min(14, metricValue * 0.42))
+        metricColumnMinWidth = max(52, min(100, innerW * 0.22))
 
         tackColumnGap = max(6, innerW * 0.025)
         let tackHalfW = max(50, (innerW - tackColumnGap) / 2)
-        tackStateToDetailGap = max(3, innerH * 0.028)
-        tackLineGap = max(2, innerH * 0.02)
-        tackState = min(18, max(11, tackHalfW * 0.09) * vScale)
-        tackDetail = min(19, max(10, tackHalfW * 0.095) * vScale)
-        tackIcon = max(10, tackDetail * 0.92)
+        tackStateToDetailGap = stripTight ? max(2, innerH * 0.02) : max(3, innerH * 0.028)
+        tackState = min(18, max(stripTight ? 10 : 11, tackHalfW * (stripTight ? 0.078 : 0.09)) * vScale)
+        tackDetail = min(19, max(stripTight ? 9 : 10, tackHalfW * (stripTight ? 0.085 : 0.095)) * vScale)
 
         warningFont = max(11, min(15, innerW * 0.035))
         warningVerticalPad = max(5, innerH * 0.035)

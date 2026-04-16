@@ -123,19 +123,31 @@ private struct RacingFillBar: View {
             let w = max(geo.size.width, 1)
             let fillW = max(w * fillFraction, fillFraction > 0 ? 3 : 0)
             ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(Color.primary.opacity(0.08))
+                // Full bar = full hue scale (subtle) so the track is always the same absolute ruler.
                 Capsule()
                     .fill(
                         LinearGradient(
-                            colors: TacticalPalette.racingFillGradientColors,
+                            colors: TacticalPalette.racingTrackBackgroundColors,
                             startPoint: .leading,
                             endPoint: .trailing
                         )
                     )
-                    .frame(width: fillW)
-                    .animation(.easeInOut(duration: 0.32), value: performance)
+                // Fill reveals the same scale from 0 % only up to `performance` — trailing edge colour = hue at that %.
+                LinearGradient(
+                    colors: TacticalPalette.racingFillGradientColors,
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+                .frame(width: w, height: height)
+                .mask {
+                    HStack(spacing: 0) {
+                        Capsule()
+                            .frame(width: fillW, height: height)
+                        Spacer(minLength: 0)
+                    }
+                }
             }
+            .animation(.easeInOut(duration: 0.32), value: performance)
         }
         .frame(height: height)
     }
@@ -163,8 +175,8 @@ struct PowerSegments: View {
             ForEach(0..<total, id: \.self) { i in
                 RoundedRectangle(cornerRadius: 2)
                     .fill(isFilled(i)
-                          ? segmentColor(index: i).opacity(0.88)
-                          : Color.gray.opacity(0.15))
+                          ? segmentColor(index: i).opacity(0.92)
+                          : segmentColor(index: i).opacity(0.22))
                     .frame(height: barHeight)
                     .animation(
                         .easeInOut(duration: 0.5).delay(Double(i) * 0.025),

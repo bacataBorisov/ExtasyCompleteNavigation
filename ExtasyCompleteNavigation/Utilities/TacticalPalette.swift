@@ -22,9 +22,15 @@ enum TacticalPalette {
         return Color("display_font")
     }
 
-    /// Colours for the continuous racing performance fill (low → high %).
+    /// Colours for the continuous racing / performance bar: **leading = low % of polar**, **trailing = high %** (green → good).
+    /// Used as a **full-bar** linear gradient; fill level is a mask so hue always matches absolute position on 0…100 %.
     static var racingFillGradientColors: [Color] {
         [portEnd.opacity(0.92), portStart, transition, starboardStart, starboardEnd.opacity(0.96)]
+    }
+
+    /// Same hue progression as `racingFillGradientColors`, for a dim “ruler” under the fill so the whole track reads as one scale.
+    static var racingTrackBackgroundColors: [Color] {
+        racingFillGradientColors.map { $0.opacity(0.14) }
     }
 
     /// Background gradient for `TackAlignmentBar` (port / low error → starboard / high).

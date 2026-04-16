@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [Unreleased] — 2026-04-16
+
+### Improvements
+
+- **Laylines (`WaypointProcessor` + `MapView`)**: Chart laylines use **slower low-pass TWD** (layline-only) plus **smoothed polar optimal up/down TWA** for ray angles; **mark vs smoothed TWD** for up/down family. **`MapView`**: boat-side outer rays start at **tack** when the diamond is valid (avoids overlap flash with white legs / fill); **stable polygon vertex order**; **no `withAnimation`** on tack dots; waypoint bundle uses **processor boat** anchor. **Dashboard map** (`iPadDashboardBleedMargins`): **no rounded card** — map fills the map cell (**`iPadMapChromeEdgeInsets`** zero).
+- **Performance bars (`PerformanceDoubleBarView` + `TacticalPalette`)**: Racing fill uses **full-width gradient masked to fill %** (absolute 0–100 % hue scale); dim full-width track; **`PowerSegments`** empty cells use faint segment hue instead of flat grey.
+- **iPad strip (`iPadView`)**: **Tack alignment bar flush** to strip bottom (removed inner bottom pad and outer safe-area-style bottom pad on the strip).
+- **`VMGSimpleView`**: No **top** content padding; **header** row fixed height with title **vertically centered** with list/close; **DTM / Trip / ETA** **leading-packed** columns; **ETA** shows **`d MMM HH:mm`** when not same-day or beyond ~24 h; **downwind/upwind** on one **distance · time** line each; tighter **`StripMetrics`** when the strip is short.
+
+### Documentation
+
+- **`.cursor/skills/sailing-racing-tactics/SKILL.md`**: Vendor layline filter notes (Garmin / B&G); **Extasy** dual smoothing (TWD + tack angles) and “filtered not locked” expectation; editing bullets updated.
+- **`.agent/ROADMAP.md`**: Layline stability line updated; **Optional C / Accelerate kernels** task (profile-first NMEA / polar / geodesic / matrices) from prior planning.
+
+---
+
 ## [Unreleased] — 2026-04-15
 
 ### Features

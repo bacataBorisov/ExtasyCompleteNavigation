@@ -33,6 +33,28 @@ Laylines **rotate with TWD shifts** and **open or close** with wind speed (optim
 
 **Tactical note (fleet racing):** hitting the layline **very early** is often wrong — you lose shift options and get “layline parade” traffic. Software still draws full geometry; the human tactician chooses **when** to commit.
 
+## How chartplotters stabilise laylines (what other makers do)
+
+Instruments agree laylines **must** follow wind and polar angles, but **raw** updates can make the chart unreadable. Common patterns:
+
+| Source | Mechanism | Notes |
+|--------|-----------|--------|
+| **Garmin GPSMAP** (sailing) | **[Layline Filter](https://www8.garmin.com/manuals/webhelp/GUID-3E67C80C-0812-4EEC-BC60-699751B9CF6F/EN-US/GUID-452E9A3D-1C2B-42C0-87EC-D06BE8927AD8.html)** — time interval; higher = smoother, filters **heading / TWA** jitter. | Explicit user control (“smoother vs more sensitive”). |
+| **Garmin** | **Sailing Ang.** = **Actual** (sensor) vs **Manual** (fixed windward/leeward angles) vs **Polar table**. | Manual = ignore short-term wind noise; polar = TWS-dependent angles like Extasy’s polars. |
+| **B&G / Zeus** (community docs) | TWD from mast wind + motion; **[Use COG as heading](https://copelands.blog/2019/08/29/configuring-true-wind-direction-twd-and-true-wind-speed-tws-on-a-bg-zeus-3-chart-plotter/)** (and SOG as speed) option to **stabilise TWD** in current — tradeoff: TWA vs water becomes less “pure”. | Same physics problem: **ground-referenced** wind can be steadier when **HDG** lags or wanders in tacks. |
+| **Racing / nav suites** (e.g. Expedition, SailTimer class) | Often **user wind** or **averaged TWD**, sometimes **mark type** (windward vs leeward) to pick layline family. | Less automatic twitching; crew accepts responsibility for wrong manual wind. |
+
+**Why lines “dance” without filtering**
+
+1. **TWD from HDG + TWA** (typical NMEA MWV “true”): any **heading** step or lag rotates derived TWD even if the **true** wind field is steady.  
+2. **Polar up/down mode from live TWA**: crossing the polar’s **upwind / downwind** threshold swaps **optimal up TWA** vs **optimal down TWA** in the layline math — a **large** geometric jump unrelated to a small mark move.  
+3. **True wind shifts** (5° shift ≈ 5° line rotation) — correct behaviour; filtering should **not** remove real persistent shifts, only **high-frequency** noise.
+
+**Extasy (implementation intent)**
+
+- **Instruments / VMC / labels**: keep **live** `WindData.trueWindDirection` (already Kalman-smoothed in `WindProcessor`).  
+- **Diamond laylines on the map** (`WaypointProcessor`): **(1)** circular low-pass **TWD** used only for layline math (slower blend than before — same *class* as Garmin **Layline Filter**: chart ignores short spikes from HDG/TWA coupling in a tack); **(2)** low-pass **polar optimal up/down TWA** used only for ray angles (damps TWS table jitter); **(3)** **mark vs smoothed TWD** for upwind vs downwind **family**. Lines are **filtered**, not **locked** — a real persistent shift or new TWS band still moves them; that matches well-tested plotter behaviour.
+
 ## Two different “modes” (source of app confusion)
 
 1. **Boat mode (TWA vs polar threshold):** “Am I sailing in the **upwind** or **downwind** band of the polar **right now**?” — drives **VMG bars**, **optimal TWA for trimming**, **generic wind laylines from the boat**.
@@ -41,15 +63,17 @@ Laylines **rotate with TWD shifts** and **open or close** with wind speed (optim
 
 Those two **can disagree near the threshold** (e.g. sailing **upwind TWA** while AoM is barely past the polar’s upwind/downwind boundary). A **tactician** still sails the **actual leg** (upwind beat vs downwind); the **mark laylines** for that leg should use the **same optimal tack angle family** as the leg you are sailing, or the chart will disagree with “what’s fast.”
 
+**Extasy tradeoff:** diamond laylines prefer **mark vs smoothed TWD** for that family choice so the **map** does not swap up/down tack angles when **polar boat mode** flickers; you may rarely see chart laylines in the “other” polar band — prefer **crew / polar readouts** for “what mode we are sailing.”
+
 ## Fastest path to the mark (what you want on the water)
 
 - **Mark to windward (you are beating):** fastest course to that mark is driven by **upwind polar optimum** (close‑hauled VMG), not downwind angles — laylines through the mark should use **optimal upwind TWA** for that TWS.
 - **Mark to leeward (you are running):** use **downwind** polar optimum for laylines / gybing geometry.
 - **“No matter what the label says”:** if one classifier says “downwind” but you are clearly in **upwind TWA band**, you still sail and plan with **upwind optimum** for speed to a windward mark.
 
-**Extasy behaviour:** diamond laylines use **polar sailing mode from live TWA** (`VMGData.sailingState`) when it is `Upwind` or `Downwind`; otherwise they fall back to mark‑vs‑TWD (`waypointApproachState`). The **mark** badge in debug can still show mark‑centric state for context.
+**Extasy behaviour:** **Map diamond laylines** use **layline‑only smoothed TWD** + **smoothed polar tack angles** for the rays, plus **bearing‑to‑mark vs smoothed TWD** for up/down **family**. **`waypointApproachState`** and VMC still use **live** TWD vs mark for tactics. Polar **`sailingState`** remains authoritative for **VMG bars** and trim hints, not for swapping layline tack‑angle family on every threshold cross.
 
-**Future product (see `.agent/ROADMAP.md`):** **Downwind path advisor** — compare time‑to‑mark for **rhumb / straight** vs **one or more gybes** at polar‑optimal TWA using **VMC** and polar boat speed; start simple (stay vs one gybe) before full routing.
+**Future product (see `.agent/ROADMAP.md`):** **Downwind path advisor** — compare time‑to‑mark for **rhumb / straight** vs **one or more gybes** at polar‑optimal TWA using **VMC** and polar boat speed; start simple (stay vs one gybe) before full routing. Optional **Settings** later: Garmin‑style **layline filter interval** or **manual layline wind** if users want full control.
 
 ## VMG vs VMC (one line each)
 
@@ -62,6 +86,8 @@ Those two **can disagree near the threshold** (e.g. sailing **upwind TWA** while
 
 ## Sources (public, stable enough to cite)
 
+- Garmin GPSMAP — [Laylines settings (Layline Filter, Sailing Ang., manual angles)](https://www8.garmin.com/manuals/webhelp/GUID-3E67C80C-0812-4EEC-BC60-699751B9CF6F/EN-US/GUID-452E9A3D-1C2B-42C0-87EC-D06BE8927AD8.html)
+- B&G Zeus / TWD configuration (COG vs heading tradeoff): [The Copelands — TWD on B&G Zeus 3](https://copelands.blog/2019/08/29/configuring-true-wind-direction-twd-and-true-wind-speed-tws-on-a-bg-zeus-3-chart-plotter/)
 - Windward mark laylines and early‑layline trap: [SailZing — Windward mark approach](https://sailzing.com/windward-mark-approach-six-traps-to-avoid/)
 - Race course / windward leg basics: [SailZing — Windward leg for beginners](https://sailzing.com/sailing-the-race-course-windward-leg-for-beginners/)
 - Course management / big‑picture tactics: [America’s Cup — race tactics & course management](https://www.americascup.com/news/3234_RACE-TACTICS-COURSE-MANAGEMENT-WHAT-TO-LOOK-FOR)
@@ -69,11 +95,12 @@ Those two **can disagree near the threshold** (e.g. sailing **upwind TWA** while
 
 ## When editing Extasy Complete Navigation
 
-- **Layline diamond** uses **TWA / polar mode** when known, else mark vs TWD — so boat and mark rays match **optimal up or down angles you are actually sailing**; do not revert to mark‑only if that re‑introduces the AoM threshold bug.
-- **Do not drive laylines from COG alone** — heading wobble should not swing geometry; TWD + polar state + positions are the right inputs.
+- **Layline diamond**: `WaypointProcessor` — **smoothed TWD** (`laylineWindDirectionSmoothed`), **smoothed optimal up/down TWA** for rays only, **mark vs smoothed TWD** for up/down **family**; **reset** all layline smoothers when waypoint cleared. Optional **Settings** later: user‑tunable blend or Garmin‑style **Layline Filter** interval.
+- **Do not drive laylines from COG alone** — use TWD (smoothed for chart) + mark position + polar **optimal TWA** for the chosen up/down **family**.
+- If you re‑introduce **polar `sailingState` for diamond tack‑angle family**, document the **AoM edge case** vs **chart twitch** tradeoff in this skill and consider a **user toggle** (Actual / Mark only / Polar sync).
 - **Current leg “Upwind / Downwind” labels** for the **boat** should follow **TWA / polar mode**, not only mark AoM, or the UI contradicts how the crew is sailing.
 - **VMC row** compares tacks **toward the mark**; do not relabel it as VMG.
-- Respect **Kalman‑smoothed TWD** and **vector wind** handling already in the codebase when reasoning about rotation of laylines over time.
+- Respect **Kalman vector TWD** in `WindProcessor` for live data; **`WaypointProcessor`** applies an additional **slower** circular blend **only** for diamond laylines — two stages are intentional (instruments responsive, chart calm).
 
 ## Anti‑patterns
 
