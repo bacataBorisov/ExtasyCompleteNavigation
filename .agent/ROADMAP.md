@@ -276,11 +276,11 @@ Prioritized list of improvements, organized by impact and effort.
 
 ## Priority 5 — Cleanup
 
-- Remove empty `Extensions.swift`
+- ~~Remove empty `Extensions.swift`~~ ✅ (already gone)
+- ~~Rename `WaypointFIllForm.swift` → `WaypointFillForm.swift` (typo in filename)~~ ✅ (already correct in git)
 - Update `README.md` to remove references to non-existent `VMGViewModel` and `SettingsMenuViewModel`
 - Clean up commented-out old VMGCalculator implementation at bottom of file
 - Remove `global` variable `displayCell` in `DisplayCells.swift` — consider a proper registry pattern
-- Rename `WaypointFIllForm.swift` → `WaypointFillForm.swift` (typo in filename)
 - Refactor MapView for better scalability and first-run experience ✅ (reactive `onChange` for GPS centering, Session 4)
 - Redesign MultiDisplay to be more adaptive across screen sizes
 - Ensure all available values from data structures are displayable in cells
