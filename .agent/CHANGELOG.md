@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [Unreleased] — 2026-05-01
+
+### Improvements
+
+- **iPhone waypoint view (`iPhoneVMGView`)**: Complete visual overhaul to match the iPad's `VMGSimpleView` language — **system background** replaces hardcoded dark navy; all colours are adaptive (`.primary` / `.secondary` / `Color("display_font")`); header uses the identical list-icon | name | close layout. DTM / TRIP / ETA are now **3 full-width rows** distributed vertically across the available space (using `Spacer` between each), making the numbers the hero. CURRENT and NEXT tack legs are **pinned to the bottom** of the panel; each shows a hero `distance | duration` line with a compact **`CURRENT · STBD · UPWIND`** hint line below. **Debug row removed** — the TWA/Thresh/Boat/VMC/Brg/AoM chips were dev-only and leaked to production.
+- **Waypoint list navigation (iPhone)**: The list icon in the waypoint header now opens `WaypointListView` as a **modal sheet** (`.medium` / `.large` detents) instead of a push `NavigationLink` — eliminates the broken back-navigation state that occurred when returning from the list.
+- **Multi-day TRIP & ETA formatting** (`iPhoneVMGView` + `VMGSimpleView`): TRIP durations ≥ 24 h now display as `1d 03:27` instead of `27:27`. ETA shows `d MMM HH:mm` (e.g. `2 May 22:08`) when the arrival is more than 24 h away; otherwise just `HH:mm`. Consistent across iPhone and iPad strip.
+- **UDP multi-simulator support (`UDPHandler`)**: Added `socket.enableReusePort(true)` before bind so multiple simulator instances can share port 4950 simultaneously. Requires the sender to use broadcast (`255.255.255.255:4950`) — matches how the real Raspberry Pi already sends on the boat network.
+
+---
+
 ## [Unreleased] — 2026-04-16
 
 ### Improvements

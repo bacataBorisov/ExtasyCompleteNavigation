@@ -103,6 +103,7 @@ class UDPHandler: NSObject, GCDAsyncUdpSocketDelegate {
         }
         
         do {
+            try socket.enableReusePort(true)  // allows multiple simulator instances to share port 4950
             try socket.bind(toPort: 4950)
             try socket.beginReceiving()
             isSocketOpen = true

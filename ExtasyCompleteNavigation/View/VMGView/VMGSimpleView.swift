@@ -152,28 +152,23 @@ struct VMGSimpleView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func formatTripDuration(_ eta: Double?) -> String {
-        guard let eta = eta, eta.isFinite, eta >= 0 else { return "—" }
-        let totalSeconds = Int(eta * 3600)
-        let hours = totalSeconds / 3600
-        let minutes = (totalSeconds % 3600) / 60
-        return String(format: "%02d:%02d", hours, minutes)
+    private func formatTripDuration(_ hours: Double?) -> String {
+        guard let h = hours, h.isFinite, h >= 0 else { return "—" }
+        let total = Int(h * 3600)
+        let days  = total / 86400
+        let hh    = (total % 86400) / 3600
+        let mm    = (total % 3600) / 60
+        return days > 0
+            ? String(format: "%dd %02d:%02d", days, hh, mm)
+            : String(format: "%02d:%02d", hh, mm)
     }
 
-    /// Time-only when ETA is **today** within the next 24 h; otherwise **date + time** for multi-day trips.
     private func formatETA(_ eta: Date?) -> String {
-        guard let eta = eta else { return "—" }
-        let cal = Calendar.current
-        let now = Date()
-        let hoursUntil = eta.timeIntervalSince(now) / 3600.0
-        let sameCalendarDay = cal.isDate(eta, inSameDayAs: now)
+        guard let eta else { return "—" }
+        let hours = eta.timeIntervalSince(Date()) / 3600
         let f = DateFormatter()
         f.locale = .current
-        if sameCalendarDay, hoursUntil <= 24, hoursUntil >= -1 {
-            f.dateFormat = "HH:mm"
-        } else {
-            f.dateFormat = "d MMM HH:mm"
-        }
+        f.dateFormat = hours <= 24 ? "HH:mm" : "d MMM HH:mm"
         return f.string(from: eta)
     }
 

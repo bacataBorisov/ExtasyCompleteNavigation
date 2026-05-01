@@ -1,374 +1,339 @@
 import SwiftUI
 import CoreLocation
 
+/// iPhone full-panel waypoint view.
+///
+/// Same visual language as ``VMGSimpleView`` (iPad compact strip) — system background,
+/// adaptive colours, geometry-driven fonts — but expanded to show three tack-leg rows
+/// (DIRECT / CURRENT / NEXT) that don't fit in the narrow iPad strip.
 struct iPhoneVMGView: View {
     @Environment(NMEAParser.self) private var navigationReadings
     @Environment(SettingsManager.self) private var settingsManager
     var waypointName: String
-    @State private var cardGradient: [Color] = [Color.teal.opacity(0.7), Color.blue.opacity(0.7)] // unused during debug phase
-    @State private var showWarningView = false
-    @State private var isWaypointListPresented = false
 
-    
+    @State private var showWaypointList = false
+
     var body: some View {
-        NavigationStack {
-            GeometryReader { geometry in
-                let size = min(geometry.size.width, geometry.size.height)
-                let valueFont = Font.system(size: size * 0.07, weight: .bold)
-                let labelFont = Font.system(size: size * 0.045, weight: .regular)
-                let headerFont = Font.system(size: size * 0.05, weight: .semibold)
-                let messageFont = Font.system(size: size * 0.09, weight: .semibold)
+        GeometryReader { geo in
+            let m = PhoneVMGMetrics(size: geo.size)
 
-                ZStack {
-                    VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 0) {
+                // ── Top: name ───────────────────────────────────────────────
+                headerRow(metrics: m)
 
-                        // MARK: - Header
-                        HStack {
-                            Button(action: { isWaypointListPresented.toggle() }) {
-                                Image(systemName: "dot.scope")
-                                    .foregroundColor(.white)
-                                    .frame(width: size * 0.15, height: size * 0.15)
-                            }
-                            .buttonStyle(.plain)
-                            .sheet(isPresented: $isWaypointListPresented) {
-                                WaypointListView()
-                                    .presentationDetents([.medium, .large])
-                                    .presentationDragIndicator(.visible)
-                            }
-                            Spacer()
-                            Button(action: deselectWaypoint) {
-                                Image(systemName: "xmark.circle")
-                                    .foregroundColor(.white)
-                                    .frame(width: size * 0.15, height: size * 0.15)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                        .overlay(
-                            Text(waypointName)
-                                .font(Font.system(size: size * 0.07, weight: .bold))
-                                .foregroundColor(.white)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.5)
-                                .shadow(color: Color.black.opacity(0.8), radius: 6, x: 2, y: 2)
-                        )
-                        .padding(.top)
-                        .padding(.bottom, size * 0.04)
+                Divider().padding(.vertical, m.dividerPad)
 
-                        // MARK: - Column Headers
-                        tackRowHeader(labels: ("DIST", "TIME", "ETA / STATE"), headerFont: labelFont)
-                            .padding(.bottom, 2)
+                // ── Middle: DTM / TRIP / ETA distributed across all available space
+                directSection(metrics: m)
 
-                        Divider().background(Color.white.opacity(0.3))
+                // ── Bottom: tack legs pinned to the bottom ───────────────────
+                if navigationReadings.waypointData?.isVMCNegative == true {
+                    Text("Moving away from waypoint")
+                        .font(.system(size: m.warningFont, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, m.warningPad)
+                        .padding(.horizontal, 8)
+                        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.red.opacity(0.85)))
+                } else {
+                    Divider().padding(.vertical, m.dividerPad)
 
-                        // MARK: - Row 1: Direct to Waypoint
-                        tackRow(
-                            label: "DIRECT",
-                            col1: "\(settingsManager.formatDistance(meters: navigationReadings.waypointData?.distanceToMark ?? 0)) \(settingsManager.distanceAbbreviation)",
-                            col2: formatTripDuration(navigationReadings.waypointData?.tripDurationToWaypoint),
-                            col3: formatETA(navigationReadings.waypointData?.etaToWaypoint),
-                            stateColor: .white,
-                            headerFont: headerFont,
-                            valueFont: valueFont,
-                            labelFont: labelFont
-                        )
+                    currentLegRow(metrics: m)
 
-                        Divider().background(Color.white.opacity(0.3))
+                    Divider().padding(.vertical, m.dividerPad)
 
-                        // MARK: - Warning or Tack Rows
-                        if navigationReadings.waypointData?.isVMCNegative ?? false {
-                            Spacer()
-                            Text("Moving away from waypoint")
-                                .font(messageFont)
-                                .foregroundColor(.white)
-                                .multilineTextAlignment(.center)
-                                .padding()
-                                .background(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color.red.opacity(0.8))
-                                )
-                                .padding(.horizontal)
-                            Spacer()
-                        } else {
-                            // Determine PORT / STBD from TWA (0-360°):
-                            // 0-180° = wind from starboard side → Starboard tack/gybe
-                            // Current leg: tack derived from boat's live TWA (> 180° = wind on port).
-                            let rawTWA = (navigationReadings.windData?.trueWindAngle ?? 0)
-                            let normalizedTWA = (rawTWA + 360).truncatingRemainder(dividingBy: 360)
-                            let isPortTack = normalizedTWA > 180
-                            let tack1Label = isPortTack ? "PORT" : "STBD"
-                            let tack1Color = TacticalPalette.tackLabelColor(for: tack1Label)
-
-                            // Next leg: tack derived from the second-leg heading vs TWD (computed in processor).
-                            // This is independent of the current tack — e.g. on a downwind leg the wind
-                            // can still come from the port side even though the boat just tacked.
-                            let nextLegTackStr = navigationReadings.waypointData?.nextLegTack ?? "—"
-                            let nextLabel: String = nextLegTackStr == "Port" ? "PORT" : (nextLegTackStr == "Starboard" ? "STBD" : "—")
-                            let nextColor: Color = nextLabel == "—" ? .white.opacity(0.55) : TacticalPalette.tackLabelColor(for: nextLabel)
-
-                            // CURRENT subtitle = live boat mode (TWA vs polar threshold), same as debug “Boat”.
-                            // `waypointApproachState` is mark-vs-wind only; it can say Downwind while you
-                            // are close-hauled (e.g. AoM 95° vs 93° threshold) — wrong label for this row.
-                            let currentLegMode = navigationReadings.vmgData?.sailingState
-                                ?? navigationReadings.waypointData?.waypointApproachState
-                                ?? "—"
-                            let currentLegModeColor: Color = {
-                                switch currentLegMode {
-                                case "Upwind": return .cyan
-                                case "Downwind": return .orange
-                                default: return .white.opacity(0.55)
-                                }
-                            }()
-
-                            // MARK: - Row 2: Current tack leg (boat → tack point)
-                            // col3 = PORT/STBD (which tack), col3Sub = UPWIND/DOWNWIND (live boat mode)
-                            tackRow(
-                                label: "CURRENT",
-                                col1: "\(settingsManager.formatDistanceFromNM(navigationReadings.waypointData?.tackDistance ?? 0)) \(settingsManager.distanceAbbreviation)",
-                                col2: formatTripDuration(navigationReadings.waypointData?.tackDuration),
-                                col3: tack1Label,
-                                col3Sub: currentLegMode.uppercased(),
-                                col3SubColor: currentLegModeColor,
-                                stateColor: tack1Color,
-                                headerFont: headerFont,
-                                valueFont: valueFont,
-                                labelFont: labelFont
-                            )
-
-                            Divider().background(Color.white.opacity(0.3))
-
-                            // MARK: - Row 3: Second tack leg (tack point → mark)
-                            // nextLegSailingState is computed from the INTERSECTION's bearing
-                            // to the mark, not from the boat's current position — so it correctly
-                            // reflects what the boat will actually sail on the second leg.
-                            let nextLegState = navigationReadings.waypointData?.nextLegSailingState
-                                ?? navigationReadings.waypointData?.waypointApproachState
-                                ?? "—"
-                            let nextLegStateColor: Color = nextLegState == "Upwind" ? .cyan : .orange
-                            tackRow(
-                                label: "NEXT",
-                                col1: "\(settingsManager.formatDistanceFromNM(navigationReadings.waypointData?.distanceOnOppositeTack ?? 0)) \(settingsManager.distanceAbbreviation)",
-                                col2: formatTripDuration(navigationReadings.waypointData?.tripDurationOnOppositeTack),
-                                col3: nextLabel,
-                                col3Sub: nextLegState.uppercased(),
-                                col3SubColor: nextLegStateColor,
-                                stateColor: nextColor,
-                                headerFont: headerFont,
-                                valueFont: valueFont,
-                                labelFont: labelFont
-                            )
-
-                            Divider().background(Color.white.opacity(0.3))
-
-                            // MARK: - Debug Row
-                            debugRow(size: size, labelFont: labelFont)
-                        }
-
-                        Spacer()
-                    }
-                    .padding(.horizontal, 12)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color(red: 0.05, green: 0.12, blue: 0.20))
-                    .onChange(of: navigationReadings.waypointData?.currentTackRelativeBearing) { _, _ in
-                        handleTackLogic()
-                    }
+                    nextLegRow(metrics: m)
                 }
             }
+            .padding(.horizontal, m.edgePad)
+            .padding(.vertical, m.edgePad)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        }
+        .background(Color(UIColor.systemBackground))
+        .sheet(isPresented: $showWaypointList) {
+            NavigationStack {
+                WaypointListView()
+            }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
     }
 
-    // MARK: - Column Header Row
-    private func tackRowHeader(labels: (String, String, String), headerFont: Font) -> some View {
-        HStack {
-            Text(labels.0)
-                .font(headerFont)
-                .foregroundColor(.white.opacity(0.6))
-                .frame(maxWidth: .infinity)
-            Text(labels.1)
-                .font(headerFont)
-                .foregroundColor(.white.opacity(0.6))
-                .frame(maxWidth: .infinity)
-            Text(labels.2)
-                .font(headerFont)
-                .foregroundColor(.white.opacity(0.6))
-                .frame(maxWidth: .infinity)
+    // MARK: - Header (list icon | name | close) — matches VMGSimpleView header layout
+
+    private func headerRow(metrics m: PhoneVMGMetrics) -> some View {
+        HStack(alignment: .center, spacing: m.headerSpacing) {
+            Button(action: { showWaypointList = true }) {
+                Image(systemName: "list.bullet")
+                    .font(.system(size: m.headerIcon, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                    .frame(width: m.headerRowH, height: m.headerRowH)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            Text(waypointName)
+                .font(.system(size: m.headerTitle, weight: .semibold))
+                .foregroundStyle(Color("display_font"))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .frame(maxWidth: .infinity, maxHeight: m.headerRowH, alignment: .leading)
+
+            Button(action: { navigationReadings.deselectWaypoint() }) {
+                Image(systemName: "xmark.circle.fill")
+                    .symbolRenderingMode(.hierarchical)
+                    .font(.system(size: m.closeIcon))
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .frame(width: m.headerRowH, height: m.headerRowH)
         }
-        .padding(.vertical, 4)
+        .frame(height: m.headerRowH)
     }
 
-    // MARK: - Data Row
-    /// col3Sub: optional second line below col3 (smaller, different color).
-    /// Used to show both tack (PORT/STBD) and sailing mode (UPWIND/DOWNWIND) together.
-    private func tackRow(
+    // MARK: - Direct section: DTM / TRIP / ETA as 3 rows filling available space
+
+    private func directSection(metrics m: PhoneVMGMetrics) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Spacer(minLength: 0)
+            metricRow(
+                label: "DTM",
+                value: "\(settingsManager.formatDistance(meters: navigationReadings.waypointData?.distanceToMark ?? 0)) \(settingsManager.distanceAbbreviation)",
+                metrics: m
+            )
+            Spacer(minLength: 0)
+            metricRow(
+                label: "TRIP",
+                value: formatDuration(navigationReadings.waypointData?.tripDurationToWaypoint),
+                metrics: m
+            )
+            Spacer(minLength: 0)
+            metricRow(
+                label: "ETA",
+                value: formatETA(navigationReadings.waypointData?.etaToWaypoint),
+                metrics: m
+            )
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    // MARK: - Current leg (boat → tack point)
+
+    private func currentLegRow(metrics m: PhoneVMGMetrics) -> some View {
+        let rawTWA = (navigationReadings.windData?.trueWindAngle ?? 0)
+        let normalised = (rawTWA + 360).truncatingRemainder(dividingBy: 360)
+        let isPort = normalised > 180
+        let tackLabel = isPort ? "PORT" : "STBD"
+        let tackColor = TacticalPalette.tackLabelColor(for: tackLabel)
+        let modeLabel = (navigationReadings.vmgData?.sailingState
+            ?? navigationReadings.waypointData?.waypointApproachState
+            ?? "—").uppercased()
+        let modeColor: Color = modeLabel == "UPWIND" ? .cyan : modeLabel == "DOWNWIND" ? .orange : .secondary
+
+        return legRow(
+            label: "CURRENT",
+            distance: "\(settingsManager.formatDistanceFromNM(navigationReadings.waypointData?.tackDistance ?? 0)) \(settingsManager.distanceAbbreviation)",
+            duration: formatDuration(navigationReadings.waypointData?.tackDuration),
+            tackLabel: tackLabel, tackColor: tackColor,
+            modeLabel: modeLabel, modeColor: modeColor,
+            metrics: m
+        )
+    }
+
+    // MARK: - Next leg (tack point → mark)
+
+    private func nextLegRow(metrics m: PhoneVMGMetrics) -> some View {
+        let raw = navigationReadings.waypointData?.nextLegTack ?? "—"
+        let nextLabel = raw == "Port" ? "PORT" : raw == "Starboard" ? "STBD" : "—"
+        let nextColor: Color = nextLabel == "—" ? .secondary : TacticalPalette.tackLabelColor(for: nextLabel)
+        let state = (navigationReadings.waypointData?.nextLegSailingState
+            ?? navigationReadings.waypointData?.waypointApproachState
+            ?? "—").uppercased()
+        let stateColor: Color = state == "UPWIND" ? .cyan : .orange
+
+        return legRow(
+            label: "NEXT",
+            distance: "\(settingsManager.formatDistanceFromNM(navigationReadings.waypointData?.distanceOnOppositeTack ?? 0)) \(settingsManager.distanceAbbreviation)",
+            duration: formatDuration(navigationReadings.waypointData?.tripDurationOnOppositeTack),
+            tackLabel: nextLabel, tackColor: nextColor,
+            modeLabel: state, modeColor: stateColor,
+            metrics: m
+        )
+    }
+
+    // MARK: - Shared leg row layout
+    //
+    // Hero line: distance  |  duration  (big, prominent)
+    // Hint line: CURRENT · STBD · UPWIND  (small, secondary — context at a glance)
+
+    private func legRow(
         label: String,
-        col1: String, col2: String, col3: String,
-        col3Sub: String? = nil, col3SubColor: Color = .white.opacity(0.6),
-        stateColor: Color,
-        headerFont: Font, valueFont: Font, labelFont: Font
+        distance: String, duration: String,
+        tackLabel: String, tackColor: Color,
+        modeLabel: String, modeColor: Color,
+        metrics m: PhoneVMGMetrics
     ) -> some View {
-        HStack(alignment: .center) {
-            // Row label
-            Text(label)
-                .font(labelFont)
-                .foregroundColor(.white.opacity(0.7))
-                .frame(width: 50, alignment: .leading)
-
-            // Distance
-            Text(col1)
-                .font(valueFont)
-                .foregroundColor(.white)
-                .minimumScaleFactor(0.6)
-                .lineLimit(1)
-                .frame(maxWidth: .infinity)
-
-            // Duration
-            Text(col2)
-                .font(valueFont)
-                .foregroundColor(.white)
-                .minimumScaleFactor(0.6)
-                .lineLimit(1)
-                .frame(maxWidth: .infinity)
-
-            // Tack + optional sailing-mode subtitle
-            VStack(spacing: 2) {
-                Text(col3)
-                    .font(valueFont)
-                    .foregroundColor(stateColor)
-                    .minimumScaleFactor(0.5)
+        VStack(alignment: .leading, spacing: m.hintGap) {
+            // Hero: numbers first
+            HStack(spacing: m.columnGap) {
+                Text(distance)
+                    .font(.system(size: m.dataValue, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color("display_font"))
+                    .minimumScaleFactor(0.6)
                     .lineLimit(1)
-                if let sub = col3Sub {
-                    Text(sub)
-                        .font(labelFont)
-                        .foregroundColor(col3SubColor)
-                        .minimumScaleFactor(0.6)
-                        .lineLimit(1)
-                }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Text(duration)
+                    .font(.system(size: m.dataValue, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color("display_font"))
+                    .minimumScaleFactor(0.6)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(maxWidth: .infinity)
+
+            // Hint: leg label · tack · mode
+            HStack(spacing: 5) {
+                Text(label)
+                    .foregroundStyle(.secondary)
+                Text("·")
+                    .foregroundStyle(.tertiary)
+                Text(tackLabel)
+                    .foregroundStyle(tackColor)
+                Text("·")
+                    .foregroundStyle(.tertiary)
+                Text(modeLabel)
+                    .foregroundStyle(modeColor)
+            }
+            .font(.system(size: m.rowLabel, weight: .medium))
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, m.rowVPad)
     }
 
-    // MARK: - Debug Row
-    @ViewBuilder
-    private func debugRow(size: CGFloat, labelFont: Font) -> some View {
-        let rawTWA = navigationReadings.windData?.trueWindAngle
-        let threshold = navigationReadings.vmgData?.sailingStateLimit
-        // "Boat" = current TWA-based state; "Mark" = bearing-to-mark state (stable vs heading changes)
-        let boatState = navigationReadings.vmgData?.sailingState ?? "—"
-        let markState = navigationReadings.waypointData?.waypointApproachState ?? "—"
-        let optUp = navigationReadings.vmgData?.optimalUpTWA
-        let optDn = navigationReadings.vmgData?.optimalDnTWA
+    // MARK: - Metric row (full-width, used in directSection)
 
-        VStack(spacing: 2) {
-            HStack(spacing: 8) {
-                debugChip(label: "TWA", value: rawTWA.map { String(format: "%.1f°", $0) } ?? "—")
-                debugChip(label: "Thresh", value: threshold.map { String(format: "%.0f°", $0) } ?? "—")
-                debugChip(label: "Boat", value: boatState)
-            }
-            HStack(spacing: 8) {
-                debugChip(label: "OptUp", value: optUp.map { String(format: "%.1f°", $0) } ?? "—")
-                debugChip(label: "OptDn", value: optDn.map { String(format: "%.1f°", $0) } ?? "—")
-                debugChip(label: "Mark", value: markState)
-            }
-            HStack(spacing: 8) {
-                debugChip(label: "VMC", value: navigationReadings.waypointData?.currentTackVMC.map { String(format: "%.2f kn", $0) } ?? "—")
-                let bearing = navigationReadings.waypointData?.trueMarkBearing
-                debugChip(label: "Brg", value: bearing.map { String(format: "%.0f°", $0) } ?? "—")
-                let angleToMark = rawTWA.flatMap { twa -> Double? in
-                    guard let twdRaw = navigationReadings.windData?.trueWindDirection,
-                          let brg = navigationReadings.waypointData?.trueMarkBearing else { return nil }
-                    return abs(((brg - twdRaw) + 540).truncatingRemainder(dividingBy: 360) - 180)
-                }
-                debugChip(label: "AoM", value: angleToMark.map { String(format: "%.0f°", $0) } ?? "—")
-            }
-        }
-        .padding(.vertical, 6)
-        .font(Font.system(size: size * 0.038, weight: .regular, design: .monospaced))
-    }
-
-    private func debugChip(label: String, value: String) -> some View {
-        HStack(spacing: 3) {
-            Text(label + ":")
-                .foregroundColor(.white.opacity(0.55))
+    private func metricRow(label: String, value: String, metrics m: PhoneVMGMetrics) -> some View {
+        VStack(alignment: .leading, spacing: m.metricGap) {
+            Text(label)
+                .font(.system(size: m.metricLabel, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
             Text(value)
-                .foregroundColor(.yellow)
+                .font(.system(size: m.metricValue, weight: .bold, design: .rounded))
+                .foregroundStyle(Color("display_font"))
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 2)
-        .background(Color.black.opacity(0.2))
-        .cornerRadius(4)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
-    // MARK: - Helper Functions
-    private func formatTripDuration(_ eta: Double?) -> String {
-        guard let eta = eta, eta.isFinite, eta >= 0 else { return "-" }
-        let totalSeconds = Int(eta * 3600)
-        let hours = totalSeconds / 3600
-        let minutes = (totalSeconds % 3600) / 60
-        return String(format: "%02d:%02d", hours, minutes)
+
+    // MARK: - Helpers
+
+    private func formatDuration(_ hours: Double?) -> String {
+        guard let h = hours, h.isFinite, h >= 0 else { return "—" }
+        let total = Int(h * 3600)
+        let days  = total / 86400
+        let hh    = (total % 86400) / 3600
+        let mm    = (total % 3600) / 60
+        return days > 0
+            ? String(format: "%dd %02d:%02d", days, hh, mm)
+            : String(format: "%02d:%02d", hh, mm)
     }
-    
+
     private func formatETA(_ eta: Date?) -> String {
-        guard let eta = eta else { return "-" }
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return formatter.string(from: eta)
-    }
-    
-    // MARK: - Tack Logic
-    private func handleTackLogic() {
-        guard let relativeBearing = navigationReadings.waypointData?.currentTackRelativeBearing else { return }
-        let normalizedBearing = (relativeBearing + 360).truncatingRemainder(dividingBy: 360)
-        if abs(normalizedBearing - 90) <= 5 || abs(normalizedBearing - 270) <= 5 {
-            cardGradient = [Color.orange.opacity(0.8), Color.pink.opacity(0.8)]
-        } else if normalizedBearing > 90 && normalizedBearing < 270 {
-            showWarningView = true
-        } else {
-            cardGradient = [Color.teal.opacity(0.7), Color.blue.opacity(0.7)]
-        }
-    }
-    // MARK: - Button Actions
-    private func deselectWaypoint() {
-        navigationReadings.deselectWaypoint()
+        guard let eta else { return "—" }
+        let hours = eta.timeIntervalSince(Date()) / 3600
+        let f = DateFormatter()
+        f.locale = .current
+        f.dateFormat = hours <= 24 ? "HH:mm" : "d MMM HH:mm"
+        return f.string(from: eta)
     }
 }
+
+// MARK: - Geometry-derived sizes
+
+private struct PhoneVMGMetrics {
+    let edgePad: CGFloat
+    let dividerPad: CGFloat
+    let headerSpacing: CGFloat
+    let headerRowH: CGFloat
+    let headerIcon: CGFloat
+    let headerTitle: CGFloat
+    let closeIcon: CGFloat
+    let columnGap: CGFloat
+    let rowLabel: CGFloat
+    let rowVPad: CGFloat
+    let hintGap: CGFloat
+    let dataValue: CGFloat
+    let metricGap: CGFloat
+    let metricLabel: CGFloat
+    let metricValue: CGFloat
+    let warningFont: CGFloat
+    let warningPad: CGFloat
+
+    init(size: CGSize) {
+        let w = max(size.width, 200)
+        let h = max(size.height, 160)
+
+        edgePad        = max(8, min(16, w * 0.035))
+        let inner      = w - edgePad * 2
+
+        dividerPad     = max(4, min(10, h * 0.025))
+        headerSpacing  = max(6, inner * 0.02)
+        headerTitle    = max(15, min(20, inner * 0.055))
+        headerRowH     = max(30, headerTitle * 1.8)
+        headerIcon     = max(14, min(18, headerTitle * 0.9))
+        closeIcon      = max(16, min(20, headerTitle * 1.1))
+
+        columnGap      = max(6, inner * 0.025)
+        rowLabel       = max(11, min(14, inner * 0.038))
+        rowVPad        = max(8, min(14, h * 0.035))
+        hintGap        = max(3, h * 0.012)
+        dataValue      = max(16, min(24, inner * 0.065))
+
+        metricGap      = max(4, h * 0.018)
+        metricLabel    = max(11, min(14, inner * 0.038))
+        metricValue    = max(22, min(38, inner * 0.096))
+
+        warningFont    = max(13, min(17, inner * 0.045))
+        warningPad     = max(8, h * 0.04)
+    }
+}
+
+// MARK: - Previews
 
 extension NMEAParser {
     static func mockVMCNegative() -> NMEAParser {
         let parser = NMEAParser()
-        
-        // Set only the VMC negative flag for preview testing
         parser.waypointData = WaypointData(isVMCNegative: true)
-        
         return parser
     }
 }
 
-
 #Preview("VMC Negative") {
-    GeometryProvider {width, geomtry, height in
+    GeometryProvider { _, _, height in
         VStack {
             Spacer()
             iPhoneVMGView(waypointName: "Balchik")
                 .environment(NMEAParser.mockVMCNegative())
-                .background(Color.black.edgesIgnoringSafeArea(.all))
-                .frame(height: height/2)
+                .environment(SettingsManager())
+                .frame(height: height / 2)
         }
-        
     }
 }
 
 #Preview("VMC Normal") {
-    GeometryProvider {width, geomtry, height in
+    GeometryProvider { _, _, height in
         VStack {
             Spacer()
-            iPhoneVMGView(waypointName: "Balchik")
-                .environment(NMEAParser())
-                .background(Color.black.edgesIgnoringSafeArea(.all))
-                .frame(height: height/2)
+            NavigationStack {
+                iPhoneVMGView(waypointName: "Balchik")
+                    .environment(NMEAParser())
+                    .environment(SettingsManager())
+            }
+            .frame(height: height / 2)
         }
-        
-        
     }
 }
-
