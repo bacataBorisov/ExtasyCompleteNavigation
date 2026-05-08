@@ -49,6 +49,46 @@ class WaypointProcessor {
         return distanceToMarkMeters * toNauticalMiles / effectiveSOGKnots
     }
 
+    // MARK: - Downwind Path Advisor helpers
+
+    /// Polar-speed time to sail the rhumb line to the mark. Returns nil when not
+    /// downwind, polar is unavailable, or polar speed at that angle is zero.
+    static func downwindDirectDuration(
+        distanceToMarkMeters: Double,
+        twaToMark: Double,
+        tws: Double?,
+        calc: VMGCalculator?
+    ) -> Double? {
+        guard let tws, let calc else { return nil }
+        let speed = calc.evaluateDiagram(windForce: tws, windAngle: twaToMark)
+        guard speed > 0 else { return nil }
+        return distanceToMarkMeters * toNauticalMiles / speed
+    }
+
+    /// Computes all four downwind advisor values. Returns `(nil,nil,nil,nil)` when the
+    /// mark is not downwind or the polar diagram is unavailable.
+    static func downwindPathAdvisor(
+        waypointSailingState: String,
+        distanceToMarkMeters: Double,
+        twaToMark: Double,
+        leg1NM: Double,
+        leg2NM: Double,
+        optimalDnTWA: Double,
+        tws: Double?,
+        calc: VMGCalculator?
+    ) -> (direct: Double?, gybe: Double?, delta: Double?, twaToMark: Double?) {
+        guard waypointSailingState == "Downwind", let tws, let calc else {
+            return (nil, nil, nil, nil)
+        }
+        let directSpeed = calc.evaluateDiagram(windForce: tws, windAngle: twaToMark)
+        let gybeSpeed   = calc.evaluateDiagram(windForce: tws, windAngle: optimalDnTWA)
+        let dtmNM       = distanceToMarkMeters * toNauticalMiles
+        let direct: Double? = directSpeed > 0 ? dtmNM / directSpeed : nil
+        let gybe:   Double? = gybeSpeed   > 0 ? (leg1NM + leg2NM) / gybeSpeed : nil
+        let delta:  Double? = (direct != nil && gybe != nil) ? gybe! - direct! : nil
+        return (direct, gybe, delta, twaToMark)
+    }
+
     // MARK: - Reset Waypoint Data
     func resetWaypointCalculations() {
         laylineWindDirectionSmoothed = nil
@@ -83,7 +123,8 @@ class WaypointProcessor {
     func processWaypointData(
         vmgData: VMGData?,
         gpsData: GPSData?,
-        windData: WindData?
+        windData: WindData?,
+        vmgCalculator: VMGCalculator? = nil
     ) -> WaypointData? {
         serialQueue.sync { [self] () -> Void in
             guard let polarSpeed = vmgData?.polarSpeed,
@@ -189,6 +230,13 @@ class WaypointProcessor {
                     leg2Hours: nil
                 )
                 let etaNoLegs = tripNoLegs.map { Date().addingTimeInterval($0 * 3600) }
+                // Downwind advisor — direct only (no gybe path without intersections)
+                let directNoLegs = Self.downwindDirectDuration(
+                    distanceToMarkMeters: distanceToMark,
+                    twaToMark: angleToMark,
+                    tws: windData?.trueWindForce,
+                    calc: waypointSailingState == "Downwind" ? vmgCalculator : nil
+                )
                 self.waypointData = WaypointData(
                     distanceToMark: distanceToMark,
                     trueMarkBearing: trueMarkBearing,
@@ -205,6 +253,8 @@ class WaypointProcessor {
                     polarVMC: currentTackPolarVMC,
                     maxTackPolarVMC: maxTackPolarVMC,
                     isVMCNegative: currentTackVMC < 0,
+                    directDownwindDuration: directNoLegs,
+                    twaToMarkDirect: waypointSailingState == "Downwind" ? angleToMark : nil,
                     starboardLayline: starboardLayline,
                     portsideLayline: portsideLayline,
                     extendedStarboardLayline: extendedStarboardLayline,
@@ -278,6 +328,19 @@ class WaypointProcessor {
                 self.portsideIntersection = intersections[1]
             }
             
+            // MARK: - Downwind Path Advisor
+            // Only meaningful when the mark is downwind and the polar diagram is available.
+            let (directDuration, gybeDuration, timeDelta, twaToMark) = Self.downwindPathAdvisor(
+                waypointSailingState: waypointSailingState,
+                distanceToMarkMeters: distanceToMark,
+                twaToMark: angleToMark,
+                leg1NM: currentTackDistance,
+                leg2NM: oppositeTackDistance,
+                optimalDnTWA: optimalDnTWA,
+                tws: windData?.trueWindForce,
+                calc: vmgCalculator
+            )
+
             // MARK: - Update Waypoint Data
             self.waypointData = WaypointData(
                 distanceToMark: distanceToMark,
@@ -302,6 +365,10 @@ class WaypointProcessor {
                 polarVMC: currentTackPolarVMC,
                 maxTackPolarVMC: maxTackPolarVMC,
                 isVMCNegative: currentTackVMC < 0,
+                directDownwindDuration: directDuration,
+                gybePathDuration: gybeDuration,
+                downwindTimeDeltaHours: timeDelta,
+                twaToMarkDirect: twaToMark,
                 starboardLayline: starboardLayline,
                 portsideLayline: portsideLayline,
                 extendedStarboardLayline: extendedStarboardLayline,

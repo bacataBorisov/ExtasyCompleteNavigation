@@ -65,6 +65,18 @@ struct WaypointData {
     
     var isVMCNegative: Bool = false                  // Indicates if VMC is negative (moving away from waypoint)
     
+    // MARK: - Downwind Path Advisor
+    /// Polar-speed-based time to mark sailing the direct rhumb line (hours).
+    /// Nil when not downwind or polar diagram unavailable.
+    var directDownwindDuration: Double? = nil
+    /// Polar-speed-based time to mark via the optimal gybe path (leg1 + leg2 at optimalDnTWA, hours).
+    /// Nil when intersections are unavailable or polar diagram unavailable.
+    var gybePathDuration: Double? = nil
+    /// `gybePathDuration − directDownwindDuration`. Negative means direct is faster.
+    var downwindTimeDeltaHours: Double? = nil
+    /// True wind angle when sailing straight to the mark (degrees, always positive 0–180).
+    var twaToMarkDirect: Double? = nil
+
     // MARK: - Laylines & Intersections
     var starboardLayline: Layline?                   // Starboard layline from boat to waypoint
     var portsideLayline: Layline?                    // Portside layline from boat to waypoint
@@ -111,7 +123,12 @@ struct WaypointData {
         polarVMC = nil
         maxTackPolarVMC = nil
         isVMCNegative = false
-        
+
+        directDownwindDuration = nil
+        gybePathDuration = nil
+        downwindTimeDeltaHours = nil
+        twaToMarkDirect = nil
+
         starboardLayline = nil
         portsideLayline = nil
         extendedStarboardLayline = nil

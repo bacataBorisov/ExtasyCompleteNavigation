@@ -464,7 +464,8 @@ class NMEAParser:NSObject, GCDAsyncUdpSocketDelegate, GCDAsyncSocketDelegate {
             updatedWaypointData = waypointProcessor.processWaypointData(
                 vmgData: updatedVMGData ?? currentVMG,
                 gpsData: latestGPS,
-                windData: latestWind
+                windData: latestWind,
+                vmgCalculator: vmgProcessor.polarCalculator
             )
         }
         

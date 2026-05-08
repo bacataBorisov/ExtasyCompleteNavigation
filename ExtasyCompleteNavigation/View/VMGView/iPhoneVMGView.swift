@@ -36,6 +36,19 @@ struct iPhoneVMGView: View {
                         .padding(.horizontal, 8)
                         .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.red.opacity(0.85)))
                 } else {
+                    // Downwind path advisor — only shown when mark is downwind and polar is available
+                    if let directH = navigationReadings.waypointData?.directDownwindDuration {
+                        Divider().padding(.vertical, m.dividerPad)
+                        downwindAdvisorSection(
+                            directHours: directH,
+                            gybeHours: navigationReadings.waypointData?.gybePathDuration,
+                            deltaHours: navigationReadings.waypointData?.downwindTimeDeltaHours,
+                            twaToMark: navigationReadings.waypointData?.twaToMarkDirect,
+                            optDnTWA: navigationReadings.vmgData?.optimalDnTWA,
+                            metrics: m
+                        )
+                    }
+
                     Divider().padding(.vertical, m.dividerPad)
 
                     currentLegRow(metrics: m)
@@ -227,6 +240,88 @@ struct iPhoneVMGView: View {
                 .minimumScaleFactor(0.5)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: - Downwind Path Advisor
+
+    /// Two-row comparison: Direct vs Gybe, each with a hero duration and hint line.
+    /// Faster option highlighted in cyan; shows delta on the hint of the faster row.
+    private func downwindAdvisorSection(
+        directHours: Double,
+        gybeHours: Double?,
+        deltaHours: Double?,
+        twaToMark: Double?,
+        optDnTWA: Double?,
+        metrics m: PhoneVMGMetrics
+    ) -> some View {
+        let directFaster = (deltaHours ?? 0) < 0
+        let directColor: Color = (gybeHours != nil && directFaster) ? .cyan : Color("display_font")
+        let gybeColor:   Color = (gybeHours != nil && !directFaster) ? .cyan : Color("display_font")
+
+        let directHint: String = {
+            var parts = ["DIRECT"]
+            if let twa = twaToMark { parts.append("TWA \(Int(twa))°") }
+            if directFaster, let d = deltaHours { parts.append(formatAdvisorDelta(abs(d))) }
+            return parts.joined(separator: " · ")
+        }()
+        let gybeHint: String = {
+            var parts = ["GYBE"]
+            if let twa = optDnTWA { parts.append("opt \(Int(twa))°") }
+            if !directFaster, let d = deltaHours { parts.append(formatAdvisorDelta(abs(d))) }
+            return parts.joined(separator: " · ")
+        }()
+
+        return VStack(alignment: .leading, spacing: 0) {
+            // Row 1 — Direct
+            advisorRow(
+                duration: formatDuration(directHours),
+                hint: directHint,
+                durationColor: directColor,
+                isFaster: directFaster && gybeHours != nil,
+                metrics: m
+            )
+            // Row 2 — Gybe (only when gybe path is available)
+            if let g = gybeHours {
+                advisorRow(
+                    duration: formatDuration(g),
+                    hint: gybeHint,
+                    durationColor: gybeColor,
+                    isFaster: !directFaster,
+                    metrics: m
+                )
+            }
+        }
+    }
+
+    private func advisorRow(
+        duration: String,
+        hint: String,
+        durationColor: Color,
+        isFaster: Bool,
+        metrics m: PhoneVMGMetrics
+    ) -> some View {
+        VStack(alignment: .leading, spacing: m.hintGap) {
+            Text(duration)
+                .font(.system(size: m.dataValue, weight: isFaster ? .bold : .regular, design: .rounded))
+                .foregroundStyle(durationColor)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+
+            Text(hint)
+                .font(.system(size: m.rowLabel, weight: .medium))
+                .foregroundStyle(isFaster ? Color.cyan.opacity(0.85) : .secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
+        .padding(.vertical, m.rowVPad * 0.6)
+    }
+
+    /// e.g. 0.75 h → "45m"; 1.3 h → "1h 18m"
+    private func formatAdvisorDelta(_ absHours: Double) -> String {
+        let secs = Int(absHours * 3600)
+        let h = secs / 3600
+        let m = (secs % 3600) / 60
+        return h > 0 ? "saves \(h)h \(m)m" : "saves \(m)m"
     }
 
     // MARK: - Helpers

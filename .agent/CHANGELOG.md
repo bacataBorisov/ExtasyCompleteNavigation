@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [Unreleased] — 2026-05-08
+
+### Features
+
+- **Downwind path advisor** (`WaypointProcessor` + `VMGSimpleView` + `iPhoneVMGView`): When the mark is downwind, the waypoint panels now compare **sailing direct to the mark** vs the **polar-optimal gybe path**. Both durations are computed using **polar speed** (not SOG) so the comparison is wind-condition-consistent: direct uses `evaluateDiagram(tws, twaToMark)`, gybe path uses `evaluateDiagram(tws, optimalDnTWA)` over the already-computed leg distances. The faster option is highlighted in cyan; the delta ("saves 45m") is shown inline. Hidden for upwind marks. Only appears when the polar diagram is loaded and intersections exist.
+  - **iPad strip (`VMGSimpleView`)**: Single compact line `Direct hh:mm  vs  Gybe hh:mm  · save Xm` appended below the tack pair, sized to `tackDetail` from `StripMetrics`.
+  - **iPhone (`iPhoneVMGView`)**: Two-row card inserted above CURRENT/NEXT legs; each row shows the polar duration with a hint line `DIRECT · TWA Xº · saves Ym` or `GYBE · opt Xº · saves Ym`.
+  - **`WaypointData`**: Four new fields — `directDownwindDuration`, `gybePathDuration`, `downwindTimeDeltaHours`, `twaToMarkDirect` (all `nil` for upwind marks or when polar unavailable).
+  - **`VMGProcessor`**: Exposes `polarCalculator: VMGCalculator?` so `WaypointProcessor` can call `evaluateDiagram` without duplicating the diagram load.
+  - **`WaypointProcessor`**: `processWaypointData` accepts optional `vmgCalculator` parameter; two static helpers `downwindDirectDuration` and `downwindPathAdvisor` encapsulate the math.
+
+---
+
 ## [Unreleased] — 2026-05-01
 
 ### Improvements

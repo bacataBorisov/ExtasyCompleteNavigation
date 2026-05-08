@@ -22,6 +22,16 @@ struct VMGSimpleView: View {
 
                 tackPairRowCompact(metrics: m)
 
+                if let directH = navigationReadings.waypointData?.directDownwindDuration {
+                    Divider().padding(.vertical, m.dividerPad)
+                    downwindAdvisorRow(
+                        directHours: directH,
+                        gybeHours: navigationReadings.waypointData?.gybePathDuration,
+                        deltaHours: navigationReadings.waypointData?.downwindTimeDeltaHours,
+                        metrics: m
+                    )
+                }
+
                 if navigationReadings.waypointData?.isVMCNegative == true {
                     Text("Moving away from waypoint")
                         .font(.system(size: m.warningFont, weight: .semibold))
@@ -170,6 +180,59 @@ struct VMGSimpleView: View {
         f.locale = .current
         f.dateFormat = hours <= 24 ? "HH:mm" : "d MMM HH:mm"
         return f.string(from: eta)
+    }
+
+    /// Compact one-line downwind path advisor: Direct hh:mm  vs  Gybe hh:mm  (±delta)
+    /// Faster option is highlighted in `.cyan`; slower is `.secondary`.
+    private func downwindAdvisorRow(
+        directHours: Double,
+        gybeHours: Double?,
+        deltaHours: Double?,
+        metrics m: StripMetrics
+    ) -> some View {
+        let directFaster = (deltaHours ?? 0) < 0  // negative delta → direct is faster
+        let directColor: Color = (gybeHours != nil && directFaster) ? .cyan : .secondary
+        let gybeColor:   Color = (gybeHours != nil && !directFaster) ? .cyan : .secondary
+
+        return HStack(spacing: 4) {
+            Text("Direct")
+                .foregroundStyle(.secondary)
+            Text(formatTripDuration(directHours))
+                .foregroundStyle(directColor)
+                .fontWeight(directFaster ? .bold : .regular)
+
+            Text("vs")
+                .foregroundStyle(.tertiary)
+
+            if let g = gybeHours {
+                Text("Gybe")
+                    .foregroundStyle(.secondary)
+                Text(formatTripDuration(g))
+                    .foregroundStyle(gybeColor)
+                    .fontWeight(!directFaster ? .bold : .regular)
+            } else {
+                Text("Gybe —")
+                    .foregroundStyle(.tertiary)
+            }
+
+            if let delta = deltaHours {
+                Text(formatAdvisorDelta(delta))
+                    .foregroundStyle(directFaster ? Color.cyan.opacity(0.8) : Color.orange.opacity(0.8))
+            }
+        }
+        .font(.system(size: m.tackDetail, weight: .regular, design: .rounded))
+        .lineLimit(1)
+        .minimumScaleFactor(0.6)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// e.g. −45 min delta → "save 45m"; +1.3 h delta → "gybe saves 1h 18m"
+    private func formatAdvisorDelta(_ deltaHours: Double) -> String {
+        let absSecs = Int(abs(deltaHours) * 3600)
+        let h = absSecs / 3600
+        let m = (absSecs % 3600) / 60
+        let timeStr = h > 0 ? "\(h)h \(m)m" : "\(m)m"
+        return deltaHours < 0 ? "save \(timeStr)" : "+\(timeStr)"
     }
 
     private func deselectWaypoint() {

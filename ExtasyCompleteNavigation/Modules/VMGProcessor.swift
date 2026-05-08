@@ -11,6 +11,10 @@ class VMGProcessor {
     private var calculateVMG: VMGCalculator? // Instance of VMGCalculator for computations
     private var tackTableLoaded: Bool = false
 
+    /// Exposes the polar calculator so `WaypointProcessor` can evaluate the diagram
+    /// for the downwind path advisor without duplicating the diagram load.
+    var polarCalculator: VMGCalculator? { calculateVMG }
+
     
     // MARK: - Initialization
     ///If no other diagram exists and it is loaded it defaults to Extasy polar diagram
