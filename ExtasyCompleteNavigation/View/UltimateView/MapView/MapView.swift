@@ -437,30 +437,12 @@ struct MapView: View {
     private func headingLinePolyline() -> some MapContent {
         if let boat = animatedBoatLocation, targetHeading.isFinite {
             let far = projectedCoordinate(from: boat,
-                                          headingDegrees: targetHeading,
+                                          bearingDegrees: targetHeading,
                                           distanceMeters: 185_000)
             MapPolyline(coordinates: [boat, far])
                 .stroke(Color.white.opacity(0.85),
                         style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: []))
         }
-    }
-
-    /// Rhumb-line projection: `distanceMeters` ahead along `headingDegrees` (true N = 0).
-    private func projectedCoordinate(from origin: CLLocationCoordinate2D,
-                                     headingDegrees: Double,
-                                     distanceMeters: Double) -> CLLocationCoordinate2D {
-        let R    = 6_371_000.0
-        let lat1 = origin.latitude  * .pi / 180
-        let lon1 = origin.longitude * .pi / 180
-        let brng = headingDegrees   * .pi / 180
-        let d    = distanceMeters
-
-        let lat2 = asin(sin(lat1) * cos(d / R) +
-                        cos(lat1) * sin(d / R) * cos(brng))
-        let lon2 = lon1 + atan2(sin(brng) * sin(d / R) * cos(lat1),
-                                cos(d / R) - sin(lat1) * sin(lat2))
-        return CLLocationCoordinate2D(latitude:  lat2 * 180 / .pi,
-                                      longitude: lon2 * 180 / .pi)
     }
 
     @MapContentBuilder
