@@ -161,33 +161,58 @@ struct iPhoneVMGView: View {
         bearingToMark: Double?,
         metrics m: PhoneVMGMetrics
     ) -> some View {
-        let directFaster = (deltaHours ?? 0) < 0
-        let directColor: Color = (gybeHours != nil && directHours != nil && directFaster) ? .cyan : Color("display_font")
-        let gybeColor:   Color = (gybeHours != nil && directHours != nil && !directFaster) ? .cyan : Color("display_font")
-        let bearingLabel = bearingToMark.map { "→ \(Int($0.rounded()))°" }
+        let gybeFaster  = (deltaHours ?? 0) < 0
+        let directColor: Color = (gybeHours != nil && directHours != nil && !gybeFaster) ? .cyan : Color("display_font")
+        let gybeColor:   Color = (gybeHours != nil && directHours != nil && gybeFaster)  ? .cyan : Color("display_font")
+        let wp = navigationReadings.waypointData
+        let directTWALabel = wp?.twaToMarkDirect.map { "TWA \(Int($0.rounded()))°" }
+        let gybeOptLabel   = wp?.optimalGybeTWA.map  { "opt \(Int($0.rounded()))°" }
+
+        let statusLabel: String?
+        let statusColor: Color
+        if let twaMark = wp?.twaToMarkDirect, let twaOpt = wp?.optimalGybeTWA {
+            let diff = twaMark - twaOpt
+            if diff < -8 {
+                statusLabel = "OVERSTOOD ↑"; statusColor = .secondary
+            } else if diff > 8 {
+                statusLabel = "MARK DEEP ↓"; statusColor = .orange.opacity(0.85)
+            } else {
+                statusLabel = "ON LAYLINE ≈"; statusColor = .cyan.opacity(0.85)
+            }
+        } else {
+            statusLabel = nil; statusColor = .secondary
+        }
+
+        // Delta string attached inline to the winning cell.
+        let deltaStr = deltaHours.map { formatAdvisorDelta($0) }
+        let deltaColor = Color.cyan.opacity(0.85)
 
         return VStack(alignment: .leading, spacing: m.tackRowGap) {
+            if let status = statusLabel {
+                Text(status)
+                    .font(.system(size: m.rowLabel, weight: .semibold))
+                    .foregroundStyle(statusColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+            }
+
             advisorCell(label: "DIRECT",
-                        time: directHours.map { formatDuration($0) } ?? "—",
-                        sublabel: bearingLabel,
+                        time: formatAdvisorDuration(directHours),
+                        sublabel: directTWALabel,
                         timeColor: directHours != nil ? directColor : Color.secondary,
-                        bold: directFaster && gybeHours != nil,
+                        bold: !gybeFaster && gybeHours != nil,
+                        delta: !gybeFaster ? deltaStr : nil,
+                        deltaColor: deltaColor,
                         metrics: m)
 
             advisorCell(label: "GYBE",
-                        time: gybeHours.map { formatDuration($0) } ?? "—",
-                        sublabel: nil,
+                        time: formatAdvisorDuration(gybeHours),
+                        sublabel: gybeOptLabel,
                         timeColor: gybeHours != nil ? gybeColor : Color.secondary,
-                        bold: !directFaster && gybeHours != nil,
+                        bold: gybeFaster && gybeHours != nil,
+                        delta: gybeFaster ? deltaStr : nil,
+                        deltaColor: deltaColor,
                         metrics: m)
-
-            if let delta = deltaHours {
-                Text(formatAdvisorDelta(delta))
-                    .font(.system(size: m.rowLabel, weight: .semibold, design: .rounded))
-                    .foregroundStyle(directFaster ? Color.cyan.opacity(0.85) : Color.orange.opacity(0.85))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.6)
-            }
         }
     }
 
@@ -195,10 +220,12 @@ struct iPhoneVMGView: View {
         label: String, time: String,
         sublabel: String? = nil,
         timeColor: Color, bold: Bool,
+        delta: String? = nil,
+        deltaColor: Color = .secondary,
         metrics m: PhoneVMGMetrics
     ) -> some View {
         VStack(alignment: .leading, spacing: m.hintGap) {
-            // Label + optional inline bearing ("DIRECT  → 310°") — one row, no extra height.
+            // Label + optional inline angle hint — one row, no extra height.
             HStack(spacing: 4) {
                 Text(label)
                     .foregroundStyle(.secondary)
@@ -210,11 +237,21 @@ struct iPhoneVMGView: View {
             .font(.system(size: m.rowLabel, weight: .medium))
             .lineLimit(1)
             .minimumScaleFactor(0.75)
-            Text(time)
-                .font(.system(size: m.dataValue, weight: bold ? .bold : .regular, design: .rounded))
-                .foregroundStyle(timeColor)
-                .lineLimit(1)
-                .minimumScaleFactor(0.6)
+            // Time + optional inline delta to the right.
+            HStack(alignment: .firstTextBaseline, spacing: 5) {
+                Text(time)
+                    .font(.system(size: m.dataValue, weight: bold ? .bold : .regular, design: .rounded))
+                    .foregroundStyle(timeColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                if let d = delta {
+                    Text(d)
+                        .font(.system(size: m.rowLabel, weight: .semibold, design: .rounded))
+                        .foregroundStyle(deltaColor)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                }
+            }
         }
     }
 
@@ -305,7 +342,7 @@ struct iPhoneVMGView: View {
     // MARK: - Formatters
 
     private func formatDuration(_ hours: Double?) -> String {
-        guard let h = hours, h.isFinite, h >= 0 else { return "—" }
+        guard let h = hours, h.isFinite, h > 0, h < 87_600 else { return "—" }
         let total = Int(h * 3600)
         let days  = total / 86400
         let hh    = (total % 86400) / 3600
@@ -324,6 +361,16 @@ struct iPhoneVMGView: View {
         return f.string(from: eta)
     }
 
+    /// Racing-precision duration for advisor cells: always hh:mm:ss.
+    private func formatAdvisorDuration(_ hours: Double?) -> String {
+        guard let h = hours, h.isFinite, h > 0, h < 87_600 else { return "—" }
+        let total = Int(h * 3600)
+        let hh = total / 3600
+        let mm = (total % 3600) / 60
+        let ss = total % 60
+        return String(format: "%02d:%02d:%02d", hh, mm, ss)
+    }
+
     /// Signed delta with seconds precision when under 1 hour.
     private func formatAdvisorDelta(_ deltaHours: Double) -> String {
         let absSecs = Int(abs(deltaHours) * 3600)
@@ -332,9 +379,9 @@ struct iPhoneVMGView: View {
         let s = absSecs % 60
         let timeStr: String
         if h > 0 {
-            timeStr = "\(h)h \(m)m"
+            timeStr = "\(h)h \(m)m \(s)s"
         } else if m > 0 {
-            timeStr = s > 0 ? "\(m)m \(s)s" : "\(m)m"
+            timeStr = "\(m)m \(s)s"
         } else {
             timeStr = "\(s)s"
         }

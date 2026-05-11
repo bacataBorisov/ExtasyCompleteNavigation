@@ -183,7 +183,9 @@ struct VMGSimpleView: View {
     }
 
     private func formatTripDuration(_ hours: Double?) -> String {
-        guard let h = hours, h.isFinite, h >= 0 else { return "—" }
+        // Cap at 10 years — prevents Int overflow when effectiveSOG is near-zero.
+        // isFinite alone doesn't block large-but-finite values from overflowing Int.
+        guard let h = hours, h.isFinite, h > 0, h < 87_600 else { return "—" }
         let total = Int(h * 3600)
         let days  = total / 86400
         let hh    = (total % 86400) / 3600
@@ -236,33 +238,67 @@ struct VMGSimpleView: View {
         bearingToMark: Double?,
         metrics m: StripMetrics
     ) -> some View {
-        let directFaster = (deltaHours ?? 0) < 0
-        let directColor: Color = (gybeHours != nil && directHours != nil && directFaster) ? .cyan : Color("display_font")
-        let gybeColor:   Color = (gybeHours != nil && directHours != nil && !directFaster) ? .cyan : Color("display_font")
-        let bearingLabel = bearingToMark.map { "→ \(Int($0.rounded()))°" }
+        // delta = gybe − direct. Negative → gybe faster; positive → direct faster.
+        let gybeFaster  = (deltaHours ?? 0) < 0
+        let directColor: Color = (gybeHours != nil && directHours != nil && !gybeFaster) ? .cyan : Color("display_font")
+        let gybeColor:   Color = (gybeHours != nil && directHours != nil && gybeFaster)  ? .cyan : Color("display_font")
+        let wp = navigationReadings.waypointData
+        let directTWALabel = wp?.twaToMarkDirect.map { "TWA \(Int($0.rounded()))°" }
+        let gybeOptLabel   = wp?.optimalGybeTWA.map  { "opt \(Int($0.rounded()))°" }
+
+        // Geometric status: how is the mark positioned relative to the optimal gybe angle?
+        // · OVERSTOOD  — mark is shallower than optimal (twaToMark < optTWA). Direct trivially wins.
+        // · ON LAYLINE — mark is within ±8° of optimal. Closest to the classic "when to gybe" decision.
+        // · MARK DEEP  — mark is deeper than optimal. Gybing at optimal angle may save time.
+        let statusLabel: String?
+        let statusColor: Color
+        if let twaMark = wp?.twaToMarkDirect, let twaOpt = wp?.optimalGybeTWA {
+            let diff = twaMark - twaOpt
+            if diff < -8 {
+                statusLabel = "OVERSTOOD ↑"
+                statusColor = .secondary
+            } else if diff > 8 {
+                statusLabel = "MARK DEEP ↓"
+                statusColor = .orange.opacity(0.85)
+            } else {
+                statusLabel = "ON LAYLINE ≈"
+                statusColor = .cyan.opacity(0.85)
+            }
+        } else {
+            statusLabel = nil
+            statusColor = .secondary
+        }
+
+        // Delta string attached inline to the winning cell.
+        let deltaStr = deltaHours.map { formatAdvisorDelta($0) }
+        let deltaColor = Color.cyan.opacity(0.85)
 
         return VStack(alignment: .leading, spacing: m.tackRowGap) {
+            if let status = statusLabel {
+                Text(status)
+                    .font(.system(size: m.tackState, weight: .semibold))
+                    .foregroundStyle(statusColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+            }
+
             advisorLegCell(label: "DIRECT",
-                           time: directHours.map { formatTripDuration($0) } ?? "—",
-                           sublabel: bearingLabel,
+                           time: formatAdvisorDuration(directHours),
+                           sublabel: directTWALabel,
                            timeColor: directHours != nil ? directColor : Color.secondary,
-                           bold: directFaster && gybeHours != nil,
+                           bold: !gybeFaster && gybeHours != nil,
+                           delta: !gybeFaster ? deltaStr : nil,
+                           deltaColor: deltaColor,
                            metrics: m)
 
             advisorLegCell(label: "GYBE",
-                           time: gybeHours.map { formatTripDuration($0) } ?? "—",
-                           sublabel: nil,
+                           time: formatAdvisorDuration(gybeHours),
+                           sublabel: gybeOptLabel,
                            timeColor: gybeHours != nil ? gybeColor : Color.secondary,
-                           bold: !directFaster && gybeHours != nil,
+                           bold: gybeFaster && gybeHours != nil,
+                           delta: gybeFaster ? deltaStr : nil,
+                           deltaColor: deltaColor,
                            metrics: m)
-
-            if let delta = deltaHours {
-                Text(formatAdvisorDelta(delta))
-                    .font(.system(size: m.tackState, weight: .semibold, design: .rounded))
-                    .foregroundStyle(directFaster ? Color.cyan.opacity(0.85) : Color.orange.opacity(0.85))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.6)
-            }
         }
     }
 
@@ -270,10 +306,12 @@ struct VMGSimpleView: View {
         label: String, time: String,
         sublabel: String? = nil,
         timeColor: Color, bold: Bool,
+        delta: String? = nil,
+        deltaColor: Color = .secondary,
         metrics m: StripMetrics
     ) -> some View {
         VStack(alignment: .leading, spacing: m.tackStateToDetailGap) {
-            // Label + optional inline bearing ("DIRECT  → 310°") — one row, no extra height.
+            // Label + optional inline angle hint — one row, no extra height.
             HStack(spacing: 4) {
                 Text(label)
                     .foregroundStyle(.secondary)
@@ -285,16 +323,36 @@ struct VMGSimpleView: View {
             .font(.system(size: m.tackState, weight: .medium))
             .lineLimit(1)
             .minimumScaleFactor(0.75)
-            Text(time)
-                .font(.system(size: m.tackDetail, weight: bold ? .bold : .regular, design: .rounded))
-                .foregroundStyle(timeColor)
-                .lineLimit(1)
-                .minimumScaleFactor(0.6)
+            // Time + optional inline delta to the right.
+            HStack(alignment: .firstTextBaseline, spacing: 5) {
+                Text(time)
+                    .font(.system(size: m.tackDetail, weight: bold ? .bold : .regular, design: .rounded))
+                    .foregroundStyle(timeColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                if let d = delta {
+                    Text(d)
+                        .font(.system(size: m.tackState, weight: .semibold, design: .rounded))
+                        .foregroundStyle(deltaColor)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                }
+            }
         }
     }
 
-    /// Racing-precision delta: seconds shown when under 1 hour.
-    /// e.g. −75 s → "save 1m 15s"; +2 min → "+2m"; +1.3 h → "+1h 18m"
+    /// Racing-precision duration for advisor cells: always hh:mm:ss.
+    private func formatAdvisorDuration(_ hours: Double?) -> String {
+        guard let h = hours, h.isFinite, h > 0, h < 87_600 else { return "—" }
+        let total = Int(h * 3600)
+        let hh = total / 3600
+        let mm = (total % 3600) / 60
+        let ss = total % 60
+        return String(format: "%02d:%02d:%02d", hh, mm, ss)
+    }
+
+    /// Racing-precision delta: seconds always shown.
+    /// e.g. −75 s → "save 1m 15s"; +2 min → "+2m 0s"; +1.3 h → "+1h 18m 22s"
     private func formatAdvisorDelta(_ deltaHours: Double) -> String {
         let absSecs = Int(abs(deltaHours) * 3600)
         let h = absSecs / 3600
@@ -302,9 +360,9 @@ struct VMGSimpleView: View {
         let s = absSecs % 60
         let timeStr: String
         if h > 0 {
-            timeStr = "\(h)h \(m)m"          // hour-level: no seconds needed
+            timeStr = "\(h)h \(m)m \(s)s"
         } else if m > 0 {
-            timeStr = s > 0 ? "\(m)m \(s)s" : "\(m)m"
+            timeStr = "\(m)m \(s)s"
         } else {
             timeStr = "\(s)s"
         }
