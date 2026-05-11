@@ -193,14 +193,14 @@ struct iPhoneVMGView: View {
             }
 
             advisorCell(label: "DIRECT",
-                        time: directHours.map { formatDuration($0) } ?? "—",
+                        time: formatAdvisorDuration(directHours),
                         sublabel: directTWALabel,
                         timeColor: directHours != nil ? directColor : Color.secondary,
                         bold: !gybeFaster && gybeHours != nil,
                         metrics: m)
 
             advisorCell(label: "GYBE",
-                        time: gybeHours.map { formatDuration($0) } ?? "—",
+                        time: formatAdvisorDuration(gybeHours),
                         sublabel: gybeOptLabel,
                         timeColor: gybeHours != nil ? gybeColor : Color.secondary,
                         bold: gybeFaster && gybeHours != nil,
@@ -347,6 +347,16 @@ struct iPhoneVMGView: View {
         f.locale = .current
         f.dateFormat = hours <= 24 ? "HH:mm" : "d MMM HH:mm"
         return f.string(from: eta)
+    }
+
+    /// Racing-precision duration for advisor cells: always hh:mm:ss.
+    private func formatAdvisorDuration(_ hours: Double?) -> String {
+        guard let h = hours, h.isFinite, h > 0, h < 87_600 else { return "—" }
+        let total = Int(h * 3600)
+        let hh = total / 3600
+        let mm = (total % 3600) / 60
+        let ss = total % 60
+        return String(format: "%02d:%02d:%02d", hh, mm, ss)
     }
 
     /// Signed delta with seconds precision when under 1 hour.

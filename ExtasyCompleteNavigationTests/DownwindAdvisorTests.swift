@@ -388,6 +388,53 @@ final class AdvisorColorSignConventionTests: XCTestCase {
     }
 }
 
+// MARK: - formatAdvisorDuration string output
+
+/// Locks the hh:mm:ss contract for the advisor DIRECT/GYBE time cells.
+final class AdvisorDurationFormatTests: XCTestCase {
+
+    private func formatAdvisorDuration(_ hours: Double?) -> String {
+        guard let h = hours, h.isFinite, h > 0, h < 87_600 else { return "—" }
+        let total = Int(h * 3600)
+        let hh = total / 3600
+        let mm = (total % 3600) / 60
+        let ss = total % 60
+        return String(format: "%02d:%02d:%02d", hh, mm, ss)
+    }
+
+    func testSubMinute() {
+        XCTAssertEqual(formatAdvisorDuration(45.0 / 3600), "00:00:45")
+    }
+
+    func testMinutes() {
+        XCTAssertEqual(formatAdvisorDuration(11.0 / 60), "00:11:00",
+                       "00:11 without seconds was what the screenshot showed — must now be 00:11:00")
+    }
+
+    func testMinutesAndSeconds() {
+        // 11 min 30 sec
+        let h = (11.0 * 60 + 30) / 3600
+        XCTAssertEqual(formatAdvisorDuration(h), "00:11:30")
+    }
+
+    func testHoursMinutesSeconds() {
+        // 1h 18m 22s = 4702 sec
+        XCTAssertEqual(formatAdvisorDuration(4702.0 / 3600), "01:18:22")
+    }
+
+    func testNilReturnsPlaceholder() {
+        XCTAssertEqual(formatAdvisorDuration(nil), "—")
+    }
+
+    func testZeroReturnsPlaceholder() {
+        XCTAssertEqual(formatAdvisorDuration(0), "—")
+    }
+
+    func testOverflowCapReturnsPlaceholder() {
+        XCTAssertEqual(formatAdvisorDuration(100_000), "—")
+    }
+}
+
 // MARK: - formatAdvisorDelta string output
 
 /// Locks the "seconds always shown" contract for the racing delta display.

@@ -279,14 +279,14 @@ struct VMGSimpleView: View {
             }
 
             advisorLegCell(label: "DIRECT",
-                           time: directHours.map { formatTripDuration($0) } ?? "—",
+                           time: formatAdvisorDuration(directHours),
                            sublabel: directTWALabel,
                            timeColor: directHours != nil ? directColor : Color.secondary,
                            bold: !gybeFaster && gybeHours != nil,
                            metrics: m)
 
             advisorLegCell(label: "GYBE",
-                           time: gybeHours.map { formatTripDuration($0) } ?? "—",
+                           time: formatAdvisorDuration(gybeHours),
                            sublabel: gybeOptLabel,
                            timeColor: gybeHours != nil ? gybeColor : Color.secondary,
                            bold: gybeFaster && gybeHours != nil,
@@ -327,6 +327,16 @@ struct VMGSimpleView: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
         }
+    }
+
+    /// Racing-precision duration for advisor cells: always hh:mm:ss.
+    private func formatAdvisorDuration(_ hours: Double?) -> String {
+        guard let h = hours, h.isFinite, h > 0, h < 87_600 else { return "—" }
+        let total = Int(h * 3600)
+        let hh = total / 3600
+        let mm = (total % 3600) / 60
+        let ss = total % 60
+        return String(format: "%02d:%02d:%02d", hh, mm, ss)
     }
 
     /// Racing-precision delta: seconds always shown.
