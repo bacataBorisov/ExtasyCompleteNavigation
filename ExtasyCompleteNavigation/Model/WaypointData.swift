@@ -76,6 +76,8 @@ struct WaypointData {
     var downwindTimeDeltaHours: Double? = nil
     /// True wind angle when sailing straight to the mark (degrees, always positive 0–180).
     var twaToMarkDirect: Double? = nil
+    /// Optimal downwind VMG gybe angle used for the gybe-path calculation (from polar, degrees 0–180).
+    var optimalGybeTWA: Double? = nil
 
     // MARK: - Laylines & Intersections
     var starboardLayline: Layline?                   // Starboard layline from boat to waypoint
@@ -128,6 +130,7 @@ struct WaypointData {
         gybePathDuration = nil
         downwindTimeDeltaHours = nil
         twaToMarkDirect = nil
+        optimalGybeTWA = nil
 
         starboardLayline = nil
         portsideLayline = nil

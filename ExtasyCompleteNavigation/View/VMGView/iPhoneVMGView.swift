@@ -161,30 +161,55 @@ struct iPhoneVMGView: View {
         bearingToMark: Double?,
         metrics m: PhoneVMGMetrics
     ) -> some View {
-        let directFaster = (deltaHours ?? 0) < 0
-        let directColor: Color = (gybeHours != nil && directHours != nil && directFaster) ? .cyan : Color("display_font")
-        let gybeColor:   Color = (gybeHours != nil && directHours != nil && !directFaster) ? .cyan : Color("display_font")
-        let bearingLabel = bearingToMark.map { "→ \(Int($0.rounded()))°" }
+        let gybeFaster  = (deltaHours ?? 0) < 0
+        let directColor: Color = (gybeHours != nil && directHours != nil && !gybeFaster) ? .cyan : Color("display_font")
+        let gybeColor:   Color = (gybeHours != nil && directHours != nil && gybeFaster)  ? .cyan : Color("display_font")
+        let wp = navigationReadings.waypointData
+        let directTWALabel = wp?.twaToMarkDirect.map { "TWA \(Int($0.rounded()))°" }
+        let gybeOptLabel   = wp?.optimalGybeTWA.map  { "opt \(Int($0.rounded()))°" }
+
+        let statusLabel: String?
+        let statusColor: Color
+        if let twaMark = wp?.twaToMarkDirect, let twaOpt = wp?.optimalGybeTWA {
+            let diff = twaMark - twaOpt
+            if diff < -8 {
+                statusLabel = "OVERSTOOD ↑"; statusColor = .secondary
+            } else if diff > 8 {
+                statusLabel = "MARK DEEP ↓"; statusColor = .orange.opacity(0.85)
+            } else {
+                statusLabel = "ON LAYLINE ≈"; statusColor = .cyan.opacity(0.85)
+            }
+        } else {
+            statusLabel = nil; statusColor = .secondary
+        }
 
         return VStack(alignment: .leading, spacing: m.tackRowGap) {
+            if let status = statusLabel {
+                Text(status)
+                    .font(.system(size: m.rowLabel, weight: .semibold))
+                    .foregroundStyle(statusColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+            }
+
             advisorCell(label: "DIRECT",
                         time: directHours.map { formatDuration($0) } ?? "—",
-                        sublabel: bearingLabel,
+                        sublabel: directTWALabel,
                         timeColor: directHours != nil ? directColor : Color.secondary,
-                        bold: directFaster && gybeHours != nil,
+                        bold: !gybeFaster && gybeHours != nil,
                         metrics: m)
 
             advisorCell(label: "GYBE",
                         time: gybeHours.map { formatDuration($0) } ?? "—",
-                        sublabel: nil,
+                        sublabel: gybeOptLabel,
                         timeColor: gybeHours != nil ? gybeColor : Color.secondary,
-                        bold: !directFaster && gybeHours != nil,
+                        bold: gybeFaster && gybeHours != nil,
                         metrics: m)
 
             if let delta = deltaHours {
                 Text(formatAdvisorDelta(delta))
                     .font(.system(size: m.rowLabel, weight: .semibold, design: .rounded))
-                    .foregroundStyle(directFaster ? Color.cyan.opacity(0.85) : Color.orange.opacity(0.85))
+                    .foregroundStyle(gybeFaster ? Color.cyan.opacity(0.85) : Color.orange.opacity(0.85))
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
             }
@@ -305,7 +330,7 @@ struct iPhoneVMGView: View {
     // MARK: - Formatters
 
     private func formatDuration(_ hours: Double?) -> String {
-        guard let h = hours, h.isFinite, h >= 0 else { return "—" }
+        guard let h = hours, h.isFinite, h > 0, h < 87_600 else { return "—" }
         let total = Int(h * 3600)
         let days  = total / 86400
         let hh    = (total % 86400) / 3600
@@ -332,9 +357,9 @@ struct iPhoneVMGView: View {
         let s = absSecs % 60
         let timeStr: String
         if h > 0 {
-            timeStr = "\(h)h \(m)m"
+            timeStr = "\(h)h \(m)m \(s)s"
         } else if m > 0 {
-            timeStr = s > 0 ? "\(m)m \(s)s" : "\(m)m"
+            timeStr = "\(m)m \(s)s"
         } else {
             timeStr = "\(s)s"
         }
