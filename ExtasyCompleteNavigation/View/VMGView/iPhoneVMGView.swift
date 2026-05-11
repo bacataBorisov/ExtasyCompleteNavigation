@@ -142,6 +142,7 @@ struct iPhoneVMGView: View {
                     directHours: directH,
                     gybeHours: wp?.gybePathDuration,
                     deltaHours: wp?.downwindTimeDeltaHours,
+                    bearingToMark: wp?.trueMarkBearing,
                     metrics: m
                 )
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -156,21 +157,25 @@ struct iPhoneVMGView: View {
         directHours: Double,
         gybeHours: Double?,
         deltaHours: Double?,
+        bearingToMark: Double?,
         metrics m: PhoneVMGMetrics
     ) -> some View {
         let directFaster = (deltaHours ?? 0) < 0
         let directColor: Color = (gybeHours != nil && directFaster) ? .cyan : Color("display_font")
         let gybeColor:   Color = (gybeHours != nil && !directFaster) ? .cyan : Color("display_font")
+        let bearingLabel = bearingToMark.map { "→ \(Int($0.rounded()))°" }
 
         return VStack(alignment: .leading, spacing: m.tackRowGap) {
             advisorCell(label: "DIRECT",
                         time: formatDuration(directHours),
+                        sublabel: bearingLabel,
                         timeColor: directColor,
                         bold: directFaster && gybeHours != nil,
                         metrics: m)
 
             advisorCell(label: "GYBE",
                         time: gybeHours.map { formatDuration($0) } ?? "—",
+                        sublabel: nil,
                         timeColor: gybeHours != nil ? gybeColor : Color.secondary,
                         bold: !directFaster && gybeHours != nil,
                         metrics: m)
@@ -187,6 +192,7 @@ struct iPhoneVMGView: View {
 
     private func advisorCell(
         label: String, time: String,
+        sublabel: String? = nil,
         timeColor: Color, bold: Bool,
         metrics m: PhoneVMGMetrics
     ) -> some View {
@@ -200,6 +206,12 @@ struct iPhoneVMGView: View {
                 .foregroundStyle(timeColor)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
+            if let sub = sublabel {
+                Text(sub)
+                    .font(.system(size: m.rowLabel * 0.88, weight: .regular, design: .rounded))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
         }
     }
 
