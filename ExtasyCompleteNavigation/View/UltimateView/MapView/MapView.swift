@@ -84,7 +84,8 @@ struct MapView: View {
                 
                 // Main Map with rounded corners
                 Map(position: $mapCameraPosition, interactionModes: [.pan, .zoom], scope: mapScope, content: {
-                    boatAnnotation() // Boat a=][nnotation with animation
+                    headingLinePolyline() // COG line — drawn under the boat so marker sits on top
+                    boatAnnotation()
                     waypointAnnotations()
                     if navigationReadings.gpsData?.isTargetSelected == true {
                         laylinePolylinesToWaypoint() // Show laylines to waypoint
@@ -428,6 +429,37 @@ struct MapView: View {
     }
     // Boat annotation — custom hull shape + wind arrow
     @MapContentBuilder
+    /// COG heading line: extends 100 NM ahead so MapKit always clips it to the screen edge.
+    @MapContentBuilder
+    private func headingLinePolyline() -> some MapContent {
+        if let boat = animatedBoatLocation, animatedHeading.isFinite {
+            let far = projectedCoordinate(from: boat,
+                                          headingDegrees: animatedHeading,
+                                          distanceMeters: 185_000)
+            MapPolyline(coordinates: [boat, far])
+                .stroke(Color.white.opacity(0.85),
+                        style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: []))
+        }
+    }
+
+    /// Rhumb-line projection: `distanceMeters` ahead along `headingDegrees` (true N = 0).
+    private func projectedCoordinate(from origin: CLLocationCoordinate2D,
+                                     headingDegrees: Double,
+                                     distanceMeters: Double) -> CLLocationCoordinate2D {
+        let R    = 6_371_000.0
+        let lat1 = origin.latitude  * .pi / 180
+        let lon1 = origin.longitude * .pi / 180
+        let brng = headingDegrees   * .pi / 180
+        let d    = distanceMeters
+
+        let lat2 = asin(sin(lat1) * cos(d / R) +
+                        cos(lat1) * sin(d / R) * cos(brng))
+        let lon2 = lon1 + atan2(sin(brng) * sin(d / R) * cos(lat1),
+                                cos(d / R) - sin(lat1) * sin(lat2))
+        return CLLocationCoordinate2D(latitude:  lat2 * 180 / .pi,
+                                      longitude: lon2 * 180 / .pi)
+    }
+
     private func boatAnnotation() -> some MapContent {
         if let boatLocation = animatedBoatLocation {
             Annotation("", coordinate: boatLocation) {
@@ -809,13 +841,6 @@ struct MapBoatMarker: View {
     
     var body: some View {
         ZStack {
-            Rectangle()
-                .fill(Color.white.opacity(0.9))
-                .frame(width: 2, height: 40)
-                .offset(y: -27)
-                .shadow(color: .black.opacity(0.2), radius: 2)
-                .rotationEffect(.degrees(heading))
-            
             PseudoBoat()
                 .stroke(Color.black.opacity(0.45), style: StrokeStyle(lineWidth: 6.5, lineCap: .round, lineJoin: .round))
                 .frame(width: 20, height: 44)
