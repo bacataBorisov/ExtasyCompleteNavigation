@@ -4,19 +4,22 @@ All notable changes to this project will be documented in this file.
 
 ---
 
-## [Unreleased] — 2026-05-11 (session 2)
+## [v1.1.1] — 2026-05-11 · build 3
 
 ### Improvements
 
-- **Downwind advisor delta: always show seconds** (`VMGSimpleView` + `iPhoneVMGView`): The delta line (e.g. "save 2m") now always includes the seconds component — "save 2m 0s", "save 1m 15s", "+1h 18m 22s". Previously seconds were omitted when `s == 0` or when the delta was ≥ 1 hour, giving insufficient racing precision.
+- **Downwind advisor: seconds in DIRECT/GYBE times** (`VMGSimpleView` + `iPhoneVMGView`): Advisor leg cells now use `hh:mm:ss` format (`formatAdvisorDuration`) instead of `hh:mm`. The main TRIP row keeps `hh:mm` — only the advisor comparison cells need sub-minute precision.
+- **Downwind advisor delta: always show seconds**: The delta line (e.g. "save 2m") now always includes the seconds component — "save 2m 0s", "+1h 18m 22s". Previously seconds were omitted when `s == 0` or when δ ≥ 1 h.
+- **Downwind advisor delta: inline with winning time**: The delta ("save 22s") is now shown to the right of the winning cell's time on the same row (`HStack`), replacing the standalone bottom row that was prone to clipping. The losing cell's row is clean.
 
 ### Tests
 
-- **`DownwindAdvisorTests.swift`** (26 tests): New test file covering all recent edge cases:
-  - `DownwindDirectDurationTests` (5): nil calc → SOG fallback, nil TWS → SOG fallback, zero SOG → nil, out-of-range polar angle → SOG fallback (regression for the "advisor disappears" bug), in-range polar speed used over SOG.
-  - `DownwindPathAdvisorTests` (6): not-downwind state gate, `delta = gybe − direct` sign convention in both directions, `optimalGybeTWA` passthrough, mark-above-optimal scenario (93°/158° crash screenshot), mark-deep indicator condition.
-  - `FormatTripDurationCrashRegressionTests` (5): near-zero SOG produces `Int`-overflowing hours (crash regression), cap value fits in `Int`, all reasonable hour ranges convert safely, multi-day formatting arithmetic (51.25 h → 2d 3h 15m), zero hours.
-  - `AdvisorColorSignConventionTests` (4): `gybeFaster` boolean polarity, inverted-highlight regression test.
+- **`DownwindAdvisorTests.swift`** (33 tests): New test file covering all edge cases from this session:
+  - `DownwindDirectDurationTests` (5): nil calc/TWS → SOG fallback, zero SOG → nil, out-of-range polar angle → SOG fallback (advisor-disappears regression), polar speed preferred over SOG.
+  - `DownwindPathAdvisorTests` (6): sailing-state gate, `delta = gybe − direct` sign in both directions, `optimalGybeTWA` passthrough, mark-above-optimal (93°/158° crash scenario), mark-deep condition.
+  - `FormatTripDurationCrashRegressionTests` (5): near-zero SOG → Int overflow crash regression, cap value safety, reasonable range conversions, multi-day arithmetic, zero.
+  - `AdvisorColorSignConventionTests` (4): `gybeFaster` polarity, inverted-highlight regression lock.
+  - `AdvisorDurationFormatTests` (7): sub-minute, minute, minute+seconds, hours+minutes+seconds, nil/zero/overflow-cap placeholders.
   - `AdvisorDeltaFormatTests` (6): seconds-only, minutes-always-include-seconds, hours with seconds, sign prefixes, zero delta.
 
 ---
