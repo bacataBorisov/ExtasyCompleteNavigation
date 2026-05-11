@@ -3,9 +3,8 @@ import CoreLocation
 
 /// iPhone full-panel waypoint view.
 ///
-/// Same visual language as ``VMGSimpleView`` (iPad compact strip) — system background,
-/// adaptive colours, geometry-driven fonts — but expanded to show three tack-leg rows
-/// (DIRECT / CURRENT / NEXT) that don't fit in the narrow iPad strip.
+/// Mirrors the iPad ``VMGSimpleView`` layout:
+///   header → DTM/TRIP/ETA (3-column row) → tack pair | divider | downwind advisor
 struct iPhoneVMGView: View {
     @Environment(NMEAParser.self) private var navigationReadings
     @Environment(SettingsManager.self) private var settingsManager
@@ -18,15 +17,16 @@ struct iPhoneVMGView: View {
             let m = PhoneVMGMetrics(size: geo.size)
 
             VStack(alignment: .leading, spacing: 0) {
-                // ── Top: name ───────────────────────────────────────────────
                 headerRow(metrics: m)
 
                 Divider().padding(.vertical, m.dividerPad)
 
-                // ── Middle: DTM / TRIP / ETA distributed across all available space
-                directSection(metrics: m)
+                metricsRow(metrics: m)
 
-                // ── Bottom: tack legs pinned to the bottom ───────────────────
+                Spacer(minLength: m.sectionGap)
+
+                Divider().padding(.vertical, m.dividerPad)
+
                 if navigationReadings.waypointData?.isVMCNegative == true {
                     Text("Moving away from waypoint")
                         .font(.system(size: m.warningFont, weight: .semibold))
@@ -36,26 +36,7 @@ struct iPhoneVMGView: View {
                         .padding(.horizontal, 8)
                         .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.red.opacity(0.85)))
                 } else {
-                    // Downwind path advisor — only shown when mark is downwind and polar is available
-                    if let directH = navigationReadings.waypointData?.directDownwindDuration {
-                        Divider().padding(.vertical, m.dividerPad)
-                        downwindAdvisorSection(
-                            directHours: directH,
-                            gybeHours: navigationReadings.waypointData?.gybePathDuration,
-                            deltaHours: navigationReadings.waypointData?.downwindTimeDeltaHours,
-                            twaToMark: navigationReadings.waypointData?.twaToMarkDirect,
-                            optDnTWA: navigationReadings.vmgData?.optimalDnTWA,
-                            metrics: m
-                        )
-                    }
-
-                    Divider().padding(.vertical, m.dividerPad)
-
-                    currentLegRow(metrics: m)
-
-                    Divider().padding(.vertical, m.dividerPad)
-
-                    nextLegRow(metrics: m)
+                    tackAndAdvisorSection(metrics: m)
                 }
             }
             .padding(.horizontal, m.edgePad)
@@ -72,7 +53,7 @@ struct iPhoneVMGView: View {
         }
     }
 
-    // MARK: - Header (list icon | name | close) — matches VMGSimpleView header layout
+    // MARK: - Header
 
     private func headerRow(metrics m: PhoneVMGMetrics) -> some View {
         HStack(alignment: .center, spacing: m.headerSpacing) {
@@ -104,34 +85,125 @@ struct iPhoneVMGView: View {
         .frame(height: m.headerRowH)
     }
 
-    // MARK: - Direct section: DTM / TRIP / ETA as 3 rows filling available space
+    // MARK: - Metrics row (DTM / TRIP / ETA — 3 equal columns, mirrors iPad)
 
-    private func directSection(metrics m: PhoneVMGMetrics) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Spacer(minLength: 0)
-            metricRow(
-                label: "DTM",
+    private func metricsRow(metrics m: PhoneVMGMetrics) -> some View {
+        HStack(alignment: .top, spacing: m.metricColGap) {
+            metricCol(
+                title: "DTM",
                 value: "\(settingsManager.formatDistance(meters: navigationReadings.waypointData?.distanceToMark ?? 0)) \(settingsManager.distanceAbbreviation)",
                 metrics: m
             )
-            Spacer(minLength: 0)
-            metricRow(
-                label: "TRIP",
+            metricCol(
+                title: "TRIP",
                 value: formatDuration(navigationReadings.waypointData?.tripDurationToWaypoint),
                 metrics: m
             )
-            Spacer(minLength: 0)
-            metricRow(
-                label: "ETA",
+            metricCol(
+                title: "ETA",
                 value: formatETA(navigationReadings.waypointData?.etaToWaypoint),
                 metrics: m
             )
-            Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity)
     }
 
-    // MARK: - Current leg (boat → tack point)
+    private func metricCol(title: String, value: String, metrics m: PhoneVMGMetrics) -> some View {
+        VStack(alignment: .leading, spacing: m.metricGap) {
+            Text(title)
+                .font(.system(size: m.metricLabel, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+            Text(value)
+                .font(.system(size: m.metricValue, weight: .bold, design: .rounded))
+                .foregroundStyle(Color("display_font"))
+                .lineLimit(1)
+                .minimumScaleFactor(0.45)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: - Tack pair | divider | advisor (mirrors iPad tackAndAdvisorSection)
+
+    private func tackAndAdvisorSection(metrics m: PhoneVMGMetrics) -> some View {
+        let wp = navigationReadings.waypointData
+        return HStack(alignment: .top, spacing: 0) {
+            VStack(alignment: .leading, spacing: m.tackRowGap) {
+                currentLegRow(metrics: m)
+                nextLegRow(metrics: m)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            if let directH = wp?.directDownwindDuration {
+                Divider()
+                    .padding(.horizontal, m.advisorGap)
+
+                advisorColumn(
+                    directHours: directH,
+                    gybeHours: wp?.gybePathDuration,
+                    deltaHours: wp?.downwindTimeDeltaHours,
+                    metrics: m
+                )
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - Advisor column (right half — mirrors iPad advisorColumn)
+
+    private func advisorColumn(
+        directHours: Double,
+        gybeHours: Double?,
+        deltaHours: Double?,
+        metrics m: PhoneVMGMetrics
+    ) -> some View {
+        let directFaster = (deltaHours ?? 0) < 0
+        let directColor: Color = (gybeHours != nil && directFaster) ? .cyan : Color("display_font")
+        let gybeColor:   Color = (gybeHours != nil && !directFaster) ? .cyan : Color("display_font")
+
+        return VStack(alignment: .leading, spacing: m.tackRowGap) {
+            advisorCell(label: "DIRECT",
+                        time: formatDuration(directHours),
+                        timeColor: directColor,
+                        bold: directFaster && gybeHours != nil,
+                        metrics: m)
+
+            advisorCell(label: "GYBE",
+                        time: gybeHours.map { formatDuration($0) } ?? "—",
+                        timeColor: gybeHours != nil ? gybeColor : Color.secondary,
+                        bold: !directFaster && gybeHours != nil,
+                        metrics: m)
+
+            if let delta = deltaHours {
+                Text(formatAdvisorDelta(delta))
+                    .font(.system(size: m.rowLabel, weight: .semibold, design: .rounded))
+                    .foregroundStyle(directFaster ? Color.cyan.opacity(0.85) : Color.orange.opacity(0.85))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+            }
+        }
+    }
+
+    private func advisorCell(
+        label: String, time: String,
+        timeColor: Color, bold: Bool,
+        metrics m: PhoneVMGMetrics
+    ) -> some View {
+        VStack(alignment: .leading, spacing: m.hintGap) {
+            Text(label)
+                .font(.system(size: m.rowLabel, weight: .medium))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+            Text(time)
+                .font(.system(size: m.dataValue, weight: bold ? .bold : .regular, design: .rounded))
+                .foregroundStyle(timeColor)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+        }
+    }
+
+    // MARK: - Current / Next leg rows (format unchanged — hint line + hero numbers)
 
     private func currentLegRow(metrics m: PhoneVMGMetrics) -> some View {
         let rawTWA = (navigationReadings.windData?.trueWindAngle ?? 0)
@@ -154,8 +226,6 @@ struct iPhoneVMGView: View {
         )
     }
 
-    // MARK: - Next leg (tack point → mark)
-
     private func nextLegRow(metrics m: PhoneVMGMetrics) -> some View {
         let raw = navigationReadings.waypointData?.nextLegTack ?? "—"
         let nextLabel = raw == "Port" ? "PORT" : raw == "Starboard" ? "STBD" : "—"
@@ -175,11 +245,6 @@ struct iPhoneVMGView: View {
         )
     }
 
-    // MARK: - Shared leg row layout
-    //
-    // Hero line: distance  |  duration  (big, prominent)
-    // Hint line: CURRENT · STBD · UPWIND  (small, secondary — context at a glance)
-
     private func legRow(
         label: String,
         distance: String, duration: String,
@@ -188,7 +253,6 @@ struct iPhoneVMGView: View {
         metrics m: PhoneVMGMetrics
     ) -> some View {
         VStack(alignment: .leading, spacing: m.hintGap) {
-            // Hero: numbers first
             HStack(spacing: m.columnGap) {
                 Text(distance)
                     .font(.system(size: m.dataValue, weight: .bold, design: .rounded))
@@ -205,7 +269,6 @@ struct iPhoneVMGView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            // Hint: leg label · tack · mode
             HStack(spacing: 5) {
                 Text(label)
                     .foregroundStyle(.secondary)
@@ -222,113 +285,9 @@ struct iPhoneVMGView: View {
             .lineLimit(1)
             .minimumScaleFactor(0.7)
         }
-        .padding(.vertical, m.rowVPad)
     }
 
-    // MARK: - Metric row (full-width, used in directSection)
-
-    private func metricRow(label: String, value: String, metrics m: PhoneVMGMetrics) -> some View {
-        VStack(alignment: .leading, spacing: m.metricGap) {
-            Text(label)
-                .font(.system(size: m.metricLabel, weight: .semibold))
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-            Text(value)
-                .font(.system(size: m.metricValue, weight: .bold, design: .rounded))
-                .foregroundStyle(Color("display_font"))
-                .lineLimit(1)
-                .minimumScaleFactor(0.5)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    // MARK: - Downwind Path Advisor
-
-    /// Two-row comparison: Direct vs Gybe, each with a hero duration and hint line.
-    /// Faster option highlighted in cyan; shows delta on the hint of the faster row.
-    private func downwindAdvisorSection(
-        directHours: Double,
-        gybeHours: Double?,
-        deltaHours: Double?,
-        twaToMark: Double?,
-        optDnTWA: Double?,
-        metrics m: PhoneVMGMetrics
-    ) -> some View {
-        let directFaster = (deltaHours ?? 0) < 0
-        let directColor: Color = (gybeHours != nil && directFaster) ? .cyan : Color("display_font")
-        let gybeColor:   Color = (gybeHours != nil && !directFaster) ? .cyan : Color("display_font")
-
-        let directHint: String = {
-            var parts = ["DIRECT"]
-            if let twa = twaToMark { parts.append("TWA \(Int(twa))°") }
-            if directFaster, let d = deltaHours { parts.append(formatAdvisorDelta(abs(d))) }
-            return parts.joined(separator: " · ")
-        }()
-        let gybeHint: String = {
-            var parts = ["GYBE"]
-            if let twa = optDnTWA { parts.append("opt \(Int(twa))°") }
-            if !directFaster, let d = deltaHours { parts.append(formatAdvisorDelta(abs(d))) }
-            return parts.joined(separator: " · ")
-        }()
-
-        return VStack(alignment: .leading, spacing: 0) {
-            // Row 1 — Direct
-            advisorRow(
-                duration: formatDuration(directHours),
-                hint: directHint,
-                durationColor: directColor,
-                isFaster: directFaster && gybeHours != nil,
-                metrics: m
-            )
-            // Row 2 — Gybe (only when gybe path is available)
-            if let g = gybeHours {
-                advisorRow(
-                    duration: formatDuration(g),
-                    hint: gybeHint,
-                    durationColor: gybeColor,
-                    isFaster: !directFaster,
-                    metrics: m
-                )
-            }
-        }
-    }
-
-    private func advisorRow(
-        duration: String,
-        hint: String,
-        durationColor: Color,
-        isFaster: Bool,
-        metrics m: PhoneVMGMetrics
-    ) -> some View {
-        VStack(alignment: .leading, spacing: m.hintGap) {
-            Text(duration)
-                .font(.system(size: m.dataValue, weight: isFaster ? .bold : .regular, design: .rounded))
-                .foregroundStyle(durationColor)
-                .lineLimit(1)
-                .minimumScaleFactor(0.6)
-
-            Text(hint)
-                .font(.system(size: m.rowLabel, weight: .medium))
-                .foregroundStyle(isFaster ? Color.cyan.opacity(0.85) : .secondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-        }
-        .padding(.vertical, m.rowVPad * 0.6)
-    }
-
-    /// Racing-precision delta: seconds shown when under 1 hour.
-    /// e.g. 75 s → "saves 1m 15s"; 120 s → "saves 2m"; 1.3 h → "saves 1h 18m"
-    private func formatAdvisorDelta(_ absHours: Double) -> String {
-        let absSecs = Int(absHours * 3600)
-        let h = absSecs / 3600
-        let m = (absSecs % 3600) / 60
-        let s = absSecs % 60
-        if h > 0 { return "saves \(h)h \(m)m" }
-        if m > 0 { return s > 0 ? "saves \(m)m \(s)s" : "saves \(m)m" }
-        return "saves \(s)s"
-    }
-
-    // MARK: - Helpers
+    // MARK: - Formatters
 
     private func formatDuration(_ hours: Double?) -> String {
         guard let h = hours, h.isFinite, h >= 0 else { return "—" }
@@ -349,26 +308,52 @@ struct iPhoneVMGView: View {
         f.dateFormat = hours <= 24 ? "HH:mm" : "d MMM HH:mm"
         return f.string(from: eta)
     }
+
+    /// Signed delta with seconds precision when under 1 hour.
+    private func formatAdvisorDelta(_ deltaHours: Double) -> String {
+        let absSecs = Int(abs(deltaHours) * 3600)
+        let h = absSecs / 3600
+        let m = (absSecs % 3600) / 60
+        let s = absSecs % 60
+        let timeStr: String
+        if h > 0 {
+            timeStr = "\(h)h \(m)m"
+        } else if m > 0 {
+            timeStr = s > 0 ? "\(m)m \(s)s" : "\(m)m"
+        } else {
+            timeStr = "\(s)s"
+        }
+        return deltaHours < 0 ? "save \(timeStr)" : "+\(timeStr)"
+    }
 }
 
-// MARK: - Geometry-derived sizes
+// MARK: - Geometry-driven sizes
 
 private struct PhoneVMGMetrics {
     let edgePad: CGFloat
     let dividerPad: CGFloat
+    let sectionGap: CGFloat
     let headerSpacing: CGFloat
     let headerRowH: CGFloat
     let headerIcon: CGFloat
     let headerTitle: CGFloat
     let closeIcon: CGFloat
-    let columnGap: CGFloat
-    let rowLabel: CGFloat
-    let rowVPad: CGFloat
-    let hintGap: CGFloat
-    let dataValue: CGFloat
+    /// Gap between the 3 metric columns (DTM / TRIP / ETA).
+    let metricColGap: CGFloat
     let metricGap: CGFloat
     let metricLabel: CGFloat
     let metricValue: CGFloat
+    /// Gap between CURRENT and NEXT tack rows.
+    let tackRowGap: CGFloat
+    /// Gap between the hint line and hero numbers within a tack row.
+    let hintGap: CGFloat
+    /// Hero distance / duration font.
+    let dataValue: CGFloat
+    /// Hint line font (CURRENT · PORT · DOWNWIND).
+    let rowLabel: CGFloat
+    /// Half-width column gap (padding each side of the vertical Divider).
+    let advisorGap: CGFloat
+    let columnGap: CGFloat
     let warningFont: CGFloat
     let warningPad: CGFloat
 
@@ -376,28 +361,31 @@ private struct PhoneVMGMetrics {
         let w = max(size.width, 200)
         let h = max(size.height, 160)
 
-        edgePad        = max(8, min(16, w * 0.035))
-        let inner      = w - edgePad * 2
+        edgePad       = max(8, min(16, w * 0.035))
+        let inner     = w - edgePad * 2
 
-        dividerPad     = max(4, min(10, h * 0.025))
-        headerSpacing  = max(6, inner * 0.02)
-        headerTitle    = max(15, min(20, inner * 0.055))
-        headerRowH     = max(30, headerTitle * 1.8)
-        headerIcon     = max(14, min(18, headerTitle * 0.9))
-        closeIcon      = max(16, min(20, headerTitle * 1.1))
+        dividerPad    = max(4, min(8, h * 0.022))
+        sectionGap    = max(8, h * 0.04)
+        headerSpacing = max(6, inner * 0.02)
+        headerTitle   = max(15, min(20, inner * 0.055))
+        headerRowH    = max(30, headerTitle * 1.8)
+        headerIcon    = max(14, min(18, headerTitle * 0.9))
+        closeIcon     = max(16, min(20, headerTitle * 1.1))
 
-        columnGap      = max(6, inner * 0.025)
-        rowLabel       = max(11, min(14, inner * 0.038))
-        rowVPad        = max(8, min(14, h * 0.035))
-        hintGap        = max(3, h * 0.012)
-        dataValue      = max(16, min(24, inner * 0.065))
+        metricColGap  = max(8, inner * 0.025)
+        metricGap     = max(3, h * 0.014)
+        metricLabel   = max(11, min(14, inner * 0.038))
+        metricValue   = max(20, min(34, inner * 0.088))
 
-        metricGap      = max(4, h * 0.018)
-        metricLabel    = max(11, min(14, inner * 0.038))
-        metricValue    = max(22, min(38, inner * 0.096))
+        tackRowGap    = max(12, h * 0.04)
+        hintGap       = max(3, h * 0.012)
+        dataValue     = max(16, min(24, inner * 0.065))
+        rowLabel      = max(11, min(14, inner * 0.038))
+        advisorGap    = max(6, inner * 0.025)
+        columnGap     = max(6, inner * 0.025)
 
-        warningFont    = max(13, min(17, inner * 0.045))
-        warningPad     = max(8, h * 0.04)
+        warningFont   = max(13, min(17, inner * 0.045))
+        warningPad    = max(8, h * 0.04)
     }
 }
 
