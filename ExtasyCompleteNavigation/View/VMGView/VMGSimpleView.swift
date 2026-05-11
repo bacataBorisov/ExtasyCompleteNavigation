@@ -202,21 +202,25 @@ struct VMGSimpleView: View {
         return f.string(from: eta)
     }
 
-    /// Tack pair (left) + downwind advisor column (right) side by side.
+    /// Tack pair (left half) | vertical divider | advisor (right half).
     /// When no advisor data exists the tack pair fills the full width.
     private func tackAndAdvisorSection(metrics m: StripMetrics) -> some View {
         let wp = navigationReadings.waypointData
-        return HStack(alignment: .top, spacing: m.advisorColumnGap) {
+        return HStack(alignment: .top, spacing: 0) {
             tackPairRowCompact(metrics: m)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             if let directH = wp?.directDownwindDuration {
+                Divider()
+                    .padding(.horizontal, m.advisorColumnGap)
+
                 advisorColumn(
                     directHours: directH,
                     gybeHours: wp?.gybePathDuration,
                     deltaHours: wp?.downwindTimeDeltaHours,
                     metrics: m
                 )
-                .frame(width: m.advisorColumnWidth)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
     }
@@ -360,17 +364,17 @@ private struct StripMetrics {
         let narrowCol = metricColumnMaxWidth < 56
         metricValueMinScale = narrowCol ? 0.38 : (stripTight ? 0.42 : 0.48)
 
-        // Advisor column sits to the right of the tack pair (~33 % of inner width).
-        advisorColumnGap = max(6, innerW * 0.025)
-        advisorColumnWidth = max(64, innerW * (stripTight ? 0.30 : 0.33))
-        // Tack rows use the remaining left width.
-        let tackAvailW = max(60, innerW - advisorColumnWidth - advisorColumnGap)
+        // Equal halves: tack pair (left) | divider | advisor (right).
+        // Gap is the horizontal padding each side of the vertical Divider.
+        advisorColumnGap = max(4, innerW * 0.018)
+        // Both halves get ~48 % of inner width; the divider + its gaps take the rest.
+        let tackAvailW = max(60, innerW * 0.48)
+        advisorColumnWidth = tackAvailW   // kept for reference; layout uses maxWidth: .infinity
         tackRowGap = stripTight ? max(2, innerH * 0.025) : max(3, innerH * 0.032)
         tackStateToDetailGap = max(1, innerH * 0.01)
-        // Hint label ("STBD · DOWNWIND") — kept small so numbers dominate.
-        tackState = min(13, max(stripTight ? 9 : 10, tackAvailW * (stripTight ? 0.068 : 0.075)) * vScale)
-        // Hero numbers ("1.4 NM · 00:19") — left column width drives sizing.
-        tackDetail = min(22, max(stripTight ? 13 : 15, tackAvailW * (stripTight ? 0.108 : 0.118)) * vScale)
+        // Coefficients scaled up relative to old 65 %-wide column so hero pt-size stays the same.
+        tackState = min(13, max(stripTight ? 9 : 10, tackAvailW * (stripTight ? 0.092 : 0.103)) * vScale)
+        tackDetail = min(22, max(stripTight ? 13 : 15, tackAvailW * (stripTight ? 0.148 : 0.162)) * vScale)
 
         warningFont = max(11, min(15, innerW * 0.035))
         warningVerticalPad = max(5, innerH * 0.035)
