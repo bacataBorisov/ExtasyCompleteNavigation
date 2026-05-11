@@ -273,7 +273,11 @@ struct VMGSimpleView: View {
         let deltaStr = deltaHours.map { formatAdvisorDelta($0) }
         let deltaColor = Color.cyan.opacity(0.85)
 
-        return VStack(alignment: .leading, spacing: m.tackRowGap) {
+        // Use a tighter gap than tackRowGap: the winning cell has 3 rows (label/time/save)
+        // and tackRowGap was designed for 2-row cells — it pushes GYBE off-screen.
+        let advisorRowGap = max(1, m.tackStateToDetailGap * 1.5)
+
+        return VStack(alignment: .leading, spacing: advisorRowGap) {
             if let status = statusLabel {
                 Text(status)
                     .font(.system(size: m.tackState, weight: .semibold))
@@ -332,7 +336,7 @@ struct VMGSimpleView: View {
             // Delta on its own prominent line — only on the winning cell.
             if let d = delta {
                 Text(d)
-                    .font(.system(size: m.tackDetail * 0.78, weight: .bold, design: .rounded))
+                    .font(.system(size: m.tackDetail * 0.68, weight: .bold, design: .rounded))
                     .foregroundStyle(deltaColor)
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)

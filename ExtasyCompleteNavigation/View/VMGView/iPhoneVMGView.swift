@@ -187,7 +187,9 @@ struct iPhoneVMGView: View {
         let deltaStr = deltaHours.map { formatAdvisorDelta($0) }
         let deltaColor = Color.cyan.opacity(0.85)
 
-        return VStack(alignment: .leading, spacing: m.tackRowGap) {
+        let advisorRowGap = max(1, m.hintGap * 1.5)
+
+        return VStack(alignment: .leading, spacing: advisorRowGap) {
             if let status = statusLabel {
                 Text(status)
                     .font(.system(size: m.rowLabel, weight: .semibold))
@@ -246,7 +248,7 @@ struct iPhoneVMGView: View {
             // Delta on its own prominent line — only on the winning cell.
             if let d = delta {
                 Text(d)
-                    .font(.system(size: m.dataValue * 0.78, weight: .bold, design: .rounded))
+                    .font(.system(size: m.dataValue * 0.68, weight: .bold, design: .rounded))
                     .foregroundStyle(deltaColor)
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
