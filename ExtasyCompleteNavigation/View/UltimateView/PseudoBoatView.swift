@@ -8,8 +8,10 @@ struct PseudoBoatView: View {
             // Background (if needed)
             Color.clear // Placeholder for any background adjustments
             
+                // PseudoBoat in the center
                 PseudoBoat()
                     .stroke(lineWidth: 2)
+                    .scaleEffect(x: 0.7, y: 0.7)
                 
 
         }

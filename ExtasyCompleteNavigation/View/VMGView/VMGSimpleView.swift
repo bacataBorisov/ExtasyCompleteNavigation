@@ -339,8 +339,8 @@ private struct StripMetrics {
         /// Keep vertical scaling modest so the metrics row does not jump to oversized type in tall strips.
         let vScale = min(1.08, max(1.0, innerH / 100))
 
-        dividerPad = stripTight ? max(2, min(5, innerH * 0.028)) : max(3, min(10, innerH * 0.045))
-        sectionGap = max(4, innerH * 0.03)
+        dividerPad = stripTight ? max(1, min(3, innerH * 0.018)) : max(2, min(4, innerH * 0.022))
+        sectionGap = max(3, innerH * 0.025)
         headerSpacing = max(5, innerW * 0.018)
         // Title stays secondary to DTM / Trip / ETA — modest size, not strip‑dominant.
         headerTitle = max(12, min(15, innerW * 0.038))
@@ -365,8 +365,8 @@ private struct StripMetrics {
         advisorColumnWidth = max(64, innerW * (stripTight ? 0.30 : 0.33))
         // Tack rows use the remaining left width.
         let tackAvailW = max(60, innerW - advisorColumnWidth - advisorColumnGap)
-        tackRowGap = stripTight ? max(4, innerH * 0.04) : max(5, innerH * 0.05)
-        tackStateToDetailGap = stripTight ? max(1, innerH * 0.014) : max(2, innerH * 0.02)
+        tackRowGap = stripTight ? max(2, innerH * 0.025) : max(3, innerH * 0.032)
+        tackStateToDetailGap = max(1, innerH * 0.01)
         // Hint label ("STBD · DOWNWIND") — kept small so numbers dominate.
         tackState = min(13, max(stripTight ? 9 : 10, tackAvailW * (stripTight ? 0.068 : 0.075)) * vScale)
         // Hero numbers ("1.4 NM · 00:19") — left column width drives sizing.

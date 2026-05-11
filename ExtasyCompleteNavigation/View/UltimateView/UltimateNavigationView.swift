@@ -17,7 +17,7 @@ struct UltimateNavigationView: View {
                 PseudoBoat()
                     .stroke(lineWidth: 4)
                     .foregroundColor(Color(UIColor.systemGray))
-                    .scaleEffect(x: 0.42, y: 0.55, anchor: .center)
+                    .scaleEffect(x: 0.25, y: 0.55, anchor: .center)
                 
                 // Connection status dot just inside the bow
                 connectionStatusDot
