@@ -26,7 +26,7 @@ This repo mixes **human-written canon**, **generated Agent OS artifacts**, **Cur
 
 1. **[PROJECT.md](PROJECT.md)** — What the system is, data flow, key files, NMEA table, Agent OS refresh commands.  
 2. **[CONVENTIONS.md](CONVENTIONS.md)** — Code style and patterns.  
-3. **[Guides](guides/)** — Optional deep dives (e.g. [`guides/testing-core-math.md`](guides/testing-core-math.md)).  
+3. **[Guides](guides/)** — Optional deep dives (e.g. [`guides/testing-core-math.md`](guides/testing-core-math.md), [`guides/branching-and-releases.md`](guides/branching-and-releases.md)).  
 4. **[ROADMAP.md](ROADMAP.md)** — Prioritized work.  
 5. **[CHANGELOG.md](CHANGELOG.md)** — What changed, session notes.  
 6. **[LESSONS.md](LESSONS.md)** — Pitfalls and “why we did X”.  
