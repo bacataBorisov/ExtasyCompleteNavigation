@@ -316,12 +316,16 @@ struct iPhoneVMGView: View {
         .padding(.vertical, m.rowVPad * 0.6)
     }
 
-    /// e.g. 0.75 h → "45m"; 1.3 h → "1h 18m"
+    /// Racing-precision delta: seconds shown when under 1 hour.
+    /// e.g. 75 s → "saves 1m 15s"; 120 s → "saves 2m"; 1.3 h → "saves 1h 18m"
     private func formatAdvisorDelta(_ absHours: Double) -> String {
-        let secs = Int(absHours * 3600)
-        let h = secs / 3600
-        let m = (secs % 3600) / 60
-        return h > 0 ? "saves \(h)h \(m)m" : "saves \(m)m"
+        let absSecs = Int(absHours * 3600)
+        let h = absSecs / 3600
+        let m = (absSecs % 3600) / 60
+        let s = absSecs % 60
+        if h > 0 { return "saves \(h)h \(m)m" }
+        if m > 0 { return s > 0 ? "saves \(m)m \(s)s" : "saves \(m)m" }
+        return "saves \(s)s"
     }
 
     // MARK: - Helpers

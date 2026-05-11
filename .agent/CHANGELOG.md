@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [Unreleased] — 2026-05-11
+
+### Improvements
+
+- **iPad landscape lock**: Removed portrait and upside-down orientations for iPad in `project.pbxproj` (both Debug and Release). iPad now runs landscape-only; portrait layout was too cramped for cockpit use.
+- **Slimmer boat icon (`PseudoBoat`)**: Replaced the old double-contour open-path hull (4 disconnected bezier strokes spanning edge-to-edge) with a single **closed hull path** — bow → starboard curve → transom → port curve → `closeSubpath()`. Proportions: max half-beam = 26 % of width at 28 % down from bow; half-stern = 14 % of width. This eliminates the "thick double-wall" appearance seen on the map marker and the wind instrument. Updated `scaleEffect` in `UltimateNavigationView` (x: 0.25 → 0.42) and removed the redundant `scaleEffect(x: 0.7)` from `PseudoBoatView` since the geometry is already slim.
+
+---
+
 ## [Unreleased] — 2026-05-08
 
 ### Features

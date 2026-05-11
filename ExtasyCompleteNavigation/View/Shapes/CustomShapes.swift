@@ -13,37 +13,33 @@ import SwiftUI
  */
 
 public struct PseudoBoat: Shape {
-   public func path(in rect: CGRect) -> Path {
+    public func path(in rect: CGRect) -> Path {
         var path = Path()
-        let height = rect.minY + rect.maxY
+        let cx       = rect.midX
+        let top      = rect.minY
+        let bot      = rect.maxY
+        let h        = rect.height
 
-        path.move(to: CGPoint(x: rect.midX, y: rect.minY))
-        path.addCurve(
-            to: CGPoint(x: (rect.minX), y: rect.maxY),
-            control1: CGPoint(x: (rect.midX-rect.midX), y:rect.maxY/3),
-            control2: CGPoint(x: (rect.midX-rect.midX), y: rect.maxY/2)
+        // Slim racing-hull proportions:
+        //   max half-beam at 28% down = 26% of rect width
+        //   half-stern width          = 14% of rect width
+        let halfBeam  = rect.width * 0.26
+        let beamY     = top + h * 0.28
+        let halfStern = rect.width * 0.14
+
+        path.move(to: CGPoint(x: cx, y: top))                          // bow
+        path.addCurve(                                                  // starboard
+            to: CGPoint(x: cx + halfStern, y: bot),
+            control1: CGPoint(x: cx + halfBeam, y: beamY),
+            control2: CGPoint(x: cx + halfStern, y: bot - h * 0.22)
         )
-        path.addLine(to: CGPoint(x: (rect.minX), y: rect.maxY))
-        path.move(to: CGPoint(x: rect.midX, y: rect.minY))
-        path.addCurve(
-            to: CGPoint(x: (rect.maxX), y: rect.maxY),
-            control1: CGPoint(x: (rect.midX+rect.midX), y:rect.maxY/3),
-            control2: CGPoint(x: (rect.midX+rect.midX), y:rect.maxY/2)
+        path.addLine(to: CGPoint(x: cx - halfStern, y: bot))           // transom
+        path.addCurve(                                                  // port
+            to: CGPoint(x: cx, y: top),
+            control1: CGPoint(x: cx - halfStern, y: bot - h * 0.22),
+            control2: CGPoint(x: cx - halfBeam, y: beamY)
         )
-        //inside path
-        path.move(to: CGPoint(x: rect.midX, y: rect.minY+height/20))
-        path.addCurve(
-            to: CGPoint(x: (rect.minX), y: rect.maxY),
-            control1: CGPoint(x: (rect.midX-rect.midX/1.1), y:rect.maxY/3),
-            control2: CGPoint(x: (rect.midX-rect.midX), y: rect.maxY/2)
-        )
-        path.addLine(to: CGPoint(x: (rect.minX), y: rect.maxY))
-        path.move(to: CGPoint(x: rect.midX, y: rect.minY+height/20))
-        path.addCurve(
-            to: CGPoint(x: (rect.maxX), y: rect.maxY),
-            control1: CGPoint(x: (rect.midX+rect.midX/1.1), y:rect.maxY/3),
-            control2: CGPoint(x: (rect.midX+rect.midX), y: rect.maxY/2)
-        )
+        path.closeSubpath()
         return path
     }
 }
