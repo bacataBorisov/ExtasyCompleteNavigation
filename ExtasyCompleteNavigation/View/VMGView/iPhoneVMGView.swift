@@ -127,6 +127,7 @@ struct iPhoneVMGView: View {
 
     private func tackAndAdvisorSection(metrics m: PhoneVMGMetrics) -> some View {
         let wp = navigationReadings.waypointData
+        let showAdvisor = wp?.waypointApproachState == "Downwind"
         return HStack(alignment: .top, spacing: 0) {
             VStack(alignment: .leading, spacing: m.tackRowGap) {
                 currentLegRow(metrics: m)
@@ -134,12 +135,12 @@ struct iPhoneVMGView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            if let directH = wp?.directDownwindDuration {
+            if showAdvisor {
                 Divider()
                     .padding(.horizontal, m.advisorGap)
 
                 advisorColumn(
-                    directHours: directH,
+                    directHours: wp?.directDownwindDuration,
                     gybeHours: wp?.gybePathDuration,
                     deltaHours: wp?.downwindTimeDeltaHours,
                     bearingToMark: wp?.trueMarkBearing,
@@ -154,22 +155,22 @@ struct iPhoneVMGView: View {
     // MARK: - Advisor column (right half — mirrors iPad advisorColumn)
 
     private func advisorColumn(
-        directHours: Double,
+        directHours: Double?,
         gybeHours: Double?,
         deltaHours: Double?,
         bearingToMark: Double?,
         metrics m: PhoneVMGMetrics
     ) -> some View {
         let directFaster = (deltaHours ?? 0) < 0
-        let directColor: Color = (gybeHours != nil && directFaster) ? .cyan : Color("display_font")
-        let gybeColor:   Color = (gybeHours != nil && !directFaster) ? .cyan : Color("display_font")
+        let directColor: Color = (gybeHours != nil && directHours != nil && directFaster) ? .cyan : Color("display_font")
+        let gybeColor:   Color = (gybeHours != nil && directHours != nil && !directFaster) ? .cyan : Color("display_font")
         let bearingLabel = bearingToMark.map { "→ \(Int($0.rounded()))°" }
 
         return VStack(alignment: .leading, spacing: m.tackRowGap) {
             advisorCell(label: "DIRECT",
-                        time: formatDuration(directHours),
+                        time: directHours.map { formatDuration($0) } ?? "—",
                         sublabel: bearingLabel,
-                        timeColor: directColor,
+                        timeColor: directHours != nil ? directColor : Color.secondary,
                         bold: directFaster && gybeHours != nil,
                         metrics: m)
 
