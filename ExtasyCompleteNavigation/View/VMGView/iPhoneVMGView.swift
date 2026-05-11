@@ -225,7 +225,7 @@ struct iPhoneVMGView: View {
         metrics m: PhoneVMGMetrics
     ) -> some View {
         VStack(alignment: .leading, spacing: m.hintGap) {
-            // Label + optional inline angle hint — one row, no extra height.
+            // Label + optional inline angle hint.
             HStack(spacing: 4) {
                 Text(label)
                     .foregroundStyle(.secondary)
@@ -237,20 +237,19 @@ struct iPhoneVMGView: View {
             .font(.system(size: m.rowLabel, weight: .medium))
             .lineLimit(1)
             .minimumScaleFactor(0.75)
-            // Time + optional inline delta to the right.
-            HStack(alignment: .firstTextBaseline, spacing: 5) {
-                Text(time)
-                    .font(.system(size: m.dataValue, weight: bold ? .bold : .regular, design: .rounded))
-                    .foregroundStyle(timeColor)
+            // Time.
+            Text(time)
+                .font(.system(size: m.dataValue, weight: bold ? .bold : .regular, design: .rounded))
+                .foregroundStyle(timeColor)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+            // Delta on its own prominent line — only on the winning cell.
+            if let d = delta {
+                Text(d)
+                    .font(.system(size: m.dataValue * 0.78, weight: .bold, design: .rounded))
+                    .foregroundStyle(deltaColor)
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
-                if let d = delta {
-                    Text(d)
-                        .font(.system(size: m.rowLabel, weight: .semibold, design: .rounded))
-                        .foregroundStyle(deltaColor)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.6)
-                }
             }
         }
     }
@@ -372,6 +371,7 @@ struct iPhoneVMGView: View {
     }
 
     /// Signed delta with seconds precision when under 1 hour.
+    /// Racing-precision delta — always "save Xs" since it only appears on the winning cell.
     private func formatAdvisorDelta(_ deltaHours: Double) -> String {
         let absSecs = Int(abs(deltaHours) * 3600)
         let h = absSecs / 3600
@@ -385,7 +385,7 @@ struct iPhoneVMGView: View {
         } else {
             timeStr = "\(s)s"
         }
-        return deltaHours < 0 ? "save \(timeStr)" : "+\(timeStr)"
+        return "save \(timeStr)"
     }
 }
 

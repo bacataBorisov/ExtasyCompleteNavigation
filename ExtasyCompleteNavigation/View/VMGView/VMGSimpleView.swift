@@ -311,7 +311,7 @@ struct VMGSimpleView: View {
         metrics m: StripMetrics
     ) -> some View {
         VStack(alignment: .leading, spacing: m.tackStateToDetailGap) {
-            // Label + optional inline angle hint — one row, no extra height.
+            // Label + optional inline angle hint.
             HStack(spacing: 4) {
                 Text(label)
                     .foregroundStyle(.secondary)
@@ -323,20 +323,19 @@ struct VMGSimpleView: View {
             .font(.system(size: m.tackState, weight: .medium))
             .lineLimit(1)
             .minimumScaleFactor(0.75)
-            // Time + optional inline delta to the right.
-            HStack(alignment: .firstTextBaseline, spacing: 5) {
-                Text(time)
-                    .font(.system(size: m.tackDetail, weight: bold ? .bold : .regular, design: .rounded))
-                    .foregroundStyle(timeColor)
+            // Time.
+            Text(time)
+                .font(.system(size: m.tackDetail, weight: bold ? .bold : .regular, design: .rounded))
+                .foregroundStyle(timeColor)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+            // Delta on its own prominent line — only on the winning cell.
+            if let d = delta {
+                Text(d)
+                    .font(.system(size: m.tackDetail * 0.78, weight: .bold, design: .rounded))
+                    .foregroundStyle(deltaColor)
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
-                if let d = delta {
-                    Text(d)
-                        .font(.system(size: m.tackState, weight: .semibold, design: .rounded))
-                        .foregroundStyle(deltaColor)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.6)
-                }
             }
         }
     }
@@ -351,8 +350,7 @@ struct VMGSimpleView: View {
         return String(format: "%02d:%02d:%02d", hh, mm, ss)
     }
 
-    /// Racing-precision delta: seconds always shown.
-    /// e.g. −75 s → "save 1m 15s"; +2 min → "+2m 0s"; +1.3 h → "+1h 18m 22s"
+    /// Racing-precision delta — always "save Xs" since it only appears on the winning cell.
     private func formatAdvisorDelta(_ deltaHours: Double) -> String {
         let absSecs = Int(abs(deltaHours) * 3600)
         let h = absSecs / 3600
@@ -366,7 +364,7 @@ struct VMGSimpleView: View {
         } else {
             timeStr = "\(s)s"
         }
-        return deltaHours < 0 ? "save \(timeStr)" : "+\(timeStr)"
+        return "save \(timeStr)"
     }
 
     private func deselectWaypoint() {
