@@ -25,17 +25,14 @@ struct MapView: View {
     /// iPad dashboard (`.settingsLink`): show settings **inside the map column** so cockpit metrics stay visible.
     @State private var iPadDashboardSettingsPresented = false
 
-    @State private var animatedBoatLocation: CLLocationCoordinate2D?
-    @State private var animatedStarboardLayline: CLLocationCoordinate2D?
-    @State private var animatedPortsideLayline: CLLocationCoordinate2D?
-    @State private var animatedHeading: Double = 0.0
-    @State private var animatedTWD: Double = 0.0
+    // All map elements use GPS-rate state (~1 Hz).
+    // Heading and TWD are updated with withAnimation so the boat and wind-arrow
+    // rotate smoothly without a 30 Hz timer hammering @State and rebuilding MapPolylines.
     @State private var targetBoatLocation: CLLocationCoordinate2D?
     @State private var targetStarboardLayline: CLLocationCoordinate2D?
     @State private var targetPortsideLayline: CLLocationCoordinate2D?
     @State private var targetHeading: Double = 0.0
     @State private var targetTWD: Double = 0.0
-    @State private var smoothingTimer: Timer?
     @State private var mapCameraPosition: MapCameraPosition = .automatic
 
     @AppStorage("savedCenterLat") private var savedCenterLat: Double = .nan
@@ -110,11 +107,9 @@ struct MapView: View {
                     }
                     // If no saved position and no GPS yet, map defaults to .automatic
 
-                    syncAnimatedState()
-                    startSmoothingTimer()
+                    syncTargetState()
                 }
                 .onDisappear {
-                    // Save the map position on disappearance if allowed
                     if allowSave {
                         if let camera = mapCameraPosition.camera {
                             savedCenterLat = camera.centerCoordinate.latitude
@@ -122,7 +117,6 @@ struct MapView: View {
                             savedZoomLevel = camera.distance
                         }
                     }
-                    stopSmoothingTimer()
                 }
                 .onMapCameraChange { context in
                     guard allowSave else { return }
@@ -279,97 +273,43 @@ struct MapView: View {
         }
     }
     
-    private func syncAnimatedState() {
-        updateBoatLocation()
-        updateHeading()
-        updateWindDirection()
-        updateLaylines()
-        animatedBoatLocation = targetBoatLocation
-        animatedStarboardLayline = targetStarboardLayline
-        animatedPortsideLayline = targetPortsideLayline
-        animatedHeading = targetHeading
-        animatedTWD = targetTWD
+    /// Snap all map state to current NMEA readings on first appearance.
+    private func syncTargetState() {
+        targetBoatLocation = navigationReadings.gpsData?.boatLocation
+        targetHeading      = navigationReadings.gpsData?.courseOverGround ?? 0
+        targetTWD          = navigationReadings.windData?.trueWindDirection ?? 0
+        targetStarboardLayline = navigationReadings.vmgData?.starboardLayline
+        targetPortsideLayline  = navigationReadings.vmgData?.portsideLayline
         updateIntersections()
     }
-    
+
     private func updateBoatLocation() {
         targetBoatLocation = navigationReadings.gpsData?.boatLocation
     }
-    
+
+    /// Heading updates use a short ease so the boat icon rotates smoothly rather than jumping.
     private func updateHeading() {
         if let newCOG = navigationReadings.gpsData?.courseOverGround {
-            targetHeading = newCOG
+            withAnimation(.easeInOut(duration: 0.6)) { targetHeading = newCOG }
         }
     }
-    
+
+    /// Same smooth ease for the wind arrow — TWD changes are infrequent but can be large.
     private func updateWindDirection() {
         if let newTWD = navigationReadings.windData?.trueWindDirection {
-            targetTWD = newTWD
+            withAnimation(.easeInOut(duration: 0.6)) { targetTWD = newTWD }
         }
     }
-    
-    // Update wind-mode layline endpoints.
+
     private func updateLaylines() {
         targetStarboardLayline = navigationReadings.vmgData?.starboardLayline
         targetPortsideLayline  = navigationReadings.vmgData?.portsideLayline
     }
 
-    // Update waypoint tack intersection dots.
-    /// No implicit animation — small coordinate jitter every frame was restarting a 1s ease,
-    /// which fought `MapPolyline` updates and read as flashing on the layline bundle.
+    /// No animation — coordinate jitter was restarting eases and causing flashing.
     private func updateIntersections() {
         starboardIntersection = navigationReadings.waypointData?.starboardIntersection?.intersection
-        portsideIntersection = navigationReadings.waypointData?.portsideIntersection?.intersection
-    }
-    
-    private func startSmoothingTimer() {
-        smoothingTimer?.invalidate()
-        smoothingTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 30.0, repeats: true) { _ in
-            advanceAnimatedState()
-        }
-    }
-    
-    private func stopSmoothingTimer() {
-        smoothingTimer?.invalidate()
-        smoothingTimer = nil
-    }
-    
-    private func advanceAnimatedState() {
-        animatedBoatLocation = interpolatedCoordinate(from: animatedBoatLocation, to: targetBoatLocation, factor: 0.18)
-        animatedStarboardLayline = interpolatedCoordinate(from: animatedStarboardLayline, to: targetStarboardLayline, factor: 0.12)
-        animatedPortsideLayline = interpolatedCoordinate(from: animatedPortsideLayline, to: targetPortsideLayline, factor: 0.12)
-        animatedHeading = interpolatedAngle(from: animatedHeading, to: targetHeading, factor: 0.18)
-        animatedTWD = interpolatedAngle(from: animatedTWD, to: targetTWD, factor: 0.10)
-    }
-    
-    private func interpolatedCoordinate(
-        from current: CLLocationCoordinate2D?,
-        to target: CLLocationCoordinate2D?,
-        factor: Double
-    ) -> CLLocationCoordinate2D? {
-        guard let target else { return nil }
-        guard let current else { return target }
-        
-        let latDelta = target.latitude - current.latitude
-        let lonDelta = target.longitude - current.longitude
-        
-        if abs(latDelta) < 0.000001, abs(lonDelta) < 0.000001 {
-            return target
-        }
-        
-        return CLLocationCoordinate2D(
-            latitude: current.latitude + latDelta * factor,
-            longitude: current.longitude + lonDelta * factor
-        )
-    }
-    
-    private func interpolatedAngle(from current: Double, to target: Double, factor: Double) -> Double {
-        let delta = (target - current).truncatingRemainder(dividingBy: 360)
-        let shortest = delta > 180 ? delta - 360 : (delta < -180 ? delta + 360 : delta)
-        if abs(shortest) < 0.1 {
-            return target
-        }
-        return current + shortest * factor
+        portsideIntersection  = navigationReadings.waypointData?.portsideIntersection?.intersection
     }
     
     // MARK: - Dynamic Zoom Level
@@ -427,15 +367,12 @@ struct MapView: View {
             }
         }
     }
-    /// COG heading line: extends 100 NM ahead so MapKit always clips it to the screen edge.
-    ///
-    /// Uses `targetHeading` (GPS rate, ~1 Hz) rather than `animatedHeading` (30 Hz timer)
-    /// so the MapPolyline is not re-created on every animation tick, which caused visible flickering.
-    /// The boat marker still uses `animatedHeading` for smooth rotation — the line only needs
-    /// coarse directional accuracy (1° error on 185 km is < 3 m at the boat).
+    /// COG heading line: 100 NM ahead so MapKit clips it to the screen edge.
+    /// Uses GPS-rate state only — no 30 Hz animated vars — so MapPolyline is recreated
+    /// at ~1 Hz instead of 30 Hz, which eliminates flickering entirely.
     @MapContentBuilder
     private func headingLinePolyline() -> some MapContent {
-        if let boat = animatedBoatLocation, targetHeading.isFinite {
+        if let boat = targetBoatLocation, targetHeading.isFinite {
             let far = projectedCoordinate(from: boat,
                                           bearingDegrees: targetHeading,
                                           distanceMeters: 185_000)
@@ -447,13 +384,13 @@ struct MapView: View {
 
     @MapContentBuilder
     private func boatAnnotation() -> some MapContent {
-        if let boatLocation = animatedBoatLocation {
+        if let boatLocation = targetBoatLocation {
             Annotation("", coordinate: boatLocation) {
                 ZStack {
                     // TWD wind arrow — teal arrowhead pointing downwind, with degree badge
-                    WindDirectionArrow(twd: animatedTWD)
+                    WindDirectionArrow(twd: targetTWD)
 
-                    MapBoatMarker(heading: animatedHeading)
+                    MapBoatMarker(heading: targetHeading)
 
                     // Boat name label
                     Text(settingsManager.boatName)
@@ -498,38 +435,33 @@ struct MapView: View {
         }
     }
     
-    // Laylines for wind mode with adjustable opacity
+    // Laylines for wind mode with adjustable opacity.
+    // Uses GPS-rate target vars so polylines update at ~1 Hz, not 30 Hz.
     @MapContentBuilder
     private func laylinePolylines(opacity: Double) -> some MapContent {
-        if let boatLocation = animatedBoatLocation {
-            if let sailingState = navigationReadings.vmgData?.sailingState {
-                // Colors are swapped depending on the sailing state.
-                // STBD gradient: green → teal  |  PORT gradient: red → purple
-                // (matches the AnemometerView wind sector palette)
-                // STBD: teal  |  PORT: purple — matching the anemometer sector end-colors.
-                // (Screen-space LinearGradient on map polylines renders mostly one colour,
-                //  so solid distinctive colours give the clearest visual match.)
-                let stbdColor = Color.teal.opacity(opacity)
-                let portColor = Color.purple.opacity(opacity)
+        if let boatLocation = targetBoatLocation,
+           let sailingState = navigationReadings.vmgData?.sailingState {
+            // STBD: teal  |  PORT: purple — matching the anemometer sector end-colors.
+            let stbdColor = Color.teal.opacity(opacity)
+            let portColor = Color.purple.opacity(opacity)
 
-                if sailingState == "Upwind" {
-                    if let starboardLayline = animatedStarboardLayline {
-                        MapPolyline(coordinates: [boatLocation, starboardLayline])
-                            .stroke(stbdColor, lineWidth: 2)
-                    }
-                    if let portsideLayline = animatedPortsideLayline {
-                        MapPolyline(coordinates: [boatLocation, portsideLayline])
-                            .stroke(portColor, lineWidth: 2)
-                    }
-                } else {
-                    if let starboardLayline = animatedStarboardLayline {
-                        MapPolyline(coordinates: [boatLocation, starboardLayline])
-                            .stroke(portColor, lineWidth: 2)
-                    }
-                    if let portsideLayline = animatedPortsideLayline {
-                        MapPolyline(coordinates: [boatLocation, portsideLayline])
-                            .stroke(stbdColor, lineWidth: 2)
-                    }
+            if sailingState == "Upwind" {
+                if let starboardLayline = targetStarboardLayline {
+                    MapPolyline(coordinates: [boatLocation, starboardLayline])
+                        .stroke(stbdColor, lineWidth: 2)
+                }
+                if let portsideLayline = targetPortsideLayline {
+                    MapPolyline(coordinates: [boatLocation, portsideLayline])
+                        .stroke(portColor, lineWidth: 2)
+                }
+            } else {
+                if let starboardLayline = targetStarboardLayline {
+                    MapPolyline(coordinates: [boatLocation, starboardLayline])
+                        .stroke(portColor, lineWidth: 2)
+                }
+                if let portsideLayline = targetPortsideLayline {
+                    MapPolyline(coordinates: [boatLocation, portsideLayline])
+                        .stroke(stbdColor, lineWidth: 2)
                 }
             }
         }

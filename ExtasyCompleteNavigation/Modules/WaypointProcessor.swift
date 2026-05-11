@@ -51,22 +51,28 @@ class WaypointProcessor {
 
     // MARK: - Downwind Path Advisor helpers
 
-    /// Polar-speed time to sail the rhumb line to the mark. Returns nil when not
-    /// downwind, polar is unavailable, or polar speed at that angle is zero.
+    /// Polar-speed time to sail the rhumb line to the mark.
+    /// Falls back to `sogKnots` when the polar is unavailable or returns 0 for this angle
+    /// (e.g., angle beyond the table range). Returns nil only when both polar and SOG are unusable.
     static func downwindDirectDuration(
         distanceToMarkMeters: Double,
         twaToMark: Double,
         tws: Double?,
-        calc: VMGCalculator?
+        calc: VMGCalculator?,
+        sogKnots: Double
     ) -> Double? {
-        guard let tws, let calc else { return nil }
-        let speed = calc.evaluateDiagram(windForce: tws, windAngle: twaToMark)
-        guard speed > 0 else { return nil }
-        return distanceToMarkMeters * toNauticalMiles / speed
+        let dtmNM = distanceToMarkMeters * toNauticalMiles
+        if let tws, let calc {
+            let speed = calc.evaluateDiagram(windForce: tws, windAngle: twaToMark)
+            if speed > 0 { return dtmNM / speed }
+        }
+        // Polar unavailable or angle outside table range — use current SOG as best estimate.
+        return sogKnots > 0 ? dtmNM / sogKnots : nil
     }
 
-    /// Computes all four downwind advisor values. Returns `(nil,nil,nil,nil)` when the
-    /// mark is not downwind or the polar diagram is unavailable.
+    /// Computes all four downwind advisor values.
+    /// Falls back to SOG for the direct leg when the polar angle is out of range.
+    /// Returns `(nil,nil,nil,nil)` only when the mark is not downwind.
     static func downwindPathAdvisor(
         waypointSailingState: String,
         distanceToMarkMeters: Double,
@@ -75,17 +81,23 @@ class WaypointProcessor {
         leg2NM: Double,
         optimalDnTWA: Double,
         tws: Double?,
-        calc: VMGCalculator?
+        calc: VMGCalculator?,
+        sogKnots: Double
     ) -> (direct: Double?, gybe: Double?, delta: Double?, twaToMark: Double?) {
-        guard waypointSailingState == "Downwind", let tws, let calc else {
-            return (nil, nil, nil, nil)
-        }
-        let directSpeed = calc.evaluateDiagram(windForce: tws, windAngle: twaToMark)
-        let gybeSpeed   = calc.evaluateDiagram(windForce: tws, windAngle: optimalDnTWA)
-        let dtmNM       = distanceToMarkMeters * toNauticalMiles
-        let direct: Double? = directSpeed > 0 ? dtmNM / directSpeed : nil
-        let gybe:   Double? = gybeSpeed   > 0 ? (leg1NM + leg2NM) / gybeSpeed : nil
-        let delta:  Double? = (direct != nil && gybe != nil) ? gybe! - direct! : nil
+        guard waypointSailingState == "Downwind" else { return (nil, nil, nil, nil) }
+        let dtmNM = distanceToMarkMeters * toNauticalMiles
+
+        // Direct: prefer polar speed; fall back to SOG when polar angle is out of range.
+        var directSpeed = 0.0
+        if let tws, let calc { directSpeed = calc.evaluateDiagram(windForce: tws, windAngle: twaToMark) }
+        let direct: Double? = directSpeed > 0 ? dtmNM / directSpeed
+                            : (sogKnots > 0   ? dtmNM / sogKnots : nil)
+
+        // Gybe: only polar — SOG is not meaningful for an angle we've never measured.
+        var gybeSpeed = 0.0
+        if let tws, let calc { gybeSpeed = calc.evaluateDiagram(windForce: tws, windAngle: optimalDnTWA) }
+        let gybe:  Double? = gybeSpeed > 0 ? (leg1NM + leg2NM) / gybeSpeed : nil
+        let delta: Double? = (direct != nil && gybe != nil) ? gybe! - direct! : nil
         return (direct, gybe, delta, twaToMark)
     }
 
@@ -231,12 +243,15 @@ class WaypointProcessor {
                 )
                 let etaNoLegs = tripNoLegs.map { Date().addingTimeInterval($0 * 3600) }
                 // Downwind advisor — direct only (no gybe path without intersections)
-                let directNoLegs = Self.downwindDirectDuration(
-                    distanceToMarkMeters: distanceToMark,
-                    twaToMark: angleToMark,
-                    tws: windData?.trueWindForce,
-                    calc: waypointSailingState == "Downwind" ? vmgCalculator : nil
-                )
+                let directNoLegs = waypointSailingState == "Downwind"
+                    ? Self.downwindDirectDuration(
+                        distanceToMarkMeters: distanceToMark,
+                        twaToMark: angleToMark,
+                        tws: windData?.trueWindForce,
+                        calc: vmgCalculator,
+                        sogKnots: effectiveSOG
+                      )
+                    : nil
                 self.waypointData = WaypointData(
                     distanceToMark: distanceToMark,
                     trueMarkBearing: trueMarkBearing,
@@ -338,7 +353,8 @@ class WaypointProcessor {
                 leg2NM: oppositeTackDistance,
                 optimalDnTWA: optimalDnTWA,
                 tws: windData?.trueWindForce,
-                calc: vmgCalculator
+                calc: vmgCalculator,
+                sogKnots: effectiveSOG
             )
 
             // MARK: - Update Waypoint Data

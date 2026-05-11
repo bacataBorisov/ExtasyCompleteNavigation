@@ -203,19 +203,21 @@ struct VMGSimpleView: View {
     }
 
     /// Tack pair (left half) | vertical divider | advisor (right half).
-    /// When no advisor data exists the tack pair fills the full width.
+    /// Advisor column is shown whenever the approach state is Downwind, even if some
+    /// individual values are nil (e.g. gybe legs not yet computed or polar out of range).
     private func tackAndAdvisorSection(metrics m: StripMetrics) -> some View {
         let wp = navigationReadings.waypointData
+        let showAdvisor = wp?.waypointApproachState == "Downwind"
         return HStack(alignment: .top, spacing: 0) {
             tackPairRowCompact(metrics: m)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            if let directH = wp?.directDownwindDuration {
+            if showAdvisor {
                 Divider()
                     .padding(.horizontal, m.advisorColumnGap)
 
                 advisorColumn(
-                    directHours: directH,
+                    directHours: wp?.directDownwindDuration,
                     gybeHours: wp?.gybePathDuration,
                     deltaHours: wp?.downwindTimeDeltaHours,
                     bearingToMark: wp?.trueMarkBearing,
@@ -228,22 +230,22 @@ struct VMGSimpleView: View {
 
     /// Right-column advisor: Direct / Gybe times stacked vertically; faster in cyan.
     private func advisorColumn(
-        directHours: Double,
+        directHours: Double?,
         gybeHours: Double?,
         deltaHours: Double?,
         bearingToMark: Double?,
         metrics m: StripMetrics
     ) -> some View {
         let directFaster = (deltaHours ?? 0) < 0
-        let directColor: Color = (gybeHours != nil && directFaster) ? .cyan : Color("display_font")
-        let gybeColor:   Color = (gybeHours != nil && !directFaster) ? .cyan : Color("display_font")
+        let directColor: Color = (gybeHours != nil && directHours != nil && directFaster) ? .cyan : Color("display_font")
+        let gybeColor:   Color = (gybeHours != nil && directHours != nil && !directFaster) ? .cyan : Color("display_font")
         let bearingLabel = bearingToMark.map { "→ \(Int($0.rounded()))°" }
 
         return VStack(alignment: .leading, spacing: m.tackRowGap) {
             advisorLegCell(label: "DIRECT",
-                           time: formatTripDuration(directHours),
+                           time: directHours.map { formatTripDuration($0) } ?? "—",
                            sublabel: bearingLabel,
-                           timeColor: directColor,
+                           timeColor: directHours != nil ? directColor : Color.secondary,
                            bold: directFaster && gybeHours != nil,
                            metrics: m)
 
