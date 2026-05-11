@@ -84,7 +84,8 @@ struct MapView: View {
                 
                 // Main Map with rounded corners
                 Map(position: $mapCameraPosition, interactionModes: [.pan, .zoom], scope: mapScope, content: {
-                    boatAnnotation() // Boat a=][nnotation with animation
+                    headingLinePolyline() // COG line — drawn under the boat so marker sits on top
+                    boatAnnotation()
                     waypointAnnotations()
                     if navigationReadings.gpsData?.isTargetSelected == true {
                         laylinePolylinesToWaypoint() // Show laylines to waypoint
@@ -426,7 +427,24 @@ struct MapView: View {
             }
         }
     }
-    // Boat annotation — custom hull shape + wind arrow
+    /// COG heading line: extends 100 NM ahead so MapKit always clips it to the screen edge.
+    ///
+    /// Uses `targetHeading` (GPS rate, ~1 Hz) rather than `animatedHeading` (30 Hz timer)
+    /// so the MapPolyline is not re-created on every animation tick, which caused visible flickering.
+    /// The boat marker still uses `animatedHeading` for smooth rotation — the line only needs
+    /// coarse directional accuracy (1° error on 185 km is < 3 m at the boat).
+    @MapContentBuilder
+    private func headingLinePolyline() -> some MapContent {
+        if let boat = animatedBoatLocation, targetHeading.isFinite {
+            let far = projectedCoordinate(from: boat,
+                                          bearingDegrees: targetHeading,
+                                          distanceMeters: 185_000)
+            MapPolyline(coordinates: [boat, far])
+                .stroke(Color.white.opacity(0.85),
+                        style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: []))
+        }
+    }
+
     @MapContentBuilder
     private func boatAnnotation() -> some MapContent {
         if let boatLocation = animatedBoatLocation {
@@ -809,13 +827,6 @@ struct MapBoatMarker: View {
     
     var body: some View {
         ZStack {
-            Rectangle()
-                .fill(Color.white.opacity(0.9))
-                .frame(width: 2, height: 40)
-                .offset(y: -27)
-                .shadow(color: .black.opacity(0.2), radius: 2)
-                .rotationEffect(.degrees(heading))
-            
             PseudoBoat()
                 .stroke(Color.black.opacity(0.45), style: StrokeStyle(lineWidth: 6.5, lineCap: .round, lineJoin: .round))
                 .frame(width: 20, height: 44)

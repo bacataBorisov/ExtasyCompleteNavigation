@@ -197,21 +197,23 @@ struct iPhoneVMGView: View {
         metrics m: PhoneVMGMetrics
     ) -> some View {
         VStack(alignment: .leading, spacing: m.hintGap) {
-            Text(label)
-                .font(.system(size: m.rowLabel, weight: .medium))
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
+            // Label + optional inline bearing ("DIRECT  → 310°") — one row, no extra height.
+            HStack(spacing: 4) {
+                Text(label)
+                    .foregroundStyle(.secondary)
+                if let sub = sublabel {
+                    Text(sub)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .font(.system(size: m.rowLabel, weight: .medium))
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
             Text(time)
                 .font(.system(size: m.dataValue, weight: bold ? .bold : .regular, design: .rounded))
                 .foregroundStyle(timeColor)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
-            if let sub = sublabel {
-                Text(sub)
-                    .font(.system(size: m.rowLabel * 0.88, weight: .regular, design: .rounded))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
         }
     }
 

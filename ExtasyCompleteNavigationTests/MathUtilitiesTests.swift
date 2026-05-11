@@ -202,4 +202,62 @@ final class MathUtilitiesTests: XCTestCase {
         let end = CLLocationCoordinate2D(latitude: 0.0, longitude: 179.0)
         XCTAssertEqual(calculateBearing(from: start, to: end), 270.0, accuracy: 0.5)
     }
+
+    // MARK: - projectedCoordinate
+
+    func testProjectNorth() {
+        let origin = CLLocationCoordinate2D(latitude: 0, longitude: 0)
+        let result = projectedCoordinate(from: origin, bearingDegrees: 0, distanceMeters: 111_139)
+        XCTAssertEqual(result.latitude,  1.0, accuracy: 0.01, "Expected ~1° north")
+        XCTAssertEqual(result.longitude, 0.0, accuracy: 0.01, "Longitude should be unchanged")
+    }
+
+    func testProjectSouth() {
+        let origin = CLLocationCoordinate2D(latitude: 0, longitude: 0)
+        let result = projectedCoordinate(from: origin, bearingDegrees: 180, distanceMeters: 111_139)
+        XCTAssertEqual(result.latitude,  -1.0, accuracy: 0.01, "Expected ~1° south")
+        XCTAssertEqual(result.longitude,  0.0, accuracy: 0.01, "Longitude should be unchanged")
+    }
+
+    func testProjectEast() {
+        let origin = CLLocationCoordinate2D(latitude: 0, longitude: 0)
+        let result = projectedCoordinate(from: origin, bearingDegrees: 90, distanceMeters: 111_139)
+        XCTAssertEqual(result.latitude,  0.0, accuracy: 0.01, "Latitude should be unchanged")
+        XCTAssertGreaterThan(result.longitude, 0, "Longitude should increase heading east")
+    }
+
+    func testProjectWest() {
+        let origin = CLLocationCoordinate2D(latitude: 0, longitude: 0)
+        let result = projectedCoordinate(from: origin, bearingDegrees: 270, distanceMeters: 111_139)
+        XCTAssertEqual(result.latitude,  0.0, accuracy: 0.01, "Latitude should be unchanged")
+        XCTAssertLessThan(result.longitude, 0, "Longitude should decrease heading west")
+    }
+
+    /// Round-trip: project from origin, compute bearing back — must equal (forward + 180) % 360.
+    func testProjectRoundTripBearing() {
+        let cardinals: [(bearing: Double, label: String)] = [
+            (0, "N"), (45, "NE"), (90, "E"), (135, "SE"),
+            (180, "S"), (225, "SW"), (270, "W"), (315, "NW")
+        ]
+        let origin = CLLocationCoordinate2D(latitude: 43.0, longitude: 28.0)
+        let dist   = 50_000.0
+
+        for (bearing, label) in cardinals {
+            let projected = projectedCoordinate(from: origin, bearingDegrees: bearing, distanceMeters: dist)
+            let back      = calculateBearing(from: projected, to: origin)
+            let expected  = normalizeAngle(bearing + 180)
+            XCTAssertEqual(back, expected, accuracy: 0.5,
+                           "Reverse bearing mismatch for \(label) (\(bearing)°)")
+        }
+    }
+
+    /// 268° (near-west, slightly south) must project to lower longitude and slightly lower latitude.
+    func testProjectBlackSea268() {
+        let origin = CLLocationCoordinate2D(latitude: 43.0, longitude: 28.0)
+        let result = projectedCoordinate(from: origin, bearingDegrees: 268, distanceMeters: 20_000)
+        XCTAssertLessThan(result.longitude, origin.longitude, "268° should move west")
+        XCTAssertLessThan(result.latitude,  origin.latitude,  "268° should move very slightly south")
+        let measured = calculateBearing(from: origin, to: result)
+        XCTAssertEqual(measured, 268.0, accuracy: 0.5, "Measured bearing must match input")
+    }
 }
