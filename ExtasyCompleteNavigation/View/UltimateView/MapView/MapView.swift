@@ -427,8 +427,6 @@ struct MapView: View {
             }
         }
     }
-    // Boat annotation — custom hull shape + wind arrow
-    @MapContentBuilder
     /// COG heading line: extends 100 NM ahead so MapKit always clips it to the screen edge.
     @MapContentBuilder
     private func headingLinePolyline() -> some MapContent {
@@ -460,6 +458,7 @@ struct MapView: View {
                                       longitude: lon2 * 180 / .pi)
     }
 
+    @MapContentBuilder
     private func boatAnnotation() -> some MapContent {
         if let boatLocation = animatedBoatLocation {
             Annotation("", coordinate: boatLocation) {
