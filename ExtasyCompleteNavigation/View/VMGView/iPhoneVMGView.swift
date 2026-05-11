@@ -187,9 +187,7 @@ struct iPhoneVMGView: View {
         let deltaStr = deltaHours.map { formatAdvisorDelta($0) }
         let deltaColor = Color.cyan.opacity(0.85)
 
-        let advisorRowGap = max(1, m.hintGap * 1.5)
-
-        return VStack(alignment: .leading, spacing: advisorRowGap) {
+        return VStack(alignment: .leading, spacing: m.tackRowGap) {
             if let status = statusLabel {
                 Text(status)
                     .font(.system(size: m.rowLabel, weight: .semibold))
@@ -245,13 +243,23 @@ struct iPhoneVMGView: View {
                 .foregroundStyle(timeColor)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
-            // Delta on its own prominent line — only on the winning cell.
-            if let d = delta {
-                Text(d)
-                    .font(.system(size: m.dataValue * 0.68, weight: .bold, design: .rounded))
-                    .foregroundStyle(deltaColor)
+            // Time + inline save badge on the same row.
+            HStack(alignment: .firstTextBaseline, spacing: 5) {
+                Text(time)
+                    .font(.system(size: m.dataValue, weight: bold ? .bold : .regular, design: .rounded))
+                    .foregroundStyle(timeColor)
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
+                if let d = delta {
+                    Text(d)
+                        .font(.system(size: m.rowLabel * 1.1, weight: .bold, design: .rounded))
+                        .foregroundStyle(.black)
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 1)
+                        .background(Capsule().fill(deltaColor))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                }
             }
         }
     }

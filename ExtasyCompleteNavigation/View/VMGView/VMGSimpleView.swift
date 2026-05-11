@@ -273,11 +273,7 @@ struct VMGSimpleView: View {
         let deltaStr = deltaHours.map { formatAdvisorDelta($0) }
         let deltaColor = Color.cyan.opacity(0.85)
 
-        // Use a tighter gap than tackRowGap: the winning cell has 3 rows (label/time/save)
-        // and tackRowGap was designed for 2-row cells — it pushes GYBE off-screen.
-        let advisorRowGap = max(1, m.tackStateToDetailGap * 1.5)
-
-        return VStack(alignment: .leading, spacing: advisorRowGap) {
+        return VStack(alignment: .leading, spacing: m.tackRowGap) {
             if let status = statusLabel {
                 Text(status)
                     .font(.system(size: m.tackState, weight: .semibold))
@@ -327,19 +323,23 @@ struct VMGSimpleView: View {
             .font(.system(size: m.tackState, weight: .medium))
             .lineLimit(1)
             .minimumScaleFactor(0.75)
-            // Time.
-            Text(time)
-                .font(.system(size: m.tackDetail, weight: bold ? .bold : .regular, design: .rounded))
-                .foregroundStyle(timeColor)
-                .lineLimit(1)
-                .minimumScaleFactor(0.6)
-            // Delta on its own prominent line — only on the winning cell.
-            if let d = delta {
-                Text(d)
-                    .font(.system(size: m.tackDetail * 0.68, weight: .bold, design: .rounded))
-                    .foregroundStyle(deltaColor)
+            // Time + inline save badge on the same row — avoids adding a 6th row that clips GYBE.
+            HStack(alignment: .firstTextBaseline, spacing: 5) {
+                Text(time)
+                    .font(.system(size: m.tackDetail, weight: bold ? .bold : .regular, design: .rounded))
+                    .foregroundStyle(timeColor)
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
+                if let d = delta {
+                    Text(d)
+                        .font(.system(size: m.tackState * 1.1, weight: .bold, design: .rounded))
+                        .foregroundStyle(.black)
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 1)
+                        .background(Capsule().fill(deltaColor))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                }
             }
         }
     }
