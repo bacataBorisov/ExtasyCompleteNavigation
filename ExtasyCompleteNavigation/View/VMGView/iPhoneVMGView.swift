@@ -183,6 +183,10 @@ struct iPhoneVMGView: View {
             statusLabel = nil; statusColor = .secondary
         }
 
+        // Delta string attached inline to the winning cell.
+        let deltaStr = deltaHours.map { formatAdvisorDelta($0) }
+        let deltaColor = Color.cyan.opacity(0.85)
+
         return VStack(alignment: .leading, spacing: m.tackRowGap) {
             if let status = statusLabel {
                 Text(status)
@@ -197,6 +201,8 @@ struct iPhoneVMGView: View {
                         sublabel: directTWALabel,
                         timeColor: directHours != nil ? directColor : Color.secondary,
                         bold: !gybeFaster && gybeHours != nil,
+                        delta: !gybeFaster ? deltaStr : nil,
+                        deltaColor: deltaColor,
                         metrics: m)
 
             advisorCell(label: "GYBE",
@@ -204,15 +210,9 @@ struct iPhoneVMGView: View {
                         sublabel: gybeOptLabel,
                         timeColor: gybeHours != nil ? gybeColor : Color.secondary,
                         bold: gybeFaster && gybeHours != nil,
+                        delta: gybeFaster ? deltaStr : nil,
+                        deltaColor: deltaColor,
                         metrics: m)
-
-            if let delta = deltaHours {
-                Text(formatAdvisorDelta(delta))
-                    .font(.system(size: m.rowLabel, weight: .semibold, design: .rounded))
-                    .foregroundStyle(gybeFaster ? Color.cyan.opacity(0.85) : Color.orange.opacity(0.85))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.6)
-            }
         }
     }
 
@@ -220,10 +220,12 @@ struct iPhoneVMGView: View {
         label: String, time: String,
         sublabel: String? = nil,
         timeColor: Color, bold: Bool,
+        delta: String? = nil,
+        deltaColor: Color = .secondary,
         metrics m: PhoneVMGMetrics
     ) -> some View {
         VStack(alignment: .leading, spacing: m.hintGap) {
-            // Label + optional inline bearing ("DIRECT  → 310°") — one row, no extra height.
+            // Label + optional inline angle hint — one row, no extra height.
             HStack(spacing: 4) {
                 Text(label)
                     .foregroundStyle(.secondary)
@@ -235,11 +237,21 @@ struct iPhoneVMGView: View {
             .font(.system(size: m.rowLabel, weight: .medium))
             .lineLimit(1)
             .minimumScaleFactor(0.75)
-            Text(time)
-                .font(.system(size: m.dataValue, weight: bold ? .bold : .regular, design: .rounded))
-                .foregroundStyle(timeColor)
-                .lineLimit(1)
-                .minimumScaleFactor(0.6)
+            // Time + optional inline delta to the right.
+            HStack(alignment: .firstTextBaseline, spacing: 5) {
+                Text(time)
+                    .font(.system(size: m.dataValue, weight: bold ? .bold : .regular, design: .rounded))
+                    .foregroundStyle(timeColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                if let d = delta {
+                    Text(d)
+                        .font(.system(size: m.rowLabel, weight: .semibold, design: .rounded))
+                        .foregroundStyle(deltaColor)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                }
+            }
         }
     }
 
