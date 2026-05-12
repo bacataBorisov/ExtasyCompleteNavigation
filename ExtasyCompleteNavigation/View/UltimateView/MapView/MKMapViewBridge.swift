@@ -235,6 +235,10 @@ struct MKMapViewBridge: UIViewRepresentable {
         tap.delegate = context.coordinator
         mapView.addGestureRecognizer(tap)
 
+        // When a region finishes downloading, reload the tile overlay so the new
+        // local tiles are used without requiring the user to toggle the layer off/on.
+        context.coordinator.observeDownloadCompletion(mapView: mapView)
+
         return mapView
     }
 
@@ -275,6 +279,28 @@ extension MKMapViewBridge {
         private var portAnnotation:  IntersectionMapAnnotation?
 
         init(_ parent: MKMapViewBridge) { self.parent = parent }
+
+        // MARK: - Download-completion reload
+
+        /// Subscribes to `TileSeeder.didCompleteRegion` so the tile overlay is transparently
+        /// swapped for a new `NauticalChartOverlay` (which picks up the downloaded file).
+        func observeDownloadCompletion(mapView: MKMapView) {
+            NotificationCenter.default.addObserver(
+                forName: TileSeeder.didCompleteRegion,
+                object: nil,
+                queue: .main
+            ) { [weak self, weak mapView] _ in
+                guard let self, let mapView,
+                      self.nauticalLayerActive else { return }
+                // Remove the old overlay and add a fresh one that includes the new region.
+                if let old = self.tileOverlay {
+                    mapView.removeOverlay(old)
+                }
+                let fresh = NauticalChartOverlay()
+                self.tileOverlay = fresh
+                mapView.addOverlay(fresh, level: .aboveRoads)
+            }
+        }
 
         // MARK: - Main update entry point
 

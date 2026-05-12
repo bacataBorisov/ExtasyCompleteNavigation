@@ -3,44 +3,60 @@ import Foundation
 
 /// Single `MKTileOverlay` that implements the nautical-chart fallback chain:
 ///
-/// 1. **MBTiles bundle** (`nautical_charts.mbtiles`) — instantaneous, fully offline.
-/// 2. **OpenSeaMap live** (`tiles.openseamap.org`) — transparent seamark PNG tiles
+/// 1. **User-downloaded MBTiles** (one per region in Documents) — instantaneous, fully offline.
+/// 2. **Bundled MBTiles** (`nautical_charts.mbtiles` in app bundle, if present) — offline.
+/// 3. **OpenSeaMap live** (`tiles.openseamap.org`) — transparent seamark PNG tiles
 ///    with a 100 MB URLCache disk tier, so previously-seen tiles survive offline.
-/// 3. **Empty tile** — silent nil; the Apple Maps base layer shows through.
+/// 4. **Empty tile** — silent nil; Apple Maps base layer shows through.
 ///
-/// Usage: add one instance of this overlay to the `MKMapView`; remove it when the
-/// nautical layer is toggled off.  `MBTilesOverlay.bundled()` returns `nil` until the
-/// `.mbtiles` file is added to the app bundle (Phase 2 hardware step), at which point
-/// the bundled data automatically takes priority.
+/// `NauticalChartOverlay` re-evaluates available local files on each `init`, so
+/// toggling the nautical layer off → on after a download completes picks up the new data.
 final class NauticalChartOverlay: MKTileOverlay {
 
-    private let mbTiles:    MBTilesOverlay?       // nil until bundle is shipped
-    private let openSeaMap: OpenSeaMapTileOverlay
+    /// `MKMapViewBridge` posts this notification after a download completes so the
+    /// map can automatically reload the tile overlay with the new region.
+    static let reloadNotification = Notification.Name("NauticalChartOverlay.reload")
+
+    private let localOverlays: [MBTilesOverlay]   // downloaded regions
+    private let openSeaMap:    OpenSeaMapTileOverlay
 
     init() {
-        mbTiles    = MBTilesOverlay.bundled()     // nil when file not yet bundled
-        openSeaMap = OpenSeaMapTileOverlay()
+        // Downloaded regions (Documents) + bundled fallback
+        var local = MBTilesOverlay.allDownloaded()
+        if local.isEmpty, let bundled = MBTilesOverlay.bundled() {
+            local = [bundled]
+        }
+        localOverlays = local
+        openSeaMap    = OpenSeaMapTileOverlay()
+
         super.init(urlTemplate: nil)
-        canReplaceMapContent = false              // transparent overlay
+        canReplaceMapContent = false    // transparent overlay — Apple Maps shows through
         maximumZ = 18
         minimumZ = 3
     }
 
     override func loadTile(at path: MKTileOverlayPath,
                            result: @escaping (Data?, Error?) -> Void) {
-        // Step 1 — Try the bundled MBTiles (fast, offline, no network)
-        if let mbTiles {
-            mbTiles.loadTile(at: path) { [weak self] data, _ in
-                if let data {
-                    result(data, nil)   // served from bundle ✓
-                    return
-                }
-                // Step 2 — fall through to OpenSeaMap (network + disk cache)
-                self?.openSeaMap.loadTile(at: path, result: result)
-            }
-        } else {
-            // No bundle yet — go straight to OpenSeaMap
+        // Try each local overlay in sequence; fall through to live tiles on a miss.
+        tryLocal(index: 0, path: path, result: result)
+    }
+
+    // MARK: - Recursive local fallback
+
+    private func tryLocal(index: Int,
+                           path: MKTileOverlayPath,
+                           result: @escaping (Data?, Error?) -> Void) {
+        guard index < localOverlays.count else {
+            // All local sources exhausted → try OpenSeaMap live
             openSeaMap.loadTile(at: path, result: result)
+            return
+        }
+        localOverlays[index].loadTile(at: path) { [weak self] data, _ in
+            if let data {
+                result(data, nil)
+            } else {
+                self?.tryLocal(index: index + 1, path: path, result: result)
+            }
         }
     }
 }

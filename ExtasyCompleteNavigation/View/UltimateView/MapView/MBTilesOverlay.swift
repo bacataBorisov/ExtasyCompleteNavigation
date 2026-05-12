@@ -95,11 +95,12 @@ final class MBTilesOverlay: MKTileOverlay {
     }
 }
 
-// MARK: - Bundle helper
+// MARK: - Factory helpers
 
 extension MBTilesOverlay {
-    /// Convenience initialiser that looks for `nautical_charts.mbtiles` in the main bundle.
-    /// Returns `nil` if the file has not been bundled yet (Phase 2 set-up step).
+
+    /// Looks for `nautical_charts.mbtiles` in the main bundle.
+    /// Returns `nil` if the file has not been added to Resources yet.
     static func bundled() -> MBTilesOverlay? {
         guard let url = Bundle.main.url(forResource: "nautical_charts",
                                         withExtension: "mbtiles") else {
@@ -107,5 +108,17 @@ extension MBTilesOverlay {
             return nil
         }
         return MBTilesOverlay(mbtilesURL: url)
+    }
+
+    /// Returns one overlay per user-downloaded `nautical_*.mbtiles` file found in Documents.
+    /// Called by `NauticalChartOverlay` at init time so newly downloaded regions are picked up
+    /// automatically the next time the nautical layer is toggled on.
+    static func allDownloaded() -> [MBTilesOverlay] {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let files = (try? FileManager.default.contentsOfDirectory(
+            at: docs, includingPropertiesForKeys: nil
+        ).filter { $0.pathExtension == "mbtiles" &&
+                   $0.lastPathComponent.hasPrefix("nautical_") }) ?? []
+        return files.compactMap { MBTilesOverlay(mbtilesURL: $0) }
     }
 }

@@ -24,6 +24,9 @@ struct SettingsMenuView: View {
                     // Alarms
                     CompactRow(title: "Set Alarms", icon: "exclamationmark.triangle.fill", destination: AlarmsView())
 
+                    // Offline Charts
+                    CompactRow(title: "Offline Charts", icon: "map.fill", destination: OfflineChartsSettingsView())
+
                     // Glossary
                     CompactRow(title: "View Glossary", icon: "book.fill", destination: GlossaryView())
 
