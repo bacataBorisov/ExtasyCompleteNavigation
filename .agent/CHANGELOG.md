@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [Unreleased] — feature/offline-maps branch
+
+### Features
+
+- **Offline nautical maps — Phase 1: OpenSeaMap overlay** (`OpenSeaMapTileOverlay.swift`, `MKMapViewBridge.swift`, `MapView.swift`): The Apple Maps base can now be overlaid with **OpenSeaMap seamark tiles** (buoys, depth contours, shipping lanes). Because SwiftUI's `Map` API does not expose `MKTileOverlay`, the map was migrated from SwiftUI `Map(...)` to a `UIViewRepresentable` bridge (`MKMapViewBridge`) wrapping an `MKMapView`. All existing features are preserved: heading line, boat/waypoint/intersection annotations, tactical diamond laylines, COG polyline, wind-mode laylines, camera save/restore, tap-to-add-waypoint, zoom-to-fit, and center-on-boat.
+- **Offline tile cache**: `OpenSeaMapTileOverlay` uses a `URLCache` (10 MB in-memory, 100 MB disk) with `returnCacheDataElseLoad` policy. Tiles viewed online are served instantly with no network on subsequent opens.
+- **Nautical layer toggle**: A new chart icon button in the map toolbar toggles the nautical overlay on/off. State is persisted via `@AppStorage("showNauticalLayer")`. The button is cyan when active; shows a red diagonal slash when off.
+- **Offline nautical maps — Phase 2: MBTiles bundle** (`MBTilesOverlay.swift`, `NauticalChartOverlay.swift`): Infrastructure for reading pre-bundled raster tiles from a `.mbtiles` SQLite file, covering Black Sea and Mediterranean at zoom levels 3–14. Reads are done on a dedicated serial queue (no main-thread blocking). MBTiles uses TMS y-axis (0 = bottom); this is flipped to XYZ convention for MapKit.
+- **Fallback chain** (`NauticalChartOverlay`): A single overlay class implements the three-tier chain: ① bundled MBTiles (offline, instant) → ② OpenSeaMap live tiles (network + 100 MB disk cache) → ③ empty tile (silent, no crash). Once `nautical_charts.mbtiles` is added to the Resources group the bundled data automatically takes priority for covered regions.
+
+### Architecture
+
+- `MapView.swift` now passes overlay state as value types to `MKMapViewBridge`; the bridge's `Coordinator` holds all UIKit mutable state (overlays, annotations, camera token).
+- Camera control uses a `programmaticCamera` + `programmaticCameraVersion` pattern to distinguish app-initiated moves (center-on-boat, zoom-to-fit, restore) from user pans/zooms, preventing feedback loops.
+- Layline geometry helpers (`outerBoatSegment`, `trimFarEnd`, `diamondFillPolygon`, `isConvexQuad`) were moved from private MapView extension methods to module-level functions in `MKMapViewBridge.swift` so they are accessible without subclassing.
+
+---
+
 ## [v1.1.1] — 2026-05-11 · build 3
 
 ### Improvements
