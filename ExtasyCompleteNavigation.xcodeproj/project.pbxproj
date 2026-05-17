@@ -81,6 +81,12 @@
 		06FCADD02D40466100A09594 /* CocoaAsyncSocket in Frameworks */ = {isa = PBXBuildFile; productRef = 06FCADCF2D40466100A09594 /* CocoaAsyncSocket */; };
 		181601E12AD0F20700D6D31B /* DisplayCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 181601E02AD0F20700D6D31B /* DisplayCells.swift */; };
 		188B2B662ADB5EA000836F66 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188B2B652ADB5EA000836F66 /* MapView.swift */; };
+		AA0F4D012F0A000100000001 /* MKMapViewBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0F4D002F0A000100000001 /* MKMapViewBridge.swift */; };
+		AA0F4D032F0A000100000001 /* OpenSeaMapTileOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0F4D022F0A000100000001 /* OpenSeaMapTileOverlay.swift */; };
+		AA0F4D052F0A000100000001 /* MBTilesOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0F4D042F0A000100000001 /* MBTilesOverlay.swift */; };
+		AA0F4D072F0A000100000001 /* NauticalChartOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0F4D062F0A000100000001 /* NauticalChartOverlay.swift */; };
+		AA0F4D092F0A000100000001 /* TileSeeder.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0F4D082F0A000100000001 /* TileSeeder.swift */; };
+		AA0F4D0B2F0A000100000001 /* OfflineChartsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0F4D0A2F0A000100000001 /* OfflineChartsSettingsView.swift */; };
 		18A8FA742ACB974200EE2128 /* UltimateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18A8FA732ACB974200EE2128 /* UltimateView.swift */; };
 		18EDC55B2ACD052C003C82B2 /* MultiDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18EDC55A2ACD052C003C82B2 /* MultiDisplay.swift */; };
 		383EEC252AB359BE00C2F22B /* RawNavigationDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 383EEC242AB359BE00C2F22B /* RawNavigationDataView.swift */; };
@@ -213,6 +219,12 @@
 		06FC6E4C2B55D9BB006AF16A /* WaypointListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointListView.swift; sourceTree = "<group>"; };
 		181601E02AD0F20700D6D31B /* DisplayCells.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayCells.swift; sourceTree = "<group>"; };
 		188B2B652ADB5EA000836F66 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
+		AA0F4D002F0A000100000001 /* MKMapViewBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MKMapViewBridge.swift; sourceTree = "<group>"; };
+		AA0F4D022F0A000100000001 /* OpenSeaMapTileOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSeaMapTileOverlay.swift; sourceTree = "<group>"; };
+		AA0F4D042F0A000100000001 /* MBTilesOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MBTilesOverlay.swift; sourceTree = "<group>"; };
+		AA0F4D062F0A000100000001 /* NauticalChartOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NauticalChartOverlay.swift; sourceTree = "<group>"; };
+		AA0F4D082F0A000100000001 /* TileSeeder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileSeeder.swift; sourceTree = "<group>"; };
+		AA0F4D0A2F0A000100000001 /* OfflineChartsSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineChartsSettingsView.swift; sourceTree = "<group>"; };
 		18A8FA732ACB974200EE2128 /* UltimateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UltimateView.swift; sourceTree = "<group>"; };
 		18EDC55A2ACD052C003C82B2 /* MultiDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiDisplay.swift; sourceTree = "<group>"; };
 		383EEC242AB359BE00C2F22B /* RawNavigationDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawNavigationDataView.swift; sourceTree = "<group>"; };
@@ -297,6 +309,11 @@
 			isa = PBXGroup;
 			children = (
 				188B2B652ADB5EA000836F66 /* MapView.swift */,
+				AA0F4D002F0A000100000001 /* MKMapViewBridge.swift */,
+				AA0F4D022F0A000100000001 /* OpenSeaMapTileOverlay.swift */,
+				AA0F4D042F0A000100000001 /* MBTilesOverlay.swift */,
+				AA0F4D062F0A000100000001 /* NauticalChartOverlay.swift */,
+				AA0F4D082F0A000100000001 /* TileSeeder.swift */,
 			);
 			path = MapView;
 			sourceTree = "<group>";
@@ -388,6 +405,7 @@
 			isa = PBXGroup;
 			children = (
 				069EEA4F2CEB31F400357A05 /* SettingsMenuView.swift */,
+				AA0F4D0A2F0A000100000001 /* OfflineChartsSettingsView.swift */,
 				0647304E2D275C78009BCF9A /* CalibrateSpeedLog.swift */,
 				065AAD7B2D4FFC2200F7A1ED /* AdvancedSettingsView.swift */,
 				067388D02D3DAC2B002C9C54 /* ReadRawNMEA.swift */,
@@ -838,6 +856,12 @@
 				EE11AA002EE11AA002EE0005 /* PolarInstrumentView.swift in Sources */,
 				EE11AA002EE11AA002EE0003 /* NMEASentenceProcessor.swift in Sources */,
 				188B2B662ADB5EA000836F66 /* MapView.swift in Sources */,
+				AA0F4D012F0A000100000001 /* MKMapViewBridge.swift in Sources */,
+				AA0F4D032F0A000100000001 /* OpenSeaMapTileOverlay.swift in Sources */,
+				AA0F4D052F0A000100000001 /* MBTilesOverlay.swift in Sources */,
+				AA0F4D072F0A000100000001 /* NauticalChartOverlay.swift in Sources */,
+				AA0F4D092F0A000100000001 /* TileSeeder.swift in Sources */,
+				AA0F4D0B2F0A000100000001 /* OfflineChartsSettingsView.swift in Sources */,
 				069EEA882CECD25800357A05 /* CompassData.swift in Sources */,
 				383EEC252AB359BE00C2F22B /* RawNavigationDataView.swift in Sources */,
 				06A5257D2CF28BE300532A51 /* DisplayMenu.swift in Sources */,
@@ -936,7 +960,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_ASSET_PATHS = "\"ExtasyCompleteNavigationWatchApp Watch App/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -949,7 +973,7 @@
 					"@executable_path/Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bacata.ExtasyCompleteNavigation.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -970,7 +994,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_ASSET_PATHS = "\"ExtasyCompleteNavigationWatchApp Watch App/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -983,7 +1007,7 @@
 					"@executable_path/Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bacata.ExtasyCompleteNavigation.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -1002,11 +1026,11 @@
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.bacata.ExtasyCompleteNavigationWatchApp-Watch-AppTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -1025,11 +1049,11 @@
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.bacata.ExtasyCompleteNavigationWatchApp-Watch-AppTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -1047,11 +1071,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.bacata.ExtasyCompleteNavigationWatchApp-Watch-AppUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -1069,11 +1093,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.bacata.ExtasyCompleteNavigationWatchApp-Watch-AppUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -1214,7 +1238,7 @@
 				CODE_SIGN_ENTITLEMENTS = ExtasyCompleteNavigation/ExtasyCompleteNavigation.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_ASSET_PATHS = "\"ExtasyCompleteNavigation/PreviewContent\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1236,7 +1260,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bacata.ExtasyCompleteNavigation;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1254,7 +1278,7 @@
 				CODE_SIGN_ENTITLEMENTS = ExtasyCompleteNavigation/ExtasyCompleteNavigation.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_ASSET_PATHS = "\"ExtasyCompleteNavigation/PreviewContent\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1276,7 +1300,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bacata.ExtasyCompleteNavigation;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1292,12 +1316,12 @@
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bacata.ExtasyCompleteNavigationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
@@ -1314,12 +1338,12 @@
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bacata.ExtasyCompleteNavigationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_COMPILATION_MODE = wholemodule;

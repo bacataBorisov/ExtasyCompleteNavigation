@@ -460,37 +460,33 @@ final class AdvisorDeltaFormatTests: XCTestCase {
 
     func testSecondsOnlyDelta() {
         XCTAssertEqual(formatAdvisorDelta(-45.0 / 3600), "save 45s")
-        XCTAssertEqual(formatAdvisorDelta( 30.0 / 3600), "+30s")
+        XCTAssertEqual(formatAdvisorDelta( 30.0 / 3600), "save 30s")
     }
 
     func testMinutesPlusSeconds_alwaysShown() {
-        // 2 min 0 sec — seconds must still appear (the "always show seconds" contract)
-        XCTAssertEqual(formatAdvisorDelta( 2.0 / 60), "+2m 0s",
+        // 2 min 0 sec — seconds must still appear
+        XCTAssertEqual(formatAdvisorDelta( 2.0 / 60), "save 2m 0s",
                        "Seconds must always appear when delta is in the minutes range")
         // 1 min 15 sec
         XCTAssertEqual(formatAdvisorDelta(-75.0 / 3600), "save 1m 15s")
         // 4 min 30 sec
-        XCTAssertEqual(formatAdvisorDelta( 4.5 / 60), "+4m 30s")
+        XCTAssertEqual(formatAdvisorDelta( 4.5 / 60), "save 4m 30s")
     }
 
     func testHoursPlusMinutesPlusSeconds() {
         // 1 h 18 min 22 sec = 4702 seconds
         let totalSec: Double = 4702
         let delta = totalSec / 3600
-        XCTAssertEqual(formatAdvisorDelta(delta), "+1h 18m 22s")
+        XCTAssertEqual(formatAdvisorDelta(delta), "save 1h 18m 22s")
     }
 
-    func testSavePrefix_negativeSign() {
-        // Negative delta = gybe faster → "save ..."
+    func testAlwaysSavePrefix() {
+        // Both positive and negative delta → always "save ..." (shown only on winner)
         XCTAssertTrue(formatAdvisorDelta(-0.05).hasPrefix("save "))
-    }
-
-    func testPlusPrefix_positiveSign() {
-        // Positive delta = direct faster → "+..."
-        XCTAssertTrue(formatAdvisorDelta(0.05).hasPrefix("+"))
+        XCTAssertTrue(formatAdvisorDelta( 0.05).hasPrefix("save "))
     }
 
     func testZeroDelta() {
-        XCTAssertEqual(formatAdvisorDelta(0), "+0s")
+        XCTAssertEqual(formatAdvisorDelta(0), "save 0s")
     }
 }

@@ -99,17 +99,21 @@ struct PolarDiagramCanvasView: View {
 
         if let up = optimalUpTWA, up > 1 {
             let sp = nearestSpeed(to: up)
-            let p = point(twa: up, speed: sp)
-            var tick = Path()
-            tick.addEllipse(in: CGRect(x: p.x - 4, y: p.y - 4, width: 8, height: 8))
-            context.fill(tick, with: .color(.green.opacity(0.9)))
+            for twa in [up, -up] {
+                let p = point(twa: twa, speed: sp)
+                var tick = Path()
+                tick.addEllipse(in: CGRect(x: p.x - 4, y: p.y - 4, width: 8, height: 8))
+                context.fill(tick, with: .color(.green.opacity(0.9)))
+            }
         }
         if let dn = optimalDnTWA, dn > 1 {
             let sp = nearestSpeed(to: dn)
-            let p = point(twa: dn, speed: sp)
-            var tick = Path()
-            tick.addEllipse(in: CGRect(x: p.x - 4, y: p.y - 4, width: 8, height: 8))
-            context.fill(tick, with: .color(.orange.opacity(0.9)))
+            for twa in [dn, -dn] {
+                let p = point(twa: twa, speed: sp)
+                var tick = Path()
+                tick.addEllipse(in: CGRect(x: p.x - 4, y: p.y - 4, width: 8, height: 8))
+                context.fill(tick, with: .color(.orange.opacity(0.9)))
+            }
         }
 
         if let twa = liveTrueWindAngle, let bsp = liveBoatSpeedKnots, bsp > 0 {
