@@ -39,7 +39,9 @@ struct OfflineChartsSettingsView: View {
                 tipRow(icon: "arrow.clockwise",
                        text: "Toggle the chart layer off/on after download to activate new tiles.")
                 tipRow(icon: "map",
-                       text: "Zoom levels 4–13 cover overview through harbour-approach detail.")
+                       text: "Zoom levels 4–13 cover overview through harbour-approach detail. Useful content starts at z9+ near ports and marked channels.")
+                tipRow(icon: "exclamationmark.circle",
+                       text: "Only tiles with chart content are stored — open-sea areas with no buoys or marks will show 0 tiles stored, which is normal.")
             }
         }
         .listStyle(.insetGrouped)
@@ -82,11 +84,7 @@ private struct RegionRow: View {
                         if isDownloading {
                             Text("\(st.downloaded.formatted()) / ~\(region.estimatedTileCount.formatted()) tiles")
                         } else if isDownloaded {
-                            if let mb = seeder.fileSizeMB(region) {
-                                Text(String(format: "%.0f MB  ·  z%d–%d  ·  Ready offline",
-                                            mb, region.zoomMin, region.zoomMax))
-                                    .foregroundStyle(.green)
-                            }
+                            downloadedSubtitle
                         } else if let err = st.errorMessage {
                             Text(err).foregroundStyle(.red)
                         } else {
@@ -113,6 +111,26 @@ private struct RegionRow: View {
             }
         }
         .padding(.vertical, 4)
+    }
+
+    @ViewBuilder
+    private var downloadedSubtitle: some View {
+        let count = seeder.storedTileCount(region) ?? 0
+        let sizeStr = seeder.fileSizeString(region) ?? "?"
+
+        if count == 0 {
+            // File exists but no tiles were stored — region had no chart content
+            Label {
+                Text("No chart tiles stored — area may have no OpenSeaMap content at z\(region.zoomMin)–\(region.zoomMax). Try re-downloading or checking OpenSeaMap coverage for this region.")
+                    .foregroundStyle(.orange)
+            } icon: {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.orange)
+            }
+        } else {
+            Text("\(sizeStr)  ·  \(count.formatted()) tiles  ·  z\(region.zoomMin)–\(region.zoomMax)  ·  Ready offline")
+                .foregroundStyle(.green)
+        }
     }
 
     @ViewBuilder

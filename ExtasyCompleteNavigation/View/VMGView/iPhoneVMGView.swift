@@ -27,17 +27,7 @@ struct iPhoneVMGView: View {
 
                 Divider().padding(.vertical, m.dividerPad)
 
-                if navigationReadings.waypointData?.isVMCNegative == true {
-                    Text("Moving away from waypoint")
-                        .font(.system(size: m.warningFont, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, m.warningPad)
-                        .padding(.horizontal, 8)
-                        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.red.opacity(0.85)))
-                } else {
-                    tackAndAdvisorSection(metrics: m)
-                }
+                tackAndAdvisorSection(metrics: m)
             }
             .padding(.horizontal, m.edgePad)
             .padding(.vertical, m.edgePad)
@@ -51,6 +41,23 @@ struct iPhoneVMGView: View {
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
         }
+    }
+
+    // MARK: - Warning badge
+
+    private var headerWarning: (label: String, bg: Color, fg: Color)? {
+        let wp = navigationReadings.waypointData
+        if wp?.isVMCNegative == true {
+            return ("← MOVING AWAY", .red, .white)
+        }
+        if wp?.waypointApproachState == "Downwind",
+           let twaMark = wp?.twaToMarkDirect,
+           let twaOpt  = wp?.optimalGybeTWA {
+            let diff = twaMark - twaOpt
+            if diff > 8  { return ("MARK DEEP ↓",  .orange,            .white) }
+            if diff >= -8 { return ("ON LAYLINE ≈", .cyan.opacity(0.9), .black) }
+        }
+        return nil
     }
 
     // MARK: - Header
@@ -70,8 +77,21 @@ struct iPhoneVMGView: View {
                 .font(.system(size: m.headerTitle, weight: .semibold))
                 .foregroundStyle(Color("display_font"))
                 .lineLimit(1)
-                .minimumScaleFactor(0.7)
-                .frame(maxWidth: .infinity, maxHeight: m.headerRowH, alignment: .leading)
+                .minimumScaleFactor(0.6)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .layoutPriority(1)
+
+            if let w = headerWarning {
+                Text(w.label)
+                    .font(.system(size: m.headerTitle * 0.76, weight: .bold, design: .rounded))
+                    .foregroundStyle(w.fg)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 2)
+                    .background(Capsule().fill(w.bg))
+                    .lineLimit(1)
+                    .fixedSize()
+                    .layoutPriority(2)
+            }
 
             Button(action: { navigationReadings.deselectWaypoint() }) {
                 Image(systemName: "xmark.circle.fill")
@@ -168,34 +188,11 @@ struct iPhoneVMGView: View {
         let directTWALabel = wp?.twaToMarkDirect.map { "TWA \(Int($0.rounded()))°" }
         let gybeOptLabel   = wp?.optimalGybeTWA.map  { "opt \(Int($0.rounded()))°" }
 
-        let statusLabel: String?
-        let statusColor: Color
-        if let twaMark = wp?.twaToMarkDirect, let twaOpt = wp?.optimalGybeTWA {
-            let diff = twaMark - twaOpt
-            if diff < -8 {
-                statusLabel = "OVERSTOOD ↑"; statusColor = .secondary
-            } else if diff > 8 {
-                statusLabel = "MARK DEEP ↓"; statusColor = .orange.opacity(0.85)
-            } else {
-                statusLabel = "ON LAYLINE ≈"; statusColor = .cyan.opacity(0.85)
-            }
-        } else {
-            statusLabel = nil; statusColor = .secondary
-        }
-
         // Delta string attached inline to the winning cell.
         let deltaStr = deltaHours.map { formatAdvisorDelta($0) }
         let deltaColor = Color.cyan.opacity(0.85)
 
         return VStack(alignment: .leading, spacing: m.tackRowGap) {
-            if let status = statusLabel {
-                Text(status)
-                    .font(.system(size: m.rowLabel, weight: .semibold))
-                    .foregroundStyle(statusColor)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-            }
-
             advisorCell(label: "DIRECT",
                         time: formatAdvisorDuration(directHours),
                         sublabel: directTWALabel,

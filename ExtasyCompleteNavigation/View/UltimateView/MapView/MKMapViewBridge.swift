@@ -55,7 +55,8 @@ final class BoatAnnotationView: MKAnnotationView {
 
     override init(annotation: (any MKAnnotation)?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
-        frame        = CGRect(x: 0, y: 0, width: 44, height: 84)
+        // Wide enough so boat names up to ~15 chars never clip; boat icon is still centred
+        frame        = CGRect(x: 0, y: 0, width: 120, height: 84)
         centerOffset = .zero
         backgroundColor = .clear
         isOpaque        = false
@@ -70,13 +71,15 @@ final class BoatAnnotationView: MKAnnotationView {
                 Text(annotation.boatName)
                     .font(.caption2.bold())
                     .foregroundColor(.white)
+                    .lineLimit(1)
+                    .fixedSize()
                     .padding(.horizontal, 4)
                     .padding(.vertical, 2)
                     .background(Color.black.opacity(0.55))
                     .clipShape(RoundedRectangle(cornerRadius: 4))
                     .offset(y: 36)
             }
-            .frame(width: 44, height: 84)
+            .frame(width: 120, height: 84)
         )
         if let vc = hostVC {
             vc.rootView = root
@@ -96,8 +99,9 @@ final class WaypointAnnotationView: MKAnnotationView {
 
     override init(annotation: (any MKAnnotation)?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
-        frame        = CGRect(x: 0, y: 0, width: 60, height: 60)
-        centerOffset = CGPoint(x: 0, y: -30)   // anchor pin at bottom
+        // 160 px wide so waypoint names up to ~20 chars show in full on one line
+        frame        = CGRect(x: 0, y: 0, width: 160, height: 64)
+        centerOffset = CGPoint(x: 0, y: -32)   // anchor bottom-centre at coordinate
         backgroundColor = .clear
         isOpaque        = false
     }
@@ -113,10 +117,14 @@ final class WaypointAnnotationView: MKAnnotationView {
                     .foregroundColor(.orange)
                 Text(annotation.waypointName)
                     .font(.caption)
+                    .fontWeight(.semibold)
                     .foregroundColor(.black)
-                    .padding(4)
-                    .background(Color.white.opacity(0.8))
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                    .lineLimit(1)
+                    .fixedSize()
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 3)
+                    .background(Color.white.opacity(0.88))
+                    .clipShape(RoundedRectangle(cornerRadius: 5))
             }
         )
         if let vc = hostVC {
@@ -229,11 +237,14 @@ struct MKMapViewBridge: UIViewRepresentable {
         mapView.register(IntersectionAnnotationView.self,
                          forAnnotationViewWithReuseIdentifier: kIntersectionReuseID)
 
-        // Tap to add waypoint
-        let tap = UITapGestureRecognizer(target: context.coordinator,
-                                         action: #selector(Coordinator.handleTap(_:)))
-        tap.delegate = context.coordinator
-        mapView.addGestureRecognizer(tap)
+        // Long-press to add waypoint (fires on .began so the mark appears while still holding)
+        let longPress = UILongPressGestureRecognizer(
+            target: context.coordinator,
+            action: #selector(Coordinator.handleLongPress(_:))
+        )
+        longPress.minimumPressDuration = 0.6   // 0.6 s feels deliberate without being sluggish
+        longPress.delegate = context.coordinator
+        mapView.addGestureRecognizer(longPress)
 
         // When a region finishes downloading, reload the tile overlay so the new
         // local tiles are used without requiring the user to toggle the layer off/on.
@@ -575,16 +586,20 @@ extension MKMapViewBridge {
                                       mapView.camera.altitude)
         }
 
-        // MARK: - Tap gesture
+        // MARK: - Long-press gesture
 
-        @objc func handleTap(_ gesture: UITapGestureRecognizer) {
-            guard let mapView = gesture.view as? MKMapView else { return }
+        @objc func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+            // Fire once on .began — don't repeat if the user keeps holding.
+            guard gesture.state == .began,
+                  let mapView = gesture.view as? MKMapView else { return }
             let point      = gesture.location(in: mapView)
             let coordinate = mapView.convert(point, toCoordinateFrom: mapView)
+            // Haptic confirmation so the user feels the mark being placed.
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             parent.onTap(coordinate)
         }
 
-        /// Allow the map's built-in pan/pinch gestures to coexist with the tap recogniser.
+        /// Allow the map's built-in pan/pinch gestures to coexist with the long-press recogniser.
         func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
                                shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool {
             false

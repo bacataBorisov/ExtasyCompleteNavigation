@@ -5,6 +5,13 @@ struct SettingsMenuView: View {
     @Environment(NMEAParser.self) private var navigationReadings
     @State private var showAdvancedSettings = false
 
+    private var appVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
+    }
+    private var appBuild: String {
+        Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "—"
+    }
+
     var body: some View {
         Group {
             if showAdvancedSettings {
@@ -50,6 +57,16 @@ struct SettingsMenuView: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+
+                    // Version footer — subtle, non-interactive, bottom of list
+                    HStack {
+                        Text("v\(appVersion) (\(appBuild))")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                        Spacer()
+                    }
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 4, trailing: 16))
                 }
                 .listStyle(.plain)
             }

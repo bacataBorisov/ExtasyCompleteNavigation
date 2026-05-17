@@ -88,10 +88,31 @@ final class TileSeeder {
         FileManager.default.fileExists(atPath: region.localURL.path)
     }
 
-    func fileSizeMB(_ region: ChartRegion) -> Double? {
+    /// Human-readable file size string (e.g. "3.2 MB" or "420 KB").
+    func fileSizeString(_ region: ChartRegion) -> String? {
         guard let attrs = try? FileManager.default.attributesOfItem(atPath: region.localURL.path),
-              let size = attrs[.size] as? Int64 else { return nil }
-        return Double(size) / (1024 * 1024)
+              let bytes = attrs[.size] as? Int64 else { return nil }
+        let mb = Double(bytes) / (1024 * 1024)
+        if mb >= 1.0 { return String(format: "%.1f MB", mb) }
+        let kb = Double(bytes) / 1024
+        if kb >= 1.0 { return String(format: "%.0f KB", kb) }
+        return "\(bytes) B"
+    }
+
+    /// Number of tiles actually stored in the MBTiles SQLite file.
+    /// Returns `nil` if the file does not exist or cannot be read.
+    func storedTileCount(_ region: ChartRegion) -> Int? {
+        guard FileManager.default.fileExists(atPath: region.localURL.path) else { return nil }
+        var db: OpaquePointer?
+        guard sqlite3_open_v2(region.localURL.path, &db,
+                              SQLITE_OPEN_READONLY | SQLITE_OPEN_NOMUTEX, nil) == SQLITE_OK,
+              let db else { return nil }
+        defer { sqlite3_close(db) }
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, "SELECT COUNT(*) FROM tiles", -1, &stmt, nil) == SQLITE_OK,
+              let stmt else { return nil }
+        defer { sqlite3_finalize(stmt) }
+        return sqlite3_step(stmt) == SQLITE_ROW ? Int(sqlite3_column_int(stmt, 0)) : nil
     }
 
     func deleteRegion(_ region: ChartRegion) {
@@ -166,8 +187,10 @@ final class TileSeeder {
                     let data = await fetchTile(url: tileURL, session: session)
                     await throttle.release()
 
-                    // Skip blank transparent tiles (< 150 bytes)
-                    if let data, data.count >= 150 {
+                    // Skip blank transparent tiles.
+                    // OpenSeaMap returns a 68-byte 1×1 transparent PNG for empty areas.
+                    // Any tile ≤ 80 bytes is certainly blank; keep everything larger.
+                    if let data, data.count > 80 {
                         let tmsY = (1 << z) - 1 - y   // XYZ → TMS y
                         sqlite3_bind_int(stmt, 1, Int32(z))
                         sqlite3_bind_int(stmt, 2, Int32(x))

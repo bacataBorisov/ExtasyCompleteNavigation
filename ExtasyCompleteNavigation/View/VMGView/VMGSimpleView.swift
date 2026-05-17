@@ -21,24 +21,31 @@ struct VMGSimpleView: View {
                 Divider().padding(.vertical, m.dividerPad)
 
                 tackAndAdvisorSection(metrics: m)
-
-                if navigationReadings.waypointData?.isVMCNegative == true {
-                    Text("Moving away from waypoint")
-                        .font(.system(size: m.warningFont, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, m.warningVerticalPad)
-                        .padding(.horizontal, 8)
-                        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.red.opacity(0.85)))
-                        .padding(.top, m.sectionGap)
-                }
-
             }
             .padding(.horizontal, m.edgePad)
             .padding(.bottom, m.edgePad)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .background(Color(UIColor.systemBackground))
+    }
+
+    /// Highest-priority warning for the current navigation state.
+    /// Returns `(label, background color, text color)` or nil when everything is nominal.
+    private var headerWarning: (label: String, bg: Color, fg: Color)? {
+        let wp = navigationReadings.waypointData
+        // Priority 1 — leaving the mark
+        if wp?.isVMCNegative == true {
+            return ("← MOVING AWAY", .red, .white)
+        }
+        // Priority 2 — downwind geometry (only relevant when sailing downwind)
+        if wp?.waypointApproachState == "Downwind",
+           let twaMark = wp?.twaToMarkDirect,
+           let twaOpt  = wp?.optimalGybeTWA {
+            let diff = twaMark - twaOpt
+            if diff > 8  { return ("MARK DEEP ↓",  .orange,            .white) }
+            if diff >= -8 { return ("ON LAYLINE ≈", .cyan.opacity(0.9), .black) }
+        }
+        return nil
     }
 
     private func headerRow(metrics m: StripMetrics) -> some View {
@@ -52,13 +59,27 @@ struct VMGSimpleView: View {
             }
             .buttonStyle(.plain)
 
+            // Name shrinks down to 60 % before badge competes for space
             Text(waypointName)
                 .font(.system(size: m.headerTitle, weight: .semibold))
                 .foregroundStyle(Color("display_font"))
                 .lineLimit(1)
-                .minimumScaleFactor(0.7)
-                .multilineTextAlignment(.leading)
-                .frame(maxWidth: .infinity, maxHeight: m.headerRowHeight, alignment: .leading)
+                .minimumScaleFactor(0.6)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .layoutPriority(1)
+
+            // Warning badge — fixed-size so it never compresses the name below its min scale
+            if let w = headerWarning {
+                Text(w.label)
+                    .font(.system(size: m.headerTitle * 0.76, weight: .bold, design: .rounded))
+                    .foregroundStyle(w.fg)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 2)
+                    .background(Capsule().fill(w.bg))
+                    .lineLimit(1)
+                    .fixedSize()
+                    .layoutPriority(2)
+            }
 
             Button(action: deselectWaypoint) {
                 Image(systemName: "xmark.circle.fill")
@@ -246,42 +267,11 @@ struct VMGSimpleView: View {
         let directTWALabel = wp?.twaToMarkDirect.map { "TWA \(Int($0.rounded()))°" }
         let gybeOptLabel   = wp?.optimalGybeTWA.map  { "opt \(Int($0.rounded()))°" }
 
-        // Geometric status: how is the mark positioned relative to the optimal gybe angle?
-        // · OVERSTOOD  — mark is shallower than optimal (twaToMark < optTWA). Direct trivially wins.
-        // · ON LAYLINE — mark is within ±8° of optimal. Closest to the classic "when to gybe" decision.
-        // · MARK DEEP  — mark is deeper than optimal. Gybing at optimal angle may save time.
-        let statusLabel: String?
-        let statusColor: Color
-        if let twaMark = wp?.twaToMarkDirect, let twaOpt = wp?.optimalGybeTWA {
-            let diff = twaMark - twaOpt
-            if diff < -8 {
-                statusLabel = "OVERSTOOD ↑"
-                statusColor = .secondary
-            } else if diff > 8 {
-                statusLabel = "MARK DEEP ↓"
-                statusColor = .orange.opacity(0.85)
-            } else {
-                statusLabel = "ON LAYLINE ≈"
-                statusColor = .cyan.opacity(0.85)
-            }
-        } else {
-            statusLabel = nil
-            statusColor = .secondary
-        }
-
         // Delta string attached inline to the winning cell.
         let deltaStr = deltaHours.map { formatAdvisorDelta($0) }
         let deltaColor = Color.cyan.opacity(0.85)
 
         return VStack(alignment: .leading, spacing: m.tackRowGap) {
-            if let status = statusLabel {
-                Text(status)
-                    .font(.system(size: m.tackState, weight: .semibold))
-                    .foregroundStyle(statusColor)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-            }
-
             advisorLegCell(label: "DIRECT",
                            time: formatAdvisorDuration(directHours),
                            sublabel: directTWALabel,
