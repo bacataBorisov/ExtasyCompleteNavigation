@@ -136,7 +136,7 @@ final class TileSeeder {
 
     private func download(_ region: ChartRegion) async {
         let id = region.id
-        await setStatus(id, DownloadStatus(
+        setStatus(id, DownloadStatus(
             isRunning: true,
             total: region.estimatedTileCount
         ))
@@ -144,7 +144,7 @@ final class TileSeeder {
 
         // Open / create the MBTiles SQLite file
         guard let db = openDatabase(at: region.localURL, region: region) else {
-            await setStatus(id, DownloadStatus(errorMessage: "Cannot open database"))
+            setStatus(id, DownloadStatus(errorMessage: "Cannot open database"))
             return
         }
         defer { sqlite3_close(db) }
@@ -161,7 +161,7 @@ final class TileSeeder {
         let insertSQL = "INSERT OR REPLACE INTO tiles VALUES (?,?,?,?)"
         var stmt: OpaquePointer?
         guard sqlite3_prepare_v2(db, insertSQL, -1, &stmt, nil) == SQLITE_OK else {
-            await setStatus(id, DownloadStatus(errorMessage: "Cannot prepare statement"))
+            setStatus(id, DownloadStatus(errorMessage: "Cannot prepare statement"))
             return
         }
         defer { sqlite3_finalize(stmt) }
@@ -178,7 +178,7 @@ final class TileSeeder {
 
             for x in xs {
                 for y in ys {
-                    if await isCancelled(id) { cancelled = true; break outerLoop }
+                    if isCancelled(id) { cancelled = true; break outerLoop }
 
                     await throttle.acquire()
                     let tileURL = openSeaMapURL(z: z, x: x, y: y)
@@ -212,7 +212,7 @@ final class TileSeeder {
                     // Update UI every 20 tiles
                     if downloaded % 20 == 0 {
                         let prog = Double(downloaded) / Double(region.estimatedTileCount)
-                        await updateProgress(id: id, downloaded: downloaded, progress: prog)
+                        updateProgress(id: id, downloaded: downloaded, progress: prog)
                     }
                 }
             }
@@ -228,7 +228,7 @@ final class TileSeeder {
             isCancelled: cancelled,
             isComplete:  !cancelled
         )
-        await setStatus(id, finalStatus)
+        setStatus(id, finalStatus)
 
         if !cancelled {
             NotificationCenter.default.post(name: TileSeeder.didCompleteRegion,
@@ -238,18 +238,15 @@ final class TileSeeder {
 
     // MARK: - Helpers
 
-    @MainActor
     private func setStatus(_ id: String, _ s: DownloadStatus) {
         statusByID[id] = s
     }
 
-    @MainActor
     private func updateProgress(id: String, downloaded: Int, progress: Double) {
         statusByID[id]?.downloaded = downloaded
         statusByID[id]?.progress   = progress
     }
 
-    @MainActor
     private func isCancelled(_ id: String) -> Bool {
         cancellationByID[id] == true
     }
