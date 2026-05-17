@@ -189,6 +189,16 @@ Prioritized list of improvements, organized by impact and effort.
 - **Benefit**: Answers “sometimes straight is faster, sometimes not” inside the app instead of crew guesswork alone.
 - **Related**: `.cursor/skills/sailing-racing-tactics/SKILL.md` (VMC vs VMG, fastest-path notes).
 
+### Passage Weather Forecast
+- **Status**: Not started — planned (May 2026)
+- **What**: Show predicted wind conditions at points along the active route so the crew can prepare for what's coming. Fetch from StormGlass API (aggregates 7 models including MET Norway + ECMWF) at logarithmically-spaced points every ~1–2 NM, keyed to estimated time of arrival at each point.
+- **Phase 1 — single boat validation** (€19/month StormGlass Small): hardcoded API key in Settings, direct app → StormGlass calls, smart caching (one fetch per grid cell per hour), wind arrows on map + passage strip showing predicted TWD/TWS/TWA at each point.
+- **Phase 2 — commercial scale**: proxy backend (Node.js/Python on VPS), shared cache serves all users from one API key, RevenueCat subscriptions (Free / Navigator €4.99/mo / Racing €9.99/mo). Build only after Phase 1 validates the feature is actually useful on the water.
+- **UI**: Wind barbs along route on map + horizontal strip: "At 50 NM (22:00): NNE 15 kn · TWA 42° · UPWIND"
+- **Racing value**: wind shift timing for tack planning, building/dropping wind ahead, sail change preparation
+- **Branch**: `feature/passage-weather`
+- **Origin**: May 2026 — MET Norway discussion
+
 ### Lock Screen Widget
 - **Status**: Not started
 - **What**: Display remaining distance and time to waypoint on the iOS lock screen.
