@@ -116,9 +116,13 @@ Prioritized list of improvements, organized by impact and effort.
 - **Origin**: From v2.0 notes
 
 ### Polar Diagram Import & Multi-Boat Support
-- **Status**: Not started
-- **What**: Allow importing a polar from ORC `.pol` format or a custom CSV (`TWA, TWS, speed`). Store polars per boat in SwiftData. Select active polar in Settings. Current boat: Beneteau First 40.7 (Farr VPP, `Resources/first407_performance_prediction.pdf`).
-- **Origin**: From v1.0 + v2.0 notes
+- **Status**: Not started — planned (May 2026)
+- **What**: Selectable boat profile in Settings; each profile bundles a `diagram.txt` polar grid and an `optimal_tack.txt` tack table. Switching boat reloads `VMGProcessor` instantly — polar diagram, optimal angles, and downwind advisor all update automatically.
+- **Phase 1** (bundle 5 popular boats): Beneteau First 40.7 ✅, Bavaria 46 Cruiser, Beneteau Oceanis 45, Jeanneau Sun Fast 3300/3600, X-35. Polar data sourced from ORC VPP database (`orcsa.org`) or boat ORC certificate. UI: `Picker` in General Settings.
+- **Phase 2** (custom import): Import ORC `.pol` files from Files app; auto-compute optimal tack table from any imported polar grid.
+- **Files**: `SettingsManager` (add `selectedBoatID`), `VMGProcessor` (add `reload()`), `NMEAParser` (call reload on change), `GeneralSettingsView` (Picker), `Polars/` folder in bundle.
+- **Branch**: `feature/multi-boat-polars`
+- **Origin**: From v1.0 + v2.0 notes; expanded May 2026
 
 ### Real-Data Polar Calibration
 - **Status**: Not started
@@ -253,6 +257,20 @@ Prioritized list of improvements, organized by impact and effort.
 - **Status**: Done (Session 4, Mar 2026) — 20 terms in `GlossaryView` accessible from Settings
 - **What**: In-app glossary defining all abbreviations (AWA, TWS, VMG, VMC, COG, SOG, etc.) for less experienced crew.
 
+### Signal K Input Protocol
+- **Status**: Not started — planned (May 2026)
+- **What**: Add a `SignalKParser` alongside the existing `NMEAParser` so the app can receive data from a Signal K server (JSON over WebSocket) in addition to raw NMEA 0183 UDP. Signal K aggregates NMEA 0183, NMEA 2000, and other sources into one clean stream — a single input protocol that covers both old and new instrument generations.
+- **Branch**: `feature/signalk-input`
+- **Effort**: ~1 week. New `SignalKHandler` (WebSocket client) + mapping Signal K paths to existing data model (`environment.wind.speedTrue` → `WindData.trueWindForce`, etc.).
+- **Origin**: May 2026 — as part of NMEA 2000 / multi-source discussion
+
+### Signal K Output for Autopilot Integration
+- **Status**: Not started — planned (May 2026)
+- **What**: Allow the app to send a target waypoint or heading **to a Signal K server** (never directly to the autopilot). Signal K acts as the safety layer — it has watchdog timers and serial connection management — and relays `$APAPB` sentences to the B&G H1000 Pilot computer over the existing serial link. The app remains a listener for all instrument data; it only emits an **intent** (waypoint coordinate or desired heading) to Signal K.
+- **Safety constraint**: This must always go through Signal K (or equivalent server with a hardware watchdog). Direct iOS → autopilot UDP is explicitly out of scope.
+- **Branch**: `feature/autopilot-intent` (depends on `feature/signalk-input`)
+- **Origin**: May 2026 — B&G H1000 integration discussion
+
 ### Connection Instructions
 - **Status**: Not started
 - **What**: Write setup instructions for connecting to major marine brands — NMEA 0183/2000 with Garmin, B&G, Raymarine.
@@ -263,10 +281,18 @@ Prioritized list of improvements, organized by impact and effort.
 - **What**: Standard iOS-native settings view. Consider adding processing time display (moving average) in advanced settings.
 - **Origin**: From v2.0 notes
 
-### Watch App: Long-Press Full Screen
-- **Status**: Not started
-- **What**: On long press of a watch metric, go to full-screen display of that single value. Also investigate Action Button integration.
-- **Origin**: From v2.0 notes
+### Apple Watch App
+- **Status**: Not started — planned (May 2026)
+- **What**: Full watchOS companion app so critical navigation data (depth, speed, TWA, DTM) stays visible on the wrist when the iPhone is locked or the app is backgrounded.
+- **Scope**:
+  1. **Background location mode on iPhone** — enable `allowsBackgroundLocationUpdates = true`; keeps the UDP socket alive and NMEA data flowing while the phone is locked (`UIBackgroundModes: location` in `Info.plist`).
+  2. **WatchConnectivity** — add `WCSession` on both iPhone and Watch sides; push live instrument snapshot via `updateApplicationContext` every ~1–2 s.
+  3. **watchOS app target** — minimal always-on display: Depth · BSPD · TWA · DTM/ETA. Uses `@WKExtendedRuntimeSession` or standard WK lifecycle.
+  4. **Watch complications** — at least one `CLKComplicationFamily` (e.g. `.graphicCircular`) showing depth so the data is visible even when the Watch app itself is closed.
+  5. **Long-press full-screen** — tap a metric on the Watch for a large single-value view; investigate Action Button integration.
+- **Branch**: `feature/watch-app` (new experiment branch when ready)
+- **Effort**: ~3–5 days for MVP (steps 1–3); complications add ~1 day.
+- **Origin**: v2.0 notes + user request May 2026
 
 ### Accessibility
 - **Status**: Not started

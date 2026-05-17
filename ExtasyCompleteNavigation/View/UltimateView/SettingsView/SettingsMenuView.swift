@@ -5,6 +5,13 @@ struct SettingsMenuView: View {
     @Environment(NMEAParser.self) private var navigationReadings
     @State private var showAdvancedSettings = false
 
+    private var appVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
+    }
+    private var appBuild: String {
+        Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "—"
+    }
+
     var body: some View {
         Group {
             if showAdvancedSettings {
@@ -23,6 +30,9 @@ struct SettingsMenuView: View {
 
                     // Alarms
                     CompactRow(title: "Set Alarms", icon: "exclamationmark.triangle.fill", destination: AlarmsView())
+
+                    // Offline Charts
+                    CompactRow(title: "Offline Charts", icon: "map.fill", destination: OfflineChartsSettingsView())
 
                     // Glossary
                     CompactRow(title: "View Glossary", icon: "book.fill", destination: GlossaryView())
@@ -47,6 +57,16 @@ struct SettingsMenuView: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+
+                    // Version footer — subtle, non-interactive, bottom of list
+                    HStack {
+                        Text("v\(appVersion) (\(appBuild))")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                        Spacer()
+                    }
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 4, trailing: 16))
                 }
                 .listStyle(.plain)
             }

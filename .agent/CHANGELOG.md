@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [Unreleased] — feature/offline-maps branch
+
+### Features
+
+- **Offline nautical maps — Phase 1: OpenSeaMap overlay** (`OpenSeaMapTileOverlay.swift`, `MKMapViewBridge.swift`, `MapView.swift`): The Apple Maps base can now be overlaid with **OpenSeaMap seamark tiles** (buoys, depth contours, shipping lanes). Because SwiftUI's `Map` API does not expose `MKTileOverlay`, the map was migrated from SwiftUI `Map(...)` to a `UIViewRepresentable` bridge (`MKMapViewBridge`) wrapping an `MKMapView`. All existing features are preserved: heading line, boat/waypoint/intersection annotations, tactical diamond laylines, COG polyline, wind-mode laylines, camera save/restore, tap-to-add-waypoint, zoom-to-fit, and center-on-boat.
+- **Offline tile cache**: `OpenSeaMapTileOverlay` uses a `URLCache` (10 MB in-memory, 100 MB disk) with `returnCacheDataElseLoad` policy. Tiles viewed online are served instantly with no network on subsequent opens.
+- **Nautical layer toggle**: A new chart icon button in the map toolbar toggles the nautical overlay on/off. State is persisted via `@AppStorage("showNauticalLayer")`. The button is cyan when active; shows a red diagonal slash when off.
+- **Offline nautical maps — Phase 2: In-app tile downloader** (`TileSeeder.swift`, `OfflineChartsSettingsView.swift`): Users can download OpenSeaMap tiles for **Black Sea** (z4–13) and **Mediterranean** (z4–12) directly in the app via Settings → Offline Charts. Tiles are downloaded with 4 concurrent HTTP requests, stored in a per-region MBTiles SQLite file in the Documents directory, and loaded instantly on subsequent launches. Blank transparent tiles (< 150 bytes) are skipped to save storage. Progress bar + cancel button shown during download. Completion auto-reloads the tile overlay without user toggle.
+- **Fallback chain** (`NauticalChartOverlay`): A single overlay implements the four-tier chain: ① user-downloaded region MBTiles (Documents, instant) → ② bundled MBTiles (bundle, if shipped) → ③ OpenSeaMap live (network + 100 MB disk cache) → ④ empty tile (silent). New regions appear in the chain automatically when the nautical layer is next toggled.
+
+### Architecture
+
+- `MapView.swift` now passes overlay state as value types to `MKMapViewBridge`; the bridge's `Coordinator` holds all UIKit mutable state (overlays, annotations, camera token).
+- Camera control uses a `programmaticCamera` + `programmaticCameraVersion` pattern to distinguish app-initiated moves (center-on-boat, zoom-to-fit, restore) from user pans/zooms, preventing feedback loops.
+- Layline geometry helpers (`outerBoatSegment`, `trimFarEnd`, `diamondFillPolygon`, `isConvexQuad`) were moved from private MapView extension methods to module-level functions in `MKMapViewBridge.swift` so they are accessible without subclassing.
+- `TileSeeder` uses a custom `ConcurrencyThrottle` actor to cap concurrent tile requests at 4, avoiding hammering the OpenSeaMap server while keeping downloads fast.
+
+---
+
 ## [v1.1.1] — 2026-05-11 · build 3
 
 ### Improvements
